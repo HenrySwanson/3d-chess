@@ -2,9 +2,9 @@
 
 using std::list;
 
-namespace {
+namespace { //TODO comment the shit out of these
     static const int NUM_DIRECTIONS [16] = {
-        0, 0, 1, 1,
+        0, 0, 8, 8,
         24, 24, 24, 72,
         6, 12, 8,
         18, 14, 20,
@@ -20,8 +20,14 @@ namespace {
     };
 
     static const int PIECE_DIRECTIONS [16][72] = {
-        /* NIL, BORDER, W_PAWN, B_PAWN */
-        {}, {}, {}, {},
+        /* NIL, BORDER */
+        {}, {},
+
+        /* W_PAWN - Captures only */
+        { 157, 156, 155, 145, 143, 133, 132, 131},
+        /* B_PAWN - Captures only */
+        {-157,-156,-155,-145,-143,-133,-132,-131},
+
 
         /* KNIGHT */
         {  14,  10,  25,  23, 146, 142, 289, 287, 168, 120, 300, 276,
@@ -79,6 +85,54 @@ Board::Board()
 
 list<Move> Board::generateMoves(int origin)
 {
+    PieceType pt = squares[origin].type;
+
+    if(pt == NIL || pt == BORDER)
+        return list<Move>(0);
+    else if(pt == W_PAWN || pt == B_PAWN)
+        return generatePawnMoves(origin);
+    else
+        return generateNonPawnMoves(origin);
+}
+
+list<Move> Board::generatePawnMoves(int origin)
+{
+    list<Move> moves;
+
+    int forward = (squares[origin].color ? 144 : -144);
+    int ahead = origin + forward;
+    int twoAhead = ahead + forward;
+
+    int rank = (origin / 144) - 2;
+    int startingRank = (squares[origin].color ? 1 : 6);
+    int promoRank = (squares[origin].color ? 6 : 1);
+
+    if(squares[ahead].type == NIL)
+    {
+        if(rank == promoRank)
+        {
+            // TODO generate promotion moves
+        }
+        else
+        {
+            // TODO create quiet move
+        }
+
+        if(rank == startingRank && squares[twoAhead].type == NIL)
+        {
+            // TODO create double pawn push
+        }
+    }
+
+    // TODO generate captures
+
+    // TODO detect en-passant
+
+    return moves;
+}
+
+list<Move> Board::generateNonPawnMoves(int origin)
+{
     list<Move> moves;
     Square oSq = squares[origin];
     int num_dirs = NUM_DIRECTIONS[oSq.type];
@@ -108,9 +162,14 @@ list<Move> Board::generateMoves(int origin)
         }
     }
 
-    // TODO pawn moves. remember to promote correctly
+    return moves;
+}
 
-    // TODO double pawn push, en passant, castle, promote
+list<Move> Board::generateCastlingMoves(bool color)
+{
+    list<Move> moves;
+
+    // TODO actually implement castling
 
     return moves;
 }

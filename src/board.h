@@ -33,8 +33,9 @@ struct Move {
 };
 
 /**
- * Represents an 8 x 8 x 8 chessboard, and the pieces on it. Can generate legal
- * and pseudo-legal moves, given the current state of the board.
+ * Represents an 8 x 8 x 8 chessboard, the pieces on it, and all necessary
+ * metadata, such as which pieces have moved, and if en passant is possible.
+ * Can generate lists of all legal and pseudo-legal moves,
  */
 class Board
 {
@@ -50,10 +51,19 @@ class Board
      */
     std::list<Move> generateMoves(int origin);
 
-    /** Constructs a capturing move from origin to target */
+    /** Generates all pseudo-legal moves for a pawn. */ 
+    std::list<Move> generatePawnMoves(int origin);
+
+    /** Generates all pseudo-legal moves for a non-pawn piece. */ 
+    std::list<Move> generateNonPawnMoves(int origin);
+
+    /** Generates all possible castling moves for the given team. */
+    std::list<Move> generateCastlingMoves(bool color);
+
+    /** Constructs a capturing move from origin to target. */
     Move createCaptureMove(int origin, int target);
 
-    /** Constructs a quiet move from origin to target */
+    /** Constructs a quiet move from origin to target. */
     Move createQuietMove(int origin, int target);
 
     /**
