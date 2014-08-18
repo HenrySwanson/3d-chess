@@ -16,11 +16,24 @@ enum PieceType {
     QUEEN, KING
 };
 
+const bool WHITE = false;
+const bool BLACK = true;
+
+/**
+ * I'll make this a bitfield later.
+ *
+ * Bits 1-4 - type
+ * Bit 5 - color
+ * Bit 6 - moved
+ */
+
 struct Piece
 {
     PieceType type;
     bool color;
     bool moved;
 };
+
+Piece createPiece(PieceType pt, bool color, bool moved);
 
 #endif

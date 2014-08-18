@@ -7,8 +7,8 @@ OBJ_FILES = $(addprefix obj/, $(addsuffix .o, $(OBJ_NAMES)))
 
 #TODO tests, somehow including dependencies
 
-all: $(OBJ_FILES)
-	$(CC) $(LFLAGS) -o bin/test_movement $^ test/test_movement.cpp
+all: test/test_board.cpp $(OBJ_FILES)
+	$(CC) $(LFLAGS) -o bin/test_board $^
 
 obj/%.o : src/%.cpp | obj/
 	$(CC) $(CFLAGS) $< -o $@

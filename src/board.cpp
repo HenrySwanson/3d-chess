@@ -2,15 +2,24 @@
 
 using std::list;
 
-namespace { //TODO comment the shit out of these
+/**
+ * The following lookup tables are all indexed by PieceType. If the order of
+ * them changes, make sure to update this as well.
+ */
+namespace {
+    /**
+     * This array just tells you how long the relevant row of
+     * PIECE_DIRECTIONS is (the rest is garbage).
+     */
     static const int NUM_DIRECTIONS [16] = {
-        0, 0, 8, 8,
+        0, 0, 9, 9,
         24, 24, 24, 72,
         6, 12, 8,
         18, 14, 20,
         26, 26
     };
 
+    /** Whether the indexing piece is a sliding piece */
     static const bool SLIDING [16] = {
         0, 0, 0, 0,
         0, 0, 0, 0,
@@ -19,6 +28,11 @@ namespace { //TODO comment the shit out of these
         1, 0
     };
 
+    /**
+     * The directions that the indexing piece can move in. Since the pieces are
+     * stored in a linear array, we can encode an offset triple (x,y,z) as a
+     * single integer offset.
+     */
     static const int PIECE_DIRECTIONS [16][72] = {
         /* NIL, BORDER */
         {}, {},
@@ -79,8 +93,42 @@ Board::Board()
     for(int i = 0; i < 1728; i++)
         pieces[i].type = BORDER;
 
-    for(int i = 0; i < 512; i++)
-        pieces[mailbox(i)].type = NIL;
+    for(int i = 0; i < 8; i++)
+        for(int j = 0; j < 8; j++)
+            for(int k = 0; k < 8; k++)
+                pieces[mailbox(i, j, k)].type = NIL;
+}
+
+Piece Board::getPiece(int i)
+{
+    return pieces[i];
+}
+
+Piece Board::putPiece(Piece p, int i)
+{
+    Piece q = pieces[i];
+    pieces[i] = p;
+    return q;
+}
+
+list<Move> Board::generatePseudoLegalMoves(int color)
+{
+    list<Move> moves;
+    list<Move> temp;
+
+    for(int i = 0; i < 1728; i++)
+    {
+        if(pieces[i].type != BORDER && pieces[i].color == color)
+        {
+            temp = generateMoves(i);
+            moves.splice(moves.end(), temp);
+        }
+    }
+
+    temp = generateCastlingMoves(color);
+    moves.splice(moves.end(), temp);
+
+    return moves;
 }
 
 list<Move> Board::generateMoves(int origin)
@@ -93,6 +141,15 @@ list<Move> Board::generateMoves(int origin)
         return generatePawnMoves(origin);
     else
         return generateNonPawnMoves(origin);
+}
+
+list<Move> Board::generateCastlingMoves(bool color)
+{
+    list<Move> moves;
+
+    // TODO actually implement castling
+
+    return moves;
 }
 
 list<Move> Board::generatePawnMoves(int origin)
@@ -114,7 +171,12 @@ list<Move> Board::generatePawnMoves(int origin)
         // Are we currently on the second-to-last rank?
         if(rank == promoRank)
         {
-            // TODO generate all promotion moves
+            // Iterate through all non-pawns FIXME improve, this is garbage!
+            for(int pt = 4; pt < 16; pt++)
+            {
+                Piece p = createPiece((PieceType) pt, oPiece.color, true);
+                moves.push_back(createPromoteMove(origin, ahead, p));
+            }
         }
         else
             moves.push_back(createQuietMove(origin, ahead));
@@ -135,7 +197,12 @@ list<Move> Board::generatePawnMoves(int origin)
             // Are we currently on the second-to-last rank?
             if(rank == promoRank)
             {
-                // TODO generate all promo-capture moves
+                // Iterate through all non-pawns FIXME improve, this is garbage!
+                for(int pt = 4; pt < 16; pt++)
+                {
+                    Piece p = createPiece((PieceType) pt, oPiece.color, true);
+                    moves.push_back(createPromoCaptureMove(origin, target, p, tPiece));
+                }
             }
             else
                 moves.push_back(createCaptureMove(origin, target, tPiece));
@@ -183,32 +250,23 @@ list<Move> Board::generateNonPawnMoves(int origin)
     return moves;
 }
 
-list<Move> Board::generateCastlingMoves(bool color)
+int Board::mailbox(int x, int y, int z)
 {
-    list<Move> moves;
-
-    // TODO actually implement castling
-
-    return moves;
-}
-
-int Board::mailbox(int i)
-{
-    int x = i % 8;
-    int y = (i / 8) % 8;
-    int z = (i / 64) % 8;
-
     return (z + 2) * 144 + (y + 2) * 12 + (x + 2);
+    //return x + 12 * y + 144 * z + 314;
 }
 
-int Board::unmailbox(int i)
+int Board::unmailboxX(int i)
 {
-    int x = i % 12;
-    int y = (i / 12) % 12;
-    int z = (i / 144) % 12;
+    return (i % 12) - 2;
+}
 
-    if(x < 2 || x > 9 || y < 2 || y > 9 || z < 2 || z > 9)
-        return -1;
+int Board::unmailboxY(int i)
+{
+    return (i / 12) % 12 - 2;
+}
 
-    return (z - 2) * 64 + (y - 2) * 8 + (x - 2);
+int Board::unmailboxZ(int i)
+{
+    return (i / 144) % 12 - 2;
 }
