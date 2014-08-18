@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -Wall -g -c
 LFLAGS = -g
 
-OBJ_NAMES = board
+OBJ_NAMES = piece move board
 OBJ_FILES = $(addprefix obj/, $(addsuffix .o, $(OBJ_NAMES)))
 
 #TODO tests, somehow including dependencies

@@ -22,12 +22,12 @@ int main(void)
     cout << "----Begin test----" << endl;
 
     Board b;
-    Square s;
+    Piece s;
     s.type = KNIGHT;
     s.color = true;
 
     int loc = pack(2,3,4);
-    b.squares[loc] = s;
+    b.pieces[loc] = s;
     std::list<Move> li = b.generateMoves(loc);
 
     for(std::list<Move>::iterator it = li.begin(); it != li.end(); it++)

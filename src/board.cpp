@@ -23,10 +23,10 @@ namespace { //TODO comment the shit out of these
         /* NIL, BORDER */
         {}, {},
 
-        /* W_PAWN - Captures only */
-        { 157, 156, 155, 145, 143, 133, 132, 131},
-        /* B_PAWN - Captures only */
-        {-157,-156,-155,-145,-143,-133,-132,-131},
+        /* W_PAWN - First entry is a move, the rest are captures */
+        { 144, 157, 156, 155, 145, 143, 133, 132, 131},
+        /* B_PAWN - First entry is a move, the rest are captures */
+        {-144,-157,-156,-155,-145,-143,-133,-132,-131},
 
 
         /* KNIGHT */
@@ -77,15 +77,15 @@ namespace { //TODO comment the shit out of these
 Board::Board()
 {
     for(int i = 0; i < 1728; i++)
-        squares[i].type = BORDER;
+        pieces[i].type = BORDER;
 
     for(int i = 0; i < 512; i++)
-        squares[mailbox(i)].type = NIL;
+        pieces[mailbox(i)].type = NIL;
 }
 
 list<Move> Board::generateMoves(int origin)
 {
-    PieceType pt = squares[origin].type;
+    PieceType pt = pieces[origin].type;
 
     if(pt == NIL || pt == BORDER)
         return list<Move>(0);
@@ -98,35 +98,53 @@ list<Move> Board::generateMoves(int origin)
 list<Move> Board::generatePawnMoves(int origin)
 {
     list<Move> moves;
+    Piece oPiece = pieces[origin];
 
-    int forward = (squares[origin].color ? 144 : -144);
+    int forward = PIECE_DIRECTIONS[oPiece.type][0];
     int ahead = origin + forward;
     int twoAhead = ahead + forward;
 
     int rank = (origin / 144) - 2;
-    int startingRank = (squares[origin].color ? 1 : 6);
-    int promoRank = (squares[origin].color ? 6 : 1);
+    // TODO make less (?:)-y
+    int startingRank = (oPiece.type == W_PAWN ? 1 : 6);
+    int promoRank = (oPiece.type == W_PAWN ? 6 : 1);
 
-    if(squares[ahead].type == NIL)
+    if(pieces[ahead].type == NIL)
     {
+        // Are we currently on the second-to-last rank?
         if(rank == promoRank)
         {
-            // TODO generate promotion moves
+            // TODO generate all promotion moves
         }
         else
-        {
-            // TODO create quiet move
-        }
+            moves.push_back(createQuietMove(origin, ahead));
 
-        if(rank == startingRank && squares[twoAhead].type == NIL)
-        {
-            // TODO create double pawn push
-        }
+        if(rank == startingRank && pieces[twoAhead].type == NIL)
+            moves.push_back(createDPPMove(origin, twoAhead));
     }
 
-    // TODO generate captures
+    // We start at 1, because the first entry is a forward move
+    for(int i = 1; i < NUM_DIRECTIONS[oPiece.type]; i++)
+    {
+        int target = origin + PIECE_DIRECTIONS[oPiece.type][i];
+        Piece tPiece = pieces[target];
 
-    // TODO detect en-passant
+        // Is this an enemy piece?
+        if(tPiece.type != NIL && tPiece.type != BORDER && tPiece.color != oPiece.color)
+        {
+            // Are we currently on the second-to-last rank?
+            if(rank == promoRank)
+            {
+                // TODO generate all promo-capture moves
+            }
+            else
+                moves.push_back(createCaptureMove(origin, target, tPiece));
+        }
+
+        if(target == en_passant_location)
+            moves.push_back(createEPMove(origin, en_passant_location));
+
+    }
 
     return moves;
 }
@@ -134,8 +152,8 @@ list<Move> Board::generatePawnMoves(int origin)
 list<Move> Board::generateNonPawnMoves(int origin)
 {
     list<Move> moves;
-    Square oSq = squares[origin];
-    int num_dirs = NUM_DIRECTIONS[oSq.type];
+    Piece oPiece = pieces[origin];
+    int num_dirs = NUM_DIRECTIONS[oPiece.type];
 
     // Iterate through every permissible move direction
     for(int i = 0; i < num_dirs; i++)
@@ -143,21 +161,21 @@ list<Move> Board::generateNonPawnMoves(int origin)
         int target = origin;
         while(true) // this is so sliding pieces continue moving
         {
-            target += PIECE_DIRECTIONS[oSq.type][i];
-            Square tSq = squares[target];
+            target += PIECE_DIRECTIONS[oPiece.type][i];
+            Piece tPiece = pieces[target];
 
             // Did we hit something?
-            if(tSq.type != NIL)
+            if(tPiece.type != NIL)
             {
                 // Was it an enemy piece?
-                if(tSq.type != BORDER && tSq.color != oSq.color)
-                    moves.push_back(createCaptureMove(origin, target));
+                if(tPiece.type != BORDER && tPiece.color != oPiece.color)
+                    moves.push_back(createCaptureMove(origin, target, tPiece));
                 break;
             }
             moves.push_back(createQuietMove(origin, target));
 
             // Is this a non-sliding piece?
-            if(!SLIDING[oSq.type])
+            if(!SLIDING[oPiece.type])
                 break;
         }
     }
@@ -172,24 +190,6 @@ list<Move> Board::generateCastlingMoves(bool color)
     // TODO actually implement castling
 
     return moves;
-}
-
-Move Board::createCaptureMove(int origin, int target)
-{
-    Move m;
-    m.from = origin;
-    m.to = target;
-    m.captured = squares[target].type;
-    return m;
-}
-
-Move Board::createQuietMove(int origin, int target)
-{
-    Move m;
-    m.from = origin;
-    m.to = target;
-    m.captured = NIL;
-    return m;
 }
 
 int Board::mailbox(int i)
