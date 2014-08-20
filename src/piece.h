@@ -27,13 +27,23 @@ const bool BLACK = true;
  * Bit 6 - moved
  */
 
-struct Piece
+class Piece
 {
-    PieceType type;
-    bool color;
-    bool moved;
-};
+public: // TODO write docs
+    Piece();
+    Piece(PieceType pt, bool color, bool moved);
 
-Piece createPiece(PieceType pt, bool color, bool moved);
+    PieceType getType();
+    bool getColor();
+    bool getMoved();
+
+    bool isFriend(Piece p);
+    bool isEnemy(Piece p);
+    bool isEmpty();
+private:
+    PieceType _type;
+    bool _color;
+    bool _moved;
+};
 
 #endif

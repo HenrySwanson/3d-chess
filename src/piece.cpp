@@ -1,10 +1,38 @@
 #include "piece.h"
 
-Piece createPiece(PieceType pt, bool color, bool moved)
+Piece::Piece() : _type(NIL), _color(WHITE), _moved(false)
+{}
+
+Piece::Piece(PieceType pt, bool color, bool moved) : _type(pt), _color(color),
+         _moved(moved)
+{}
+
+PieceType Piece::getType()
 {
-    Piece p;
-    p.type = pt;
-    p.color = color;
-    p.moved = moved;
-    return p;
+    return _type;
+}
+
+bool Piece::getColor()
+{
+    return _color;
+}
+
+bool Piece::getMoved()
+{
+    return _moved;
+}
+
+bool Piece::isFriend(Piece p)
+{
+    return (p._type != NIL) && (p._type != BORDER) && (p._color == _color);
+}
+
+bool Piece::isEnemy(Piece p)
+{
+    return (p._type != NIL) && (p._type != BORDER) && (p._color != _color);
+}
+
+bool Piece::isEmpty()
+{
+    return (_type == NIL);
 }

@@ -25,10 +25,10 @@ string toString(Piece p)
 {
     stringstream ss;
 
-    if(p.type == NIL)
+    if(p.getType() == NIL)
         return "Nil";
 
-    if(p.type == BORDER)
+    if(p.getType() == BORDER)
         return "Border";
 
     string names [16] = {
@@ -36,11 +36,11 @@ string toString(Piece p)
         "Rook", "Bishop", "Mace", "Wizard", "Archer", "Cannon", "Queen", "King"
     };
     
-    string color = (p.color == WHITE ? "White" : "Black");
+    string color = (p.getColor() == WHITE ? "White" : "Black");
 
-    string moved = (p.moved ? "(M)" : "(S)");
+    string moved = (p.getMoved() ? "(M)" : "(S)");
 
-    ss << color << " " << names[p.type] << " " << moved;
+    ss << color << " " << names[p.getType()] << " " << moved;
 
     return ss.str();
 }
@@ -173,7 +173,7 @@ int loadConfigurationsAndTest()
 {
     int errors = 0;
     // TODO what's convention? run from root dir, or from bin dir?
-    std::ifstream file ("test/movements_and_expected_strings.txt");
+    std::ifstream file ("test/test_board_aux.txt");
     if(file.is_open())
     {
         string line;
@@ -219,7 +219,7 @@ int loadConfigurationsAndTest()
                 bool colorBool = color == 'W' ? WHITE : BLACK;
                 PieceType pt = getPieceTypeFromChar(name, colorBool);
 
-                Piece p = createPiece(pt, colorBool, moved);
+                Piece p = Piece(pt, colorBool, moved);
                 int i = Board::mailbox(x,y,z);
 
                 pieces.push_back(p);
@@ -246,10 +246,7 @@ int main(void)
 
     loadConfigurationsAndTest();
 
-    // TODO finish up movements_and_expected_strings.txt
-    // and change that dumb name
-    // also, figure out some more appropriate tests
-    // P.S. stop staying up past 3am, idiot
+    // TODO figure out some more appropriate tests
 
     cout << "====End tests====" << endl;
 
