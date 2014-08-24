@@ -1,19 +1,25 @@
 #include "../src/piece.h"
 
+#include "unit_test.h"
+
 #include <iostream>
+#include <cassert> //TODO change to some kind of TEST_ASSERT
 
 using std::cout;
 using std::endl;
 
-// TODO make getter tests (useless now, but useful when it's a bitfield
-
-int main(void)
+int constructor_test(PieceType pt, bool color, bool moved)
 {
-    cout << "----Begin test----" << endl;
+    Piece p (pt, color, moved);
+    assert(pt == p.getType());
+    assert(color == p.getColor());
+    assert(moved == p.getMoved());
+}
 
-
-
-    cout << "----End test----" << endl;
-
-    return 0;
+TEST(Piece, Pawn)
+{
+    constructor_test(W_PAWN, WHITE, true);
+    constructor_test(B_PAWN, BLACK, false);
+    constructor_test(KNIGHT, WHITE, false);
+    constructor_test(ROOK, BLACK, true);
 }
