@@ -2,8 +2,6 @@
 
 #include "unit_test.h"
 
-// TODO make getter tests (useless now, but useful when it's a bitfield
-
 TEST(Move, Quiet)
 {
     int i = mailbox(3,4,1);

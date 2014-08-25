@@ -25,7 +25,7 @@ struct TestSuite
 
 class MissionControl
 {
-  public:
+  public: // TODO document why you did this (static initialization order fiasco)
     static std::list<TestSuite>& suites()
     {
         static std::list<TestSuite> suites;

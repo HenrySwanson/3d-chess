@@ -168,12 +168,12 @@ list<Move> Board::generatePawnMoves(int origin) const
     int promoRank = (oPt == W_PAWN ? 6 : 1);
 
     // Can we move forward?
-    if(pieces_[ahead].isEmpty())
+    if(pieces_[ahead].type() == NIL)
     {
         // Are we currently on the second-to-last rank?
         if(rank == promoRank)
         {
-            // Iterate through all non-pawns FIXME improve, this is garbage!
+            // Iterate through all non-pawns FIXME improve, this is garbage! (global const array?)
             for(int pt = 4; pt < 16; pt++)
             {
                 Piece p = Piece((PieceType) pt, oPiece.color(), true);
@@ -184,7 +184,7 @@ list<Move> Board::generatePawnMoves(int origin) const
             moves.push_back(Move::Quiet(origin, ahead));
 
         // Can we perform a double pawn push?
-        if(rank == startingRank && pieces_[twoAhead].isEmpty())
+        if(rank == startingRank && pieces_[twoAhead].type() == NIL)
             moves.push_back(Move::DPP(origin, twoAhead));
     }
 
@@ -211,8 +211,8 @@ list<Move> Board::generatePawnMoves(int origin) const
                 moves.push_back(Move::Capture(origin, target, tPiece));
         }
 
-        if(target == _ep_location)
-            moves.push_back(Move::EP(origin, _ep_location));
+        if(target == ep_location_)
+            moves.push_back(Move::EP(origin, ep_location_));
 
     }
 
@@ -237,7 +237,7 @@ list<Move> Board::generateNonPawnMoves(int origin) const
             Piece tPiece = pieces_[target];
 
             // Did we hit something?
-            if(!tPiece.isEmpty())
+            if(!tPiece.type() == NIL)
             {
                 // Was it an enemy piece?
                 if(oPiece.isEnemy(tPiece))

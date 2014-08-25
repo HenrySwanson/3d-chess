@@ -6,20 +6,18 @@
 #include "move.h"
 #include "piece.h"
 
-// TODO pack Piece and Move into bit-fields
-
 /**
  * Represents an 8 x 8 x 8 chessboard, the pieces on it, and all necessary
- * metadata, such as which pieces have moved, and if en passant is possible.
- * Can generate lists of all legal and pseudo-legal moves,
+ * metadata, such as move history, and if en passant is possible.
+ * Can generate lists of all legal and pseudo-legal moves.
  */
 class Board
 {
   public:
-    /** Generates an empty board */
+    /** Generates an empty board. */
     Board();
 
-    /** Retrieves the piece at i */
+    /** Retrieves the piece at i. */
     Piece getPiece(int i) const;
 
     /** Puts the specifed piece at i and returns the previous occupant. */
@@ -38,7 +36,7 @@ class Board
     /** Generates all possible castling moves for the given team. */
     std::list<Move> generateCastlingMoves(bool color) const;
 
-//  private:
+  private:
     /** Generates all pseudo-legal moves for a pawn. */ 
     std::list<Move> generatePawnMoves(int origin) const;
 
@@ -48,18 +46,20 @@ class Board
     /**
      * Represents the pieces on the board. This is a "mailbox" representation,
      * which is, apparently, a pretty common representation for chess engines.
-     * Essentially, it's a 12 x 12 x 12 cube, with the 8 x 8 x 8 chessboard
-     * centered inside. The borders are always set to the PieceType BORDER.
-     * This makes move generation much easier, because when a piece reaches the
-     * edge of the board, instead of "wrapping around", it hits the sentinel
-     * value of BORDER, which is significantly easier to detect.
      *
-     * The x-coordinates vary first, then y, then z.
+     * There are two parts to understanding this representation. The 8 x 8 x 8
+     * chessboard is centered inside a 12 x 12 x 12 cube. The edges of this
+     * cube are always set to the PieceType BORDER. This makes move generation
+     * much easier, because when a piece reaches the edge of the board, instead
+     * of "wrapping around", it hits the sentinel value of BORDER.
+     *
+     * The second part is that this 12 x 12 x 12 cube is unspooled into a
+     * linear array of size 1728. The x-coordinates vary first, then y, then z.
      */
     Piece pieces_ [1728];
 
-    /** Stores the location of the en-passant square */
-    int _ep_location;
+    /** Stores the location of the en passant square. */
+    int ep_location_;
 };
 
 #endif

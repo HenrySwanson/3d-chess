@@ -154,6 +154,8 @@ void testConfiguration(string name, list<Piece> pieces, list<int> indices,
  * Reads a bizarrely formatted text file containing lists of pieces and moves.
  * It parses them, and feeds the pieces and moves to testConfiguration. This is
  * pretty janky, but it does the job. (And it's not production code, at least?)
+ *
+ * TODO perhaps give the file loading code to MissionControl?
  */
 TEST(Board, MoveGeneration)
 {

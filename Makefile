@@ -27,7 +27,7 @@ bin/unit_tests : $(CORE_OBJS) $(TEST_OBJS) test/unit_test.cpp
 	$(CC) $(CFLAGS) -MD -c $< -o $@
 
 ifneq "$(MAKECMDGOALS)" "clean"
-deps  = $(patsubst %.cpp, %.d, $(CORE_SRCS))
-deps += $(patsubst %.cpp, %.d, $(TEST_SRCS))
--include $(deps)
+  deps  = $(patsubst %.cpp, %.d, $(CORE_SRCS))
+  deps += $(patsubst %.cpp, %.d, $(TEST_SRCS))
+  -include $(deps)
 endif
