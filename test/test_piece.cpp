@@ -2,21 +2,15 @@
 
 #include "unit_test.h"
 
-#include <iostream>
-#include <cassert> //TODO change to some kind of TEST_ASSERT
-
-using std::cout;
-using std::endl;
-
-int constructor_test(PieceType pt, bool color, bool moved)
+void constructor_test(PieceType pt, bool color, bool moved)
 {
     Piece p (pt, color, moved);
-    assert(pt == p.getType());
-    assert(color == p.getColor());
-    assert(moved == p.getMoved());
+    EXPECT_TRUE(pt == p.getType());
+    EXPECT_TRUE(color == p.getColor());
+    EXPECT_TRUE(moved == p.getMoved());
 }
 
-TEST(Piece, Pawn)
+TEST(Piece, Constructor)
 {
     constructor_test(W_PAWN, WHITE, true);
     constructor_test(B_PAWN, BLACK, false);

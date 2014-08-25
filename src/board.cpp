@@ -91,34 +91,34 @@ namespace {
 Board::Board()
 {
     for(int i = 0; i < 1728; i++)
-        pieces[i] = Piece(BORDER, WHITE, false);
+        _pieces[i] = Piece(BORDER, WHITE, false);
 
     for(int i = 0; i < 8; i++)
         for(int j = 0; j < 8; j++)
             for(int k = 0; k < 8; k++)
-                pieces[mailbox(i, j, k)] = Piece(NIL, WHITE, false);
+                _pieces[mailbox(i, j, k)] = Piece(NIL, WHITE, false);
 }
 
-Piece Board::getPiece(int i)
+Piece Board::getPiece(int i) const
 {
-    return pieces[i];
+    return _pieces[i];
 }
 
 Piece Board::putPiece(Piece p, int i)
 {
-    Piece q = pieces[i];
-    pieces[i] = p;
+    Piece q = _pieces[i];
+    _pieces[i] = p;
     return q;
 }
 
-list<Move> Board::generatePseudoLegalMoves(int color)
+list<Move> Board::generatePseudoLegalMoves(int color) const
 {
     list<Move> moves;
     list<Move> temp;
 
     for(int i = 0; i < 1728; i++)
     {
-        if(pieces[i].getColor() == color)
+        if(_pieces[i].isOn(color))
         {
             temp = generateMoves(i);
             moves.splice(moves.end(), temp);
@@ -131,9 +131,9 @@ list<Move> Board::generatePseudoLegalMoves(int color)
     return moves;
 }
 
-list<Move> Board::generateMoves(int origin)
+list<Move> Board::generateMoves(int origin) const
 {
-    PieceType pt = pieces[origin].getType();
+    PieceType pt = _pieces[origin].getType();
 
     if(pt == NIL || pt == BORDER)
         return list<Move>(0);
@@ -143,7 +143,7 @@ list<Move> Board::generateMoves(int origin)
         return generateNonPawnMoves(origin);
 }
 
-list<Move> Board::generateCastlingMoves(bool color)
+list<Move> Board::generateCastlingMoves(bool color) const
 {
     list<Move> moves;
 
@@ -152,10 +152,10 @@ list<Move> Board::generateCastlingMoves(bool color)
     return moves;
 }
 
-list<Move> Board::generatePawnMoves(int origin)
+list<Move> Board::generatePawnMoves(int origin) const
 {
     list<Move> moves;
-    Piece oPiece = pieces[origin];
+    Piece oPiece = _pieces[origin];
     PieceType oPt = oPiece.getType();
 
     int forward = PIECE_DIRECTIONS[oPt][0];
@@ -168,7 +168,7 @@ list<Move> Board::generatePawnMoves(int origin)
     int promoRank = (oPt == W_PAWN ? 6 : 1);
 
     // Can we move forward?
-    if(pieces[ahead].isEmpty())
+    if(_pieces[ahead].isEmpty())
     {
         // Are we currently on the second-to-last rank?
         if(rank == promoRank)
@@ -177,22 +177,22 @@ list<Move> Board::generatePawnMoves(int origin)
             for(int pt = 4; pt < 16; pt++)
             {
                 Piece p = Piece((PieceType) pt, oPiece.getColor(), true);
-                moves.push_back(createPromoteMove(origin, ahead, p));
+                moves.push_back(Move::Promote(origin, ahead, p));
             }
         }
         else
-            moves.push_back(createQuietMove(origin, ahead));
+            moves.push_back(Move::Quiet(origin, ahead));
 
         // Can we perform a double pawn push?
-        if(rank == startingRank && pieces[twoAhead].isEmpty())
-            moves.push_back(createDPPMove(origin, twoAhead));
+        if(rank == startingRank && _pieces[twoAhead].isEmpty())
+            moves.push_back(Move::DPP(origin, twoAhead));
     }
 
     // We start at 1, because the first entry is a forward move
     for(int i = 1; i < NUM_DIRECTIONS[oPt]; i++)
     {
         int target = origin + PIECE_DIRECTIONS[oPt][i];
-        Piece tPiece = pieces[target];
+        Piece tPiece = _pieces[target];
 
         // Is this an enemy piece?
         if(oPiece.isEnemy(tPiece))
@@ -204,25 +204,25 @@ list<Move> Board::generatePawnMoves(int origin)
                 for(int pt = 4; pt < 16; pt++)
                 {
                     Piece p = Piece((PieceType) pt, oPiece.getColor(), true);
-                    moves.push_back(createPromoCaptureMove(origin, target, p, tPiece));
+                    moves.push_back(Move::PromoCapture(origin, target, p, tPiece));
                 }
             }
             else
-                moves.push_back(createCaptureMove(origin, target, tPiece));
+                moves.push_back(Move::Capture(origin, target, tPiece));
         }
 
-        if(target == en_passant_location)
-            moves.push_back(createEPMove(origin, en_passant_location));
+        if(target == _ep_location)
+            moves.push_back(Move::EP(origin, _ep_location));
 
     }
 
     return moves;
 }
 
-list<Move> Board::generateNonPawnMoves(int origin)
+list<Move> Board::generateNonPawnMoves(int origin) const
 {
     list<Move> moves;
-    Piece oPiece = pieces[origin];
+    Piece oPiece = _pieces[origin];
     PieceType oPt = oPiece.getType();
 
     int num_dirs = NUM_DIRECTIONS[oPt];
@@ -234,17 +234,17 @@ list<Move> Board::generateNonPawnMoves(int origin)
         while(true) // this is so sliding pieces continue moving
         {
             target += PIECE_DIRECTIONS[oPt][i];
-            Piece tPiece = pieces[target];
+            Piece tPiece = _pieces[target];
 
             // Did we hit something?
             if(!tPiece.isEmpty())
             {
                 // Was it an enemy piece?
                 if(oPiece.isEnemy(tPiece))
-                    moves.push_back(createCaptureMove(origin, target, tPiece));
+                    moves.push_back(Move::Capture(origin, target, tPiece));
                 break;
             }
-            moves.push_back(createQuietMove(origin, target));
+            moves.push_back(Move::Quiet(origin, target));
 
             // Is this a non-sliding piece?
             if(!SLIDING[oPt])
@@ -253,25 +253,4 @@ list<Move> Board::generateNonPawnMoves(int origin)
     }
 
     return moves;
-}
-
-int Board::mailbox(int x, int y, int z)
-{
-    return (z + 2) * 144 + (y + 2) * 12 + (x + 2);
-    //return x + 12 * y + 144 * z + 314;
-}
-
-int Board::unmailboxX(int i)
-{
-    return (i % 12) - 2;
-}
-
-int Board::unmailboxY(int i)
-{
-    return (i / 12) % 12 - 2;
-}
-
-int Board::unmailboxZ(int i)
-{
-    return (i / 144) % 12 - 2;
 }

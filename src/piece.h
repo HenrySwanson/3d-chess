@@ -27,19 +27,24 @@ const bool BLACK = true;
  * Bit 6 - moved
  */
 
+// TODO change get???() to ???()
 class Piece
 {
 public: // TODO write docs
     Piece();
     Piece(PieceType pt, bool color, bool moved);
 
-    PieceType getType();
-    bool getColor();
-    bool getMoved();
+    PieceType getType() const;
+    bool getColor() const;
+    bool getMoved() const;
 
-    bool isFriend(Piece p);
-    bool isEnemy(Piece p);
-    bool isEmpty();
+    bool isOn(bool color) const;
+    bool isFriend(Piece p) const;
+    bool isEnemy(Piece p) const;
+    bool isEmpty() const;
+
+    bool operator==(const Piece& p) const;
+    bool operator!=(const Piece& p) const;
 private:
     PieceType _type;
     bool _color;

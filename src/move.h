@@ -39,38 +39,43 @@ enum MoveType {
  * TODO decide which to use!
  */
 
-struct Move {
-    MoveType type;
-    int from, to;
-    Piece captured;
-    Piece promoted;
+// TODO change get???() to ???()
+class Move { // TODO write docs
+  public:
+    static Move Quiet(int origin, int target);
+    static Move DPP(int origin, int target);
+    static Move Capture(int origin, int target, Piece capt);
+    static Move EP(int origin, int target);
+    static Move Castle(int origin, int target);
+    static Move Promote(int origin, int target, Piece promo);
+    static Move PromoCapture(int origin, int target, Piece promo, Piece capt);
+
+    MoveType getType() const;
+    int getOrigin() const;
+    int getTarget() const;
+    Piece getCaptured() const;
+    Piece getPromoted() const;
+  private:
+    MoveType _type;
+    int _origin;
+    int _target;
+    Piece _captured;
+    Piece _promoted;
 };
 
-/** Constructs a quiet move from origin to target. */
-Move createQuietMove(int origin, int target);
-
-/** Constructs a double pawn push from origin to target. */
-Move createDPPMove(int origin, int target);
-
-/** Constructs a capturing move from origin to target. */
-Move createCaptureMove(int origin, int target, Piece capt);
-
-/** Constructs an en-passant move from origin to target. */
-Move createEPMove(int origin, int target);
-
-/** Constructs a castling move from origin to target. */
-Move createCastleMove(int origin, int target);
+/**
+ * Converts from an 8 x 8 x 8 cube to a 1728 array. Like the Board::_pieces
+ * array, x-coordinates vary first, then y, then z.
+ */
+int mailbox(int x, int y, int z);
 
 /**
- * Constructs a promotion move from origin to target, where the pawn becomes
- * the piece indicated by promo.
+ * Converts from a 1728 array to an 8 x 8 x 8 cube. Like the Board::_pieces
+ * array, x-coordinates vary first, then y, then z.
+ * Note that it's just as cheap to have these separate as together.
  */
-Move createPromoteMove(int origin, int target, Piece promo);
-
-/**
- * Constructs a promo-capture move from origin to target, where the pawn
- * becomes the piece indicated by promo, and the captured piece is capt.
- */
-Move createPromoCaptureMove(int origin, int target, Piece promo, Piece capt);
+int unmailboxX(int i);
+int unmailboxY(int i);
+int unmailboxZ(int i);
 
 #endif

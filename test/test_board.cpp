@@ -1,17 +1,11 @@
 #include "../src/board.h"
 
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include "unit_test.h"
 
-using std::cout;
-using std::cerr;
-using std::endl;
+#include <string>
+#include <sstream>
 
 using std::list;
-
 using std::string;
 using std::stringstream;
 
@@ -47,21 +41,21 @@ string toString(Piece p)
 
 /**
  * Converts the move into a string representation.
- * Not that useful, but unlike move, strings can be sorted.
+ * Not that useful, but unlike moves, strings can be sorted.
  */
 string toString(Move m)
 {
     stringstream ss;
 
-    int ox = Board::unmailboxX(m.from);
-    int oy = Board::unmailboxY(m.from);
-    int oz = Board::unmailboxZ(m.from);
+    int ox = unmailboxX(m.getOrigin());
+    int oy = unmailboxY(m.getOrigin());
+    int oz = unmailboxZ(m.getOrigin());
 
-    int tx = Board::unmailboxX(m.to);
-    int ty = Board::unmailboxY(m.to);
-    int tz = Board::unmailboxZ(m.to);
+    int tx = unmailboxX(m.getTarget());
+    int ty = unmailboxY(m.getTarget());
+    int tz = unmailboxZ(m.getTarget());
 
-    switch(m.type)
+    switch(m.getType())
     {
       case QUIET:
         ss << "Quiet: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
@@ -73,7 +67,8 @@ string toString(Move m)
         break;
       case CAPTURE:
         ss << "Capture: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ") - " << toString(m.captured);
+                tx << ", " << ty << ", " << tz << ") - " <<
+                toString(m.getCaptured());
         break;
       case EN_PASSANT:
         ss << "EP: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
@@ -85,12 +80,13 @@ string toString(Move m)
         break;
       case PROMOTE:
         ss << "Promote: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ") = " << toString(m.promoted);
+                tx << ", " << ty << ", " << tz << ") = " <<
+                toString(m.getPromoted());
         break;
       case PROMO_CAPTURE:
-        ss << "Promo-capture: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ") = " << toString(m.promoted) <<
-                " - " << toString(m.captured);
+        ss << "Promo-capture: (" << ox << ", " << oy << ", " << oz <<
+                ") -> (" << tx << ", " << ty << ", " << tz << ") = " <<
+                toString(m.getPromoted()) << " - " << toString(m.getCaptured());
         break;
     }
 
@@ -129,7 +125,7 @@ PieceType getPieceTypeFromChar(char name, bool color)
  *     pieces, indices - pieces and their locations
  *     expected - the string of concatenated sorted moves we expect to get
  */
-bool testConfiguration(string name, list<Piece> pieces, list<int> indices,
+void testConfiguration(string name, list<Piece> pieces, list<int> indices,
         string expected)
 {
     Board b;
@@ -150,18 +146,7 @@ bool testConfiguration(string name, list<Piece> pieces, list<int> indices,
     for(list<string>::iterator it = strs.begin(); it != strs.end(); it++)
         concatenated += (*it + "\n");
 
-    if(concatenated != expected)
-    {
-        cout << "----Test \"" << name << "\" failed!----" << endl;
-        cout << "Expected: " << endl;
-        cout << expected << endl;
-        cout << "Received: " << endl;
-        cout << concatenated << endl;
-        return false;
-    }
-
-    cout << "----Test \"" << name << "\" passed.----" << endl;
-    return true;
+    EXPECT_TRUE(concatenated == expected);
 }
 
 /**
@@ -169,86 +154,63 @@ bool testConfiguration(string name, list<Piece> pieces, list<int> indices,
  * It parses them, and feeds the pieces and moves to testConfiguration. This is
  * pretty janky, but it does the job. (And it's not production code, at least?)
  */
-int loadConfigurationsAndTest()
+TEST(Board, MoveGeneration)
 {
-    int errors = 0;
     // TODO what's convention? run from root dir, or from bin dir?
     std::ifstream file ("test/test_board_aux.txt");
-    if(file.is_open())
+
+    ASSERT_TRUE(file.is_open());
+
+    string line;
+    bool loadingPieces = true; // if not, loading strings
+
+    string test_name;
+    list<Piece> pieces;
+    list<int> indices;
+    string move_strs = "";
+
+    while(getline(file, line))
     {
-        string line;
-        bool loadingPieces = true; // if not, loading strings
+        if(line[0] == '#' || line == "")
+            continue;
 
-        string test_name;
-        list<Piece> pieces;
-        list<int> indices;
-        string move_strs = "";
-
-        while(getline(file, line))
+        if(line[0] == '+')
         {
-            if(line[0] == '#' || line == "")
-                continue;
+            loadingPieces = true;
+            test_name = line.substr(1);
+        }
+        else if(line[0] == '-')
+        {
+            loadingPieces = false;
+        }
+        else if(line[0] == '=')
+        {
+            testConfiguration(test_name, pieces, indices, move_strs);
+            pieces.clear();
+            indices.clear();
+            move_strs = "";
+        }
+        else if(loadingPieces)
+        {
+            bool moved;
+            int x, y, z;
+            char name, color;
+            stringstream ss;
+            ss << line;
+            ss >> color >> name >> x >> y >> z >> moved;
 
-            if(line[0] == '+')
-            {
-                loadingPieces = true;
-                test_name = line.substr(1);
-            }
-            else if(line[0] == '-')
-            {
-                loadingPieces = false;
-            }
-            else if(line[0] == '=')
-            {
-                errors += testConfiguration(test_name, pieces, indices,
-                        move_strs);
-                pieces.clear();
-                indices.clear();
-                move_strs = "";
-            }
-            else if(loadingPieces)
-            {
-                bool moved;
-                int x, y, z;
-                char name, color;
+            bool colorBool = color == 'W' ? WHITE : BLACK;
+            PieceType pt = getPieceTypeFromChar(name, colorBool);
 
-                stringstream ss;
-		        ss << line;
-                ss >> color >> name >> x >> y >> z >> moved;
+            Piece p = Piece(pt, colorBool, moved);
+            int i = mailbox(x,y,z);
 
-                bool colorBool = color == 'W' ? WHITE : BLACK;
-                PieceType pt = getPieceTypeFromChar(name, colorBool);
-
-                Piece p = Piece(pt, colorBool, moved);
-                int i = Board::mailbox(x,y,z);
-
-                pieces.push_back(p);
-                indices.push_back(i);
-            }
-            else
-            {
-		        move_strs += (line + "\n");
-            }
+            pieces.push_back(p);
+            indices.push_back(i);
+        }
+        else
+        {
+            move_strs += (line + "\n");
         }
     }
-    else
-    {
-        cerr << "Unable to open file, exiting!" << endl;
-        exit(-1);
-    }
-
-    return errors;
-}
-
-int main(void)
-{
-    cout << "====Begin tests====" << endl;
-
-    loadConfigurationsAndTest();
-
-    // TODO figure out some more appropriate tests
-
-    cout << "====End tests====" << endl;
-
-    return 0;
 }

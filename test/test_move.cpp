@@ -1,19 +1,76 @@
 #include "../src/move.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
+#include "unit_test.h"
 
 // TODO make getter tests (useless now, but useful when it's a bitfield
 
-int main(void)
+TEST(Move, Quiet)
 {
-    cout << "----Begin test----" << endl;
+    int i = mailbox(3,4,1);
+    int j = mailbox(3,4,6);
+    Move m = Move::Quiet(i, j);
+    EXPECT_TRUE(m.getOrigin() == i);
+    EXPECT_TRUE(m.getTarget() == j);
+}
 
+TEST(Move, DPP)
+{
+    int i = mailbox(3,4,1);
+    int j = mailbox(3,4,3);
+    Move m = Move::DPP(i, j);
+    EXPECT_TRUE(m.getOrigin() == i);
+    EXPECT_TRUE(m.getTarget() == j);
+}
 
+TEST(Move, Capture)
+{
+    int i = mailbox(3,4,1);
+    int j = mailbox(3,4,3);
+    Piece p (BISHOP, BLACK, true);
+    Move m = Move::Capture(i, j, p);
+    EXPECT_TRUE(m.getOrigin() == i);
+    EXPECT_TRUE(m.getTarget() == j);
+    EXPECT_TRUE(m.getCaptured() == p);
+}
 
-    cout << "----End test----" << endl;
+TEST(Move, EP)
+{
+    int i = mailbox(5,2,4);
+    int j = mailbox(4,3,5);
+    Move m = Move::EP(i, j);
+    EXPECT_TRUE(m.getOrigin() == i);
+    EXPECT_TRUE(m.getTarget() == j);
+}
 
-    return 0;
+TEST(Move, Castle)
+{
+    int i = mailbox(4,4,0);
+    int j = mailbox(4,7,0);
+    Move m = Move::Castle(i, j);
+    EXPECT_TRUE(m.getOrigin() == i);
+    EXPECT_TRUE(m.getTarget() == j);
+}
+
+TEST(Move, Promote)
+{
+    int i = mailbox(3,1,6);
+    int j = mailbox(3,1,7);
+    Piece p (WIZARD, WHITE, false);
+    Move m = Move::Promote(i, j, p);
+    EXPECT_TRUE(m.getOrigin() == i);
+    EXPECT_TRUE(m.getTarget() == j);
+    EXPECT_TRUE(m.getPromoted() == p);
+}
+
+TEST(Move, PromoCapture)
+{
+    int i = mailbox(3,1,6);
+    int j = mailbox(3,1,7);
+    Piece p (QUEEN, WHITE, true);
+    Piece q (DRAGON, BLACK, false);
+    Move m = Move::PromoCapture(i, j, p, q);
+    EXPECT_TRUE(m.getOrigin() == i);
+    EXPECT_TRUE(m.getTarget() == j);
+    EXPECT_TRUE(m.getPromoted() == p);
+    EXPECT_TRUE(m.getCaptured() == q);
 }

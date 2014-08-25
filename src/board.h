@@ -20,30 +20,30 @@ class Board
     Board();
 
     /** Retrieves the piece at i */
-    Piece getPiece(int i);
+    Piece getPiece(int i) const;
 
     /** Puts the specifed piece at i and returns the previous occupant. */
     Piece putPiece(Piece p, int i);
 
     /** Generates all pseudo-legal moves that the given color can make. */
-    std::list<Move> generatePseudoLegalMoves(int color);
+    std::list<Move> generatePseudoLegalMoves(int color) const;
 
     /**
      * Generates all pseudo-legal moves that the piece on this square can make.
      * It is safe to call this method on a non-piece (NIL or BORDER); it will
      * just return an empty list.
      */
-    std::list<Move> generateMoves(int origin);
+    std::list<Move> generateMoves(int origin) const;
 
     /** Generates all possible castling moves for the given team. */
-    std::list<Move> generateCastlingMoves(bool color);
+    std::list<Move> generateCastlingMoves(bool color) const;
 
 //  private:
     /** Generates all pseudo-legal moves for a pawn. */ 
-    std::list<Move> generatePawnMoves(int origin);
+    std::list<Move> generatePawnMoves(int origin) const;
 
     /** Generates all pseudo-legal moves for a non-pawn piece. */ 
-    std::list<Move> generateNonPawnMoves(int origin);
+    std::list<Move> generateNonPawnMoves(int origin) const;
 
     /**
      * Represents the pieces on the board. This is a "mailbox" representation,
@@ -56,25 +56,10 @@ class Board
      *
      * The x-coordinates vary first, then y, then z.
      */
-    Piece pieces [1728];
+    Piece _pieces [1728];
 
     /** Stores the location of the en-passant square */
-    int en_passant_location;
-
-    /**
-     * Converts from an 8 x 8 x 8 cube to a 1728 array. Like the pieces
-     * array, x-coordinates vary first, then y, then z.
-     */
-    static int mailbox(int x, int y, int z);
-    
-    /**
-     * Converts from a 1728 array to an 8 x 8 x 8 cube. Like the pieces
-     * array, x-coordinates vary first, then y, then z.
-     * Note that it's just as cheap to have these separate as together.
-     */
-    static int unmailboxX(int i);
-    static int unmailboxY(int i);
-    static int unmailboxZ(int i);
+    int _ep_location;
 };
 
 #endif
