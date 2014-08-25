@@ -8,8 +8,6 @@ CORE_OBJS = $(patsubst %.cpp, %.o, $(CORE_SRCS))
 TEST_SRCS = $(wildcard test/test_*.cpp)
 TEST_OBJS = $(patsubst %.cpp, %.o, $(TEST_SRCS))
 
-#TODO somehow include dependencies
-
 .PHONY : all check clean
 
 all : $(CORE_OBJS)
