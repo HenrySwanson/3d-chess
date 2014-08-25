@@ -1,6 +1,7 @@
 bin/*
-obj/*
-test/obj/*
+
+*.o
+*.d
 
 *.log
 *~

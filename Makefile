@@ -1,35 +1,35 @@
 CC = g++
-CFLAGS = -Wall -g -c
+CFLAGS = -Wall -g
 LFLAGS = -g
 
-#TODO figure out wildcards
-OBJ_NAMES = piece move board
-OBJ_FILES = $(addprefix obj/, $(addsuffix .o, $(OBJ_NAMES)))
+CORE_SRCS = $(wildcard src/*.cpp)
+CORE_OBJS = $(patsubst %.cpp, %.o, $(CORE_SRCS))
 
-TEST_NAMES = piece move board
-TEST_FILES = $(addprefix test/test_, $(TEST_NAMES))
-TEST_OBJS = $(addprefix test/obj/test_, $(addsuffix .o, $(TEST_NAMES)))
+TEST_SRCS = $(wildcard test/test_*.cpp)
+TEST_OBJS = $(patsubst %.cpp, %.o, $(TEST_SRCS))
 
 #TODO somehow include dependencies
 
-all : $(OBJ_FILES)
+.PHONY : all check clean
 
-.PHONY : check
+all : $(CORE_OBJS)
+
 check : bin/unit_tests
 	./bin/unit_tests
 
-bin/unit_tests : $(OBJ_FILES) $(TEST_OBJS) test/unit_test.cpp
+clean :
+	rm -rf src/*.o test/*.o
+	rm -rf src/*.d test/*.d
+	rm  -f bin/unit_tests
+
+bin/unit_tests : $(CORE_OBJS) $(TEST_OBJS) test/unit_test.cpp
 	$(CC) $(LFLAGS) $^ -o $@
 
-obj/%.o : src/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+%.o : %.cpp
+	$(CC) $(CFLAGS) -MD -c $< -o $@
 
-test/obj/%.o : test/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
-
-.PHONY : clean
-clean :
-	rm -rf obj/*
-	rm -rf bin/*
-	rm -rf test/obj/*
-
+ifneq "$(MAKECMDGOALS)" "clean"
+deps  = $(patsubst %.cpp, %.d, $(CORE_SRCS))
+deps += $(patsubst %.cpp, %.d, $(TEST_SRCS))
+-include $(deps)
+endif
