@@ -40,8 +40,8 @@ UnitTest MissionControl::createAndRegister(const char* suite_name,
 void MissionControl::runAll()
 {
     // TODO what's convention?
-    logfile.open("unit_tests.log");
-    logfile << std::boolalpha;
+    logfile_.open("unit_tests.log");
+    logfile_ << std::boolalpha;
 
     cout << "Beginning tests..." << endl;
 
@@ -56,24 +56,24 @@ void MissionControl::runAll()
             runTest(*jt);
     }
 
-    cout << "End of tests: " << num_tests_completed << " completed, "
-            << num_tests_failed << " failed." << endl;
+    cout << "End of tests: " << num_tests_completed_ << " completed, "
+            << num_tests_failed_ << " failed." << endl;
 
-    logfile.close();
+    logfile_.close();
 }
 
 void MissionControl::runTest(UnitTest ut)
 {
-    current_test_failed = false;
+    current_test_failed_ = false;
 
     cout << "    Test: " << ut.name;
-    logfile << "Test: " << ut.name << endl;
+    logfile_ << "Test: " << ut.name << endl;
 
     (*(ut.func))();
 
-    if(current_test_failed)
+    if(current_test_failed_)
     {
-        num_tests_failed++;
+        num_tests_failed_++;
         cout << "......failed!" << endl;
     }
     else
@@ -81,22 +81,22 @@ void MissionControl::runTest(UnitTest ut)
         cout << "......succeeded." << endl;
     }
 
-    num_tests_completed++;
+    num_tests_completed_++;
 }
 
 void MissionControl::logBool(const char* file, int line, const char* expr,
         bool expected, bool fatal)
 {
-    current_test_failed = true;
+    current_test_failed_ = true;
     const char* noun = fatal ? "assertion" : "expectation";
-    logfile << "Failed " << noun << ": " << file << ":" << line << ": " <<
+    logfile_ << "Failed " << noun << ": " << file << ":" << line << ": " <<
             expr << " should have been " << expected << "." << endl;
 }
 
-bool MissionControl::current_test_failed = false;
-int MissionControl::num_tests_completed = 0;
-int MissionControl::num_tests_failed = 0;
-std::ofstream MissionControl::logfile;
+bool MissionControl::current_test_failed_ = false;
+int MissionControl::num_tests_completed_ = 0;
+int MissionControl::num_tests_failed_ = 0;
+std::ofstream MissionControl::logfile_;
 
 int main(void)
 {

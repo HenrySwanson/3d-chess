@@ -56,7 +56,7 @@ class Board
      *
      * The x-coordinates vary first, then y, then z.
      */
-    Piece _pieces [1728];
+    Piece pieces_ [1728];
 
     /** Stores the location of the en-passant square */
     int _ep_location;

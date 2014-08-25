@@ -1,50 +1,50 @@
 #include "piece.h"
 
-Piece::Piece() : _type(NIL), _color(WHITE), _moved(false)
+Piece::Piece() : type_(NIL), color_(WHITE), moved_(false)
 {}
 
-Piece::Piece(PieceType pt, bool color, bool moved) : _type(pt), _color(color),
-         _moved(moved)
+Piece::Piece(PieceType pt, bool color, bool moved) : type_(pt), color_(color),
+         moved_(moved)
 {}
 
-PieceType Piece::getType() const
+PieceType Piece::type() const
 {
-    return _type;
+    return type_;
 }
 
-bool Piece::getColor() const
+bool Piece::color() const
 {
-    return _color;
+    return color_;
 }
 
-bool Piece::getMoved() const
+bool Piece::moved() const
 {
-    return _moved;
+    return moved_;
 }
 
 bool Piece::isOn(bool color) const
 {
-    return (_type != NIL) && (_type != BORDER) && (_color == color);
+    return (type_ != NIL) && (type_ != BORDER) && (color_ == color);
 }
 
 bool Piece::isFriend(Piece p) const
 {
-    return (p._type != NIL) && (p._type != BORDER) && (p._color == _color);
+    return (p.type_ != NIL) && (p.type_ != BORDER) && (p.color_ == color_);
 }
 
 bool Piece::isEnemy(Piece p) const
 {
-    return (p._type != NIL) && (p._type != BORDER) && (p._color != _color);
+    return (p.type_ != NIL) && (p.type_ != BORDER) && (p.color_ != color_);
 }
 
 bool Piece::isEmpty() const
 {
-    return (_type == NIL);
+    return (type_ == NIL);
 }
 
 bool Piece::operator==(const Piece& p) const
 {
-    return (_type == p._type) && (_color == p._color) && (_moved == p._moved);
+    return (type_ == p.type_) && (color_ == p.color_) && (moved_ == p.moved_);
 }
 
 bool Piece::operator!=(const Piece& p) const

@@ -39,7 +39,6 @@ enum MoveType {
  * TODO decide which to use!
  */
 
-// TODO change get???() to ???()
 class Move { // TODO write docs
   public:
     static Move Quiet(int origin, int target);
@@ -50,27 +49,27 @@ class Move { // TODO write docs
     static Move Promote(int origin, int target, Piece promo);
     static Move PromoCapture(int origin, int target, Piece promo, Piece capt);
 
-    MoveType getType() const;
-    int getOrigin() const;
-    int getTarget() const;
-    Piece getCaptured() const;
-    Piece getPromoted() const;
+    MoveType type() const;
+    int origin() const;
+    int target() const;
+    Piece captured() const;
+    Piece promoted() const;
   private:
-    MoveType _type;
-    int _origin;
-    int _target;
-    Piece _captured;
-    Piece _promoted;
+    MoveType type_;
+    int origin_;
+    int target_;
+    Piece captured_;
+    Piece promoted_;
 };
 
 /**
- * Converts from an 8 x 8 x 8 cube to a 1728 array. Like the Board::_pieces
+ * Converts from an 8 x 8 x 8 cube to a 1728 array. Like the Board.pieces_
  * array, x-coordinates vary first, then y, then z.
  */
 int mailbox(int x, int y, int z);
 
 /**
- * Converts from a 1728 array to an 8 x 8 x 8 cube. Like the Board::_pieces
+ * Converts from a 1728 array to an 8 x 8 x 8 cube. Like the Board.pieces_
  * array, x-coordinates vary first, then y, then z.
  * Note that it's just as cheap to have these separate as together.
  */

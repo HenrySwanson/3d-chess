@@ -3,7 +3,7 @@
 
 /**
  * A list of all pieces (and lack thereof). The value BORDER is a bit special;
- * see the comments for "Board.pieces" for more details. White and black pawns
+ * see the comments for "Board.pieces_" for more details. White and black pawns
  * are different codes for two reasons. First, it means that (standard)
  * movements are entirely determined by PieceType. Second, it gives us an even
  * 16 types, which fit perfectly into a nibble.
@@ -27,16 +27,15 @@ const bool BLACK = true;
  * Bit 6 - moved
  */
 
-// TODO change get???() to ???()
 class Piece
 {
 public: // TODO write docs
     Piece();
     Piece(PieceType pt, bool color, bool moved);
 
-    PieceType getType() const;
-    bool getColor() const;
-    bool getMoved() const;
+    PieceType type() const;
+    bool color() const;
+    bool moved() const;
 
     bool isOn(bool color) const;
     bool isFriend(Piece p) const;
@@ -46,9 +45,9 @@ public: // TODO write docs
     bool operator==(const Piece& p) const;
     bool operator!=(const Piece& p) const;
 private:
-    PieceType _type;
-    bool _color;
-    bool _moved;
+    PieceType type_;
+    bool color_;
+    bool moved_;
 };
 
 #endif

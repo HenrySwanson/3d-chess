@@ -47,11 +47,11 @@ class MissionControl
     // TODO log float/double comparisons with tolerance
 
   private:
-    static bool current_test_failed;
-    static int num_tests_completed;
-    static int num_tests_failed;
+    static bool current_test_failed_;
+    static int num_tests_completed_;
+    static int num_tests_failed_;
 
-    static std::ofstream logfile;
+    static std::ofstream logfile_;
 };
 
 #define _TEST_NAME(suite, name)                                               \

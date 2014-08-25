@@ -5,9 +5,9 @@
 void constructor_test(PieceType pt, bool color, bool moved)
 {
     Piece p (pt, color, moved);
-    EXPECT_TRUE(pt == p.getType());
-    EXPECT_TRUE(color == p.getColor());
-    EXPECT_TRUE(moved == p.getMoved());
+    EXPECT_TRUE(pt == p.type());
+    EXPECT_TRUE(color == p.color());
+    EXPECT_TRUE(moved == p.moved());
 }
 
 TEST(Piece, Constructor)

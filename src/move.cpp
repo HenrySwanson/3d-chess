@@ -3,93 +3,93 @@
 Move Move::Quiet(int origin, int target)
 {
     Move m;
-    m._type = QUIET;
-    m._origin = origin;
-    m._target = target;
+    m.type_ = QUIET;
+    m.origin_ = origin;
+    m.target_ = target;
     return m;
 }
 
 Move Move::DPP(int origin, int target)
 {
     Move m;
-    m._type = DOUBLE_PAWN_PUSH;
-    m._origin = origin;
-    m._target = target;
+    m.type_ = DOUBLE_PAWN_PUSH;
+    m.origin_ = origin;
+    m.target_ = target;
     return m;
 }
 
 Move Move::Capture(int origin, int target, Piece capt)
 {
     Move m;
-    m._type = CAPTURE;
-    m._origin = origin;
-    m._target = target;
-    m._captured = capt;
+    m.type_ = CAPTURE;
+    m.origin_ = origin;
+    m.target_ = target;
+    m.captured_ = capt;
     return m;
 }
 
 Move Move::EP(int origin, int target)
 {
     Move m;
-    m._type = EN_PASSANT;
-    m._origin = origin;
-    m._target = target;
+    m.type_ = EN_PASSANT;
+    m.origin_ = origin;
+    m.target_ = target;
     return m;
 }
 
 Move Move::Castle(int origin, int target)
 {
     Move m;
-    m._type = CASTLE;
-    m._origin = origin;
-    m._target = target;
+    m.type_ = CASTLE;
+    m.origin_ = origin;
+    m.target_ = target;
     return m;
 }
 
 Move Move::Promote(int origin, int target, Piece promo)
 {
     Move m;
-    m._type = PROMOTE;
-    m._origin = origin;
-    m._target = target;
-    m._promoted = promo;
+    m.type_ = PROMOTE;
+    m.origin_ = origin;
+    m.target_ = target;
+    m.promoted_ = promo;
     return m;
 }
 
 Move Move::PromoCapture(int origin, int target, Piece promo, Piece capt)
 {
     Move m;
-    m._type = PROMO_CAPTURE;
-    m._origin = origin;
-    m._target = target;
-    m._promoted = promo;
-    m._captured = capt;
+    m.type_ = PROMO_CAPTURE;
+    m.origin_ = origin;
+    m.target_ = target;
+    m.promoted_ = promo;
+    m.captured_ = capt;
     return m;
 }
 
-MoveType Move::getType() const
+MoveType Move::type() const
 {
-    return _type;
+    return type_;
 }
 
-int Move::getOrigin() const
+int Move::origin() const
 {
-    return _origin;
+    return origin_;
 }
 
-int Move::getTarget() const
+int Move::target() const
 {
-    return _target;
+    return target_;
 }
 
-Piece Move::getCaptured() const
+Piece Move::captured() const
 {
-    return _captured;
+    return captured_;
 }
 
-Piece Move::getPromoted() const
+Piece Move::promoted() const
 {
-    return _promoted;
+    return promoted_;
 }
 
 int mailbox(int x, int y, int z)

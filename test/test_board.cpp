@@ -10,6 +10,7 @@ using std::string;
 using std::stringstream;
 
 // TODO maybe move these into the appropriate cpp files, wrapped in an #ifdef?
+// perhaps as << overloads
 
 /**
  * Converts the piece into a string representation.
@@ -19,10 +20,10 @@ string toString(Piece p)
 {
     stringstream ss;
 
-    if(p.getType() == NIL)
+    if(p.type() == NIL)
         return "Nil";
 
-    if(p.getType() == BORDER)
+    if(p.type() == BORDER)
         return "Border";
 
     string names [16] = {
@@ -30,11 +31,11 @@ string toString(Piece p)
         "Rook", "Bishop", "Mace", "Wizard", "Archer", "Cannon", "Queen", "King"
     };
     
-    string color = (p.getColor() == WHITE ? "White" : "Black");
+    string color = (p.color() == WHITE ? "White" : "Black");
 
-    string moved = (p.getMoved() ? "(M)" : "(S)");
+    string moved = (p.moved() ? "(M)" : "(S)");
 
-    ss << color << " " << names[p.getType()] << " " << moved;
+    ss << color << " " << names[p.type()] << " " << moved;
 
     return ss.str();
 }
@@ -47,32 +48,32 @@ string toString(Move m)
 {
     stringstream ss;
 
-    int ox = unmailboxX(m.getOrigin());
-    int oy = unmailboxY(m.getOrigin());
-    int oz = unmailboxZ(m.getOrigin());
+    int ox = unmailboxX(m.origin());
+    int oy = unmailboxY(m.origin());
+    int oz = unmailboxZ(m.origin());
 
-    int tx = unmailboxX(m.getTarget());
-    int ty = unmailboxY(m.getTarget());
-    int tz = unmailboxZ(m.getTarget());
+    int tx = unmailboxX(m.target());
+    int ty = unmailboxY(m.target());
+    int tz = unmailboxZ(m.target());
 
-    switch(m.getType())
+    switch(m.type())
     {
       case QUIET:
-        ss << "Quiet: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ")";
+        ss << "Quiet: (" << ox << ", " << oy << ", " << oz << ") -> (" << tx <<
+                ", " << ty << ", " << tz << ")";
         break;
       case DOUBLE_PAWN_PUSH:
-        ss << "DPP: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ")";
+        ss << "DPP: (" << ox << ", " << oy << ", " << oz << ") -> (" << tx <<
+                ", " << ty << ", " << tz << ")";
         break;
       case CAPTURE:
         ss << "Capture: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
                 tx << ", " << ty << ", " << tz << ") - " <<
-                toString(m.getCaptured());
+                toString(m.captured());
         break;
       case EN_PASSANT:
-        ss << "EP: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ")";
+        ss << "EP: (" << ox << ", " << oy << ", " << oz << ") -> (" << tx <<
+                ", " << ty << ", " << tz << ")";
         break;
       case CASTLE:
         ss << "Castle: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
@@ -81,12 +82,12 @@ string toString(Move m)
       case PROMOTE:
         ss << "Promote: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
                 tx << ", " << ty << ", " << tz << ") = " <<
-                toString(m.getPromoted());
+                toString(m.promoted());
         break;
       case PROMO_CAPTURE:
         ss << "Promo-capture: (" << ox << ", " << oy << ", " << oz <<
                 ") -> (" << tx << ", " << ty << ", " << tz << ") = " <<
-                toString(m.getPromoted()) << " - " << toString(m.getCaptured());
+                toString(m.promoted()) << " - " << toString(m.captured());
         break;
     }
 

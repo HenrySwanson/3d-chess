@@ -91,23 +91,23 @@ namespace {
 Board::Board()
 {
     for(int i = 0; i < 1728; i++)
-        _pieces[i] = Piece(BORDER, WHITE, false);
+        pieces_[i] = Piece(BORDER, WHITE, false);
 
     for(int i = 0; i < 8; i++)
         for(int j = 0; j < 8; j++)
             for(int k = 0; k < 8; k++)
-                _pieces[mailbox(i, j, k)] = Piece(NIL, WHITE, false);
+                pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE, false);
 }
 
 Piece Board::getPiece(int i) const
 {
-    return _pieces[i];
+    return pieces_[i];
 }
 
 Piece Board::putPiece(Piece p, int i)
 {
-    Piece q = _pieces[i];
-    _pieces[i] = p;
+    Piece q = pieces_[i];
+    pieces_[i] = p;
     return q;
 }
 
@@ -118,7 +118,7 @@ list<Move> Board::generatePseudoLegalMoves(int color) const
 
     for(int i = 0; i < 1728; i++)
     {
-        if(_pieces[i].isOn(color))
+        if(pieces_[i].isOn(color))
         {
             temp = generateMoves(i);
             moves.splice(moves.end(), temp);
@@ -133,7 +133,7 @@ list<Move> Board::generatePseudoLegalMoves(int color) const
 
 list<Move> Board::generateMoves(int origin) const
 {
-    PieceType pt = _pieces[origin].getType();
+    PieceType pt = pieces_[origin].type();
 
     if(pt == NIL || pt == BORDER)
         return list<Move>(0);
@@ -155,8 +155,8 @@ list<Move> Board::generateCastlingMoves(bool color) const
 list<Move> Board::generatePawnMoves(int origin) const
 {
     list<Move> moves;
-    Piece oPiece = _pieces[origin];
-    PieceType oPt = oPiece.getType();
+    Piece oPiece = pieces_[origin];
+    PieceType oPt = oPiece.type();
 
     int forward = PIECE_DIRECTIONS[oPt][0];
     int ahead = origin + forward;
@@ -168,7 +168,7 @@ list<Move> Board::generatePawnMoves(int origin) const
     int promoRank = (oPt == W_PAWN ? 6 : 1);
 
     // Can we move forward?
-    if(_pieces[ahead].isEmpty())
+    if(pieces_[ahead].isEmpty())
     {
         // Are we currently on the second-to-last rank?
         if(rank == promoRank)
@@ -176,7 +176,7 @@ list<Move> Board::generatePawnMoves(int origin) const
             // Iterate through all non-pawns FIXME improve, this is garbage!
             for(int pt = 4; pt < 16; pt++)
             {
-                Piece p = Piece((PieceType) pt, oPiece.getColor(), true);
+                Piece p = Piece((PieceType) pt, oPiece.color(), true);
                 moves.push_back(Move::Promote(origin, ahead, p));
             }
         }
@@ -184,7 +184,7 @@ list<Move> Board::generatePawnMoves(int origin) const
             moves.push_back(Move::Quiet(origin, ahead));
 
         // Can we perform a double pawn push?
-        if(rank == startingRank && _pieces[twoAhead].isEmpty())
+        if(rank == startingRank && pieces_[twoAhead].isEmpty())
             moves.push_back(Move::DPP(origin, twoAhead));
     }
 
@@ -192,7 +192,7 @@ list<Move> Board::generatePawnMoves(int origin) const
     for(int i = 1; i < NUM_DIRECTIONS[oPt]; i++)
     {
         int target = origin + PIECE_DIRECTIONS[oPt][i];
-        Piece tPiece = _pieces[target];
+        Piece tPiece = pieces_[target];
 
         // Is this an enemy piece?
         if(oPiece.isEnemy(tPiece))
@@ -203,7 +203,7 @@ list<Move> Board::generatePawnMoves(int origin) const
                 // Iterate through all non-pawns FIXME improve, this is garbage!
                 for(int pt = 4; pt < 16; pt++)
                 {
-                    Piece p = Piece((PieceType) pt, oPiece.getColor(), true);
+                    Piece p = Piece((PieceType) pt, oPiece.color(), true);
                     moves.push_back(Move::PromoCapture(origin, target, p, tPiece));
                 }
             }
@@ -222,8 +222,8 @@ list<Move> Board::generatePawnMoves(int origin) const
 list<Move> Board::generateNonPawnMoves(int origin) const
 {
     list<Move> moves;
-    Piece oPiece = _pieces[origin];
-    PieceType oPt = oPiece.getType();
+    Piece oPiece = pieces_[origin];
+    PieceType oPt = oPiece.type();
 
     int num_dirs = NUM_DIRECTIONS[oPt];
 
@@ -234,7 +234,7 @@ list<Move> Board::generateNonPawnMoves(int origin) const
         while(true) // this is so sliding pieces continue moving
         {
             target += PIECE_DIRECTIONS[oPt][i];
-            Piece tPiece = _pieces[target];
+            Piece tPiece = pieces_[target];
 
             // Did we hit something?
             if(!tPiece.isEmpty())
