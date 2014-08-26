@@ -147,7 +147,7 @@ void testConfiguration(string name, list<Piece> pieces, list<int> indices,
     for(list<string>::iterator it = strs.begin(); it != strs.end(); it++)
         concatenated += (*it + "\n");
 
-    EXPECT_TRUE(concatenated == expected);
+    EXPECT_STR_EQ(concatenated.c_str(), expected.c_str());
 }
 
 /**

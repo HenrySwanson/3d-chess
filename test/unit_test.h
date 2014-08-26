@@ -1,9 +1,9 @@
 #ifndef UNIT_TEST_H
 #define UNIT_TEST_H
 
+#include <cstring>
 #include <fstream>
 #include <list>
-#include <string>
 
 // TODO Document this clusterfuck, especially that bs going on in TEST
 
@@ -39,13 +39,16 @@ class MissionControl
     static void runTest(UnitTest ut);
 
     static void logBool(const char* file, int line, const char* expr,
-            bool expected, bool fatal);
+            bool expected);
 
-    // TODO log str comparison
+    template<typename T, typename U>
+    static void logCmp(const char* file, int line, const char* expr_a,
+            const char* expr_b, const char* cmp_op, T val_a, U val_b);
 
-    // TODO log comparison (<, ==, !=, <=)
-    //     [to get types right, use templates. Foo<var> is Foo<Type>]
-    //     [or provide type in macro, if you want C compatibility.]
+
+    static void logStrCmp(const char* file, int line, const char* expr_a,
+            const char* expr_b, const char* cmp_op, const char* val_a,
+            const char* val_b);
 
     // TODO log float/double comparisons with tolerance
 
@@ -56,6 +59,18 @@ class MissionControl
 
     static std::ofstream logfile_;
 };
+
+template<typename T, typename U>
+void MissionControl::logCmp(const char* file, int line, const char* expr_a,
+        const char* expr_b, const char* op, T val_a, U val_b)
+{
+    current_test_failed_ = true;
+
+    logfile_ << "Failed comparision: " << file << ":" << line << ": " <<
+            expr_a << " " << op << " " << expr_b << std::endl;
+    logfile_ << "  Values were: \"" << val_a << "\" and \"" << val_b << "\"" <<
+            std::endl;
+}
 
 #define _TEST_NAME(suite, name)                                               \
     unit_test_##suite##_##name
@@ -72,30 +87,94 @@ class MissionControl
 
 // TODO add setup/teardown function registration
 
+#define IF_NOT(b)                                                             \
+    if(b){;}else                                                              \
+
+
+//====Simple Boolean Macros====
+
 #define ASSERT_TRUE(b)                                                        \
-    if(!(b))                                                                  \
+    IF_NOT( b )                                                               \
     {                                                                         \
-        MissionControl::logBool(__FILE__, __LINE__, #b, true, true);          \
+        MissionControl::logBool(__FILE__, __LINE__, #b, true);                \
         return;                                                               \
     }
 
 #define EXPECT_TRUE(b)                                                        \
-    if(!(b))                                                                  \
+    IF_NOT( b )                                                               \
     {                                                                         \
-        MissionControl::logBool(__FILE__, __LINE__, #b, true, false);         \
+        MissionControl::logBool(__FILE__, __LINE__, #b, true);                \
     }
 
 #define ASSERT_FALSE(b)                                                       \
-    if(b)                                                                     \
+    IF_NOT( !b )                                                              \
     {                                                                         \
-        MissionControl::logBool(__FILE__, __LINE__, #b, false, true);         \
+        MissionControl::logBool(__FILE__, __LINE__, #b, false);               \
         return;                                                               \
     }
 
 #define EXPECT_FALSE(b)                                                       \
-    if(b)                                                                     \
+    IF_NOT( !b )                                                              \
     {                                                                         \
-        MissionControl::logBool(__FILE__, __LINE__, #b, false, false);        \
+        MissionControl::logBool(__FILE__, __LINE__, #b, false);               \
     }
+
+//====Comparison Macros====
+
+#define ASSERT_CMP(a, b, op)                                                  \
+    IF_NOT( (a) op (b) )                                                      \
+    {                                                                         \
+        MissionControl::logCmp(__FILE__, __LINE__, #a, #b, #op, (a), (b));    \
+        return;                                                               \
+    }
+
+#define EXPECT_CMP(a, b, op)                                                  \
+    IF_NOT( (a) op (b) )                                                      \
+    {                                                                         \
+        MissionControl::logCmp(__FILE__, __LINE__, #a, #b, #op, (a), (b));    \
+    }
+
+#define ASSERT_EQ(a, b) ASSERT_CMP(a, b, ==)
+#define ASSERT_NE(a, b) ASSERT_CMP(a, b, !=)
+#define ASSERT_LT(a, b) ASSERT_CMP(a, b,  <)
+#define ASSERT_GT(a, b) ASSERT_CMP(a, b,  >)
+#define ASSERT_LE(a, b) ASSERT_CMP(a, b, <=)
+#define ASSERT_GE(a, b) ASSERT_CMP(a, b, >=)
+
+#define EXPECT_EQ(a, b) EXPECT_CMP(a, b, ==)
+#define EXPECT_NE(a, b) EXPECT_CMP(a, b, !=)
+#define EXPECT_LT(a, b) EXPECT_CMP(a, b,  <)
+#define EXPECT_GT(a, b) EXPECT_CMP(a, b,  >)
+#define EXPECT_LE(a, b) EXPECT_CMP(a, b, <=)
+#define EXPECT_GE(a, b) EXPECT_CMP(a, b, >=)
+
+//====String Comparision Macros====
+
+#define ASSERT_STR_CMP(a, b, op)                                              \
+    IF_NOT( strcmp((a), (b)) op 0 )                                           \
+    {                                                                         \
+        MissionControl::logStrCmp(__FILE__, __LINE__, #a, #b, #op, (a), (b)); \                                                         \
+        return;                                                               \
+    }
+
+#define EXPECT_STR_CMP(a, b, op)                                              \
+    IF_NOT( strcmp((a), (b)) op 0 )                                           \
+    {                                                                         \
+        MissionControl::logStrCmp(__FILE__, __LINE__, #a, #b, #op, (a), (b)); \
+    }
+
+#define ASSERT_STR_EQ(a, b) ASSERT_STR_CMP(a, b, ==)
+#define ASSERT_STR_NE(a, b) ASSERT_STR_CMP(a, b, !=)
+#define ASSERT_STR_LT(a, b) ASSERT_STR_CMP(a, b,  <)
+#define ASSERT_STR_GT(a, b) ASSERT_STR_CMP(a, b,  >)
+#define ASSERT_STR_LE(a, b) ASSERT_STR_CMP(a, b, <=)
+#define ASSERT_STR_GE(a, b) ASSERT_STR_CMP(a, b, >=)
+
+#define EXPECT_STR_EQ(a, b) EXPECT_STR_CMP(a, b, ==)
+#define EXPECT_STR_NE(a, b) EXPECT_STR_CMP(a, b, !=)
+#define EXPECT_STR_LT(a, b) EXPECT_STR_CMP(a, b,  <)
+#define EXPECT_STR_GT(a, b) EXPECT_STR_CMP(a, b,  >)
+#define EXPECT_STR_LE(a, b) EXPECT_STR_CMP(a, b, <=)
+#define EXPECT_STR_GE(a, b) EXPECT_STR_CMP(a, b, >=)
 
 #endif

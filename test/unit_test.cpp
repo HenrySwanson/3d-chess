@@ -1,10 +1,11 @@
 #include "unit_test.h"
 
 #include <cstdlib>
-#include <cstring>
+#include <iomanip>
 #include <iostream>
 #include <list>
 
+const int MAX_NUM_DOTS = 60;
 
 using std::list;
 using std::cout;
@@ -74,7 +75,6 @@ void MissionControl::runTest(UnitTest ut)
 {
     current_test_failed_ = false;
 
-    cout << "    Test: " << ut.name;
     logfile_ << "Test: " << ut.name << endl;
 
     (*(ut.func))();
@@ -82,23 +82,40 @@ void MissionControl::runTest(UnitTest ut)
     if(current_test_failed_)
     {
         num_tests_failed_++;
-        cout << "......failed!" << endl;
+        cout << "    Test " << std::left << std::setw(MAX_NUM_DOTS) <<
+                std::setfill('.') << ut.name << "...failed!" << endl;
     }
     else
     {
-        cout << "......succeeded." << endl;
+        cout << "    Test " << std::left << std::setw(MAX_NUM_DOTS) <<
+                std::setfill('.') << ut.name << "succeeded." << endl;
     }
 
     num_tests_completed_++;
 }
 
 void MissionControl::logBool(const char* file, int line, const char* expr,
-        bool expected, bool fatal)
+        bool expected)
 {
     current_test_failed_ = true;
-    const char* noun = fatal ? "assertion" : "expectation";
-    logfile_ << "Failed " << noun << ": " << file << ":" << line << ": " <<
+
+    logfile_ << "Failed assertion: " << file << ":" << line << ": " <<
             expr << " should have been " << expected << "." << endl;
+}
+
+
+
+// TODO "unescape" strings
+void MissionControl::logStrCmp(const char* file, int line, const char* expr_a,
+        const char* expr_b, const char* op, const char* val_a,
+        const char* val_b)
+{
+    current_test_failed_ = true;
+
+    logfile_ << "Failed string comparision: " << file << ":" << line << ": " <<
+            expr_a << " " << op << " " << expr_b << endl;
+    logfile_ << "  Values were: \"" << val_a << "\" and \"" << val_b << "\"" <<
+            endl;
 }
 
 bool MissionControl::current_test_failed_ = false;
