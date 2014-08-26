@@ -7,6 +7,8 @@
 # I know it's awful, but it makes my testing code simpler,
 # and honestly, this is still pretty human-readable.
 
+#====LONE TESTS====
+
 +Lone Knight
 W N 2 3 4 0
 -
@@ -545,8 +547,158 @@ Quiet: (2, 3, 4) -> (3, 4, 4)
 Quiet: (2, 3, 4) -> (3, 4, 5)
 =
 
-#TODO make some capture, en passant, castle, etc. tests
++Jumping Near Border
+W N 7 7 7 0
+-
+Quiet: (7, 7, 7) -> (5, 6, 7)
+Quiet: (7, 7, 7) -> (5, 7, 6)
+Quiet: (7, 7, 7) -> (6, 5, 7)
+Quiet: (7, 7, 7) -> (6, 7, 5)
+Quiet: (7, 7, 7) -> (7, 5, 6)
+Quiet: (7, 7, 7) -> (7, 6, 5)
+=
 
-#TODO also, put some stuff near the borders to avoid crashing.
-# nothing as comprehensive as a total moveset,
-# but at least one sliding and jumping piece each.
+#====PAWN TESTS====
+
++Pawn DPP and Capture
+W P 6 4 1 0
+B R 6 5 2 0
+-
+Capture: (6, 4, 1) -> (6, 5, 2) - Black Rook (S)
+DPP: (6, 4, 1) -> (6, 4, 3)
+Quiet: (6, 4, 1) -> (6, 4, 2)
+=
+
++Pawn DPP and No Capture
+W P 6 4 1 0
+W R 6 5 2 0
+-
+DPP: (6, 4, 1) -> (6, 4, 3)
+Quiet: (6, 4, 1) -> (6, 4, 2)
+=
+
++Pawn Blocked
+W P 6 4 1 0
+B R 6 4 2 0
+-
+=
+
++Pawn DPP Blocked
+W P 6 4 1 0
+B R 6 4 3 0
+-
+Quiet: (6, 4, 1) -> (6, 4, 2)
+=
+
++Pawn No DPP
+W P 6 4 2 1
+-
+Quiet: (6, 4, 2) -> (6, 4, 3)
+=
+
++Pawn Promotion
+B P 3 2 1 1
+-
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Archer (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Bishop (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Cannon (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Dragon (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Griffin (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Knight (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Mace (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Queen (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Rook (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Unicorn (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Wizard (M)
+=
+
++Pawn Promo-capture
+B P 3 2 1 1
+W R 4 1 0 0
+-
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Archer (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Bishop (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Cannon (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Dragon (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Griffin (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Knight (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Mace (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Queen (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Rook (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Unicorn (M) - White Rook (S)
+Promo-capture: (3, 2, 1) -> (4, 1, 0) = Black Wizard (M) - White Rook (S)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Archer (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Bishop (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Cannon (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Dragon (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Griffin (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Knight (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Mace (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Queen (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Rook (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Unicorn (M)
+Promote: (3, 2, 1) -> (3, 2, 0) = Black Wizard (M)
+=
+
+#====CAPTURING TESTS====
+
++Capturing Rook
+W R 2 3 4 0
+B P 5 3 4 0
+-
+Capture: (2, 3, 4) -> (5, 3, 4) - Black Pawn (S)
+Quiet: (2, 3, 4) -> (0, 3, 4)
+Quiet: (2, 3, 4) -> (1, 3, 4)
+Quiet: (2, 3, 4) -> (2, 0, 4)
+Quiet: (2, 3, 4) -> (2, 1, 4)
+Quiet: (2, 3, 4) -> (2, 2, 4)
+Quiet: (2, 3, 4) -> (2, 3, 0)
+Quiet: (2, 3, 4) -> (2, 3, 1)
+Quiet: (2, 3, 4) -> (2, 3, 2)
+Quiet: (2, 3, 4) -> (2, 3, 3)
+Quiet: (2, 3, 4) -> (2, 3, 5)
+Quiet: (2, 3, 4) -> (2, 3, 6)
+Quiet: (2, 3, 4) -> (2, 3, 7)
+Quiet: (2, 3, 4) -> (2, 4, 4)
+Quiet: (2, 3, 4) -> (2, 5, 4)
+Quiet: (2, 3, 4) -> (2, 6, 4)
+Quiet: (2, 3, 4) -> (2, 7, 4)
+Quiet: (2, 3, 4) -> (3, 3, 4)
+Quiet: (2, 3, 4) -> (4, 3, 4)
+=
+
++Capturing Knight
+W N 2 3 4 0
+B P 2 2 6 0
+-
+Capture: (2, 3, 4) -> (2, 2, 6) - Black Pawn (S)
+Quiet: (2, 3, 4) -> (0, 2, 4)
+Quiet: (2, 3, 4) -> (0, 3, 3)
+Quiet: (2, 3, 4) -> (0, 3, 5)
+Quiet: (2, 3, 4) -> (0, 4, 4)
+Quiet: (2, 3, 4) -> (1, 1, 4)
+Quiet: (2, 3, 4) -> (1, 3, 2)
+Quiet: (2, 3, 4) -> (1, 3, 6)
+Quiet: (2, 3, 4) -> (1, 5, 4)
+Quiet: (2, 3, 4) -> (2, 1, 3)
+Quiet: (2, 3, 4) -> (2, 1, 5)
+Quiet: (2, 3, 4) -> (2, 2, 2)
+Quiet: (2, 3, 4) -> (2, 4, 2)
+Quiet: (2, 3, 4) -> (2, 4, 6)
+Quiet: (2, 3, 4) -> (2, 5, 3)
+Quiet: (2, 3, 4) -> (2, 5, 5)
+Quiet: (2, 3, 4) -> (3, 1, 4)
+Quiet: (2, 3, 4) -> (3, 3, 2)
+Quiet: (2, 3, 4) -> (3, 3, 6)
+Quiet: (2, 3, 4) -> (3, 5, 4)
+Quiet: (2, 3, 4) -> (4, 2, 4)
+Quiet: (2, 3, 4) -> (4, 3, 3)
+Quiet: (2, 3, 4) -> (4, 3, 5)
+Quiet: (2, 3, 4) -> (4, 4, 4)
+=
+
+#====CASTLING TESTS====
+
+#TODO make tests
+
+#TODO en passant tests require setting the ep square, so implement that somehow
