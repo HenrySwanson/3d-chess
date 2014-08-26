@@ -174,7 +174,7 @@ list<Move> Board::generatePawnMoves(int origin) const
         if(rank == promoRank)
         {
             // Iterate through all non-pawns FIXME improve, this is garbage! (global const array?)
-            for(int pt = 4; pt < 16; pt++)
+            for(int pt = 4; pt < 15; pt++)
             {
                 Piece p = Piece((PieceType) pt, oPiece.color(), true);
                 moves.push_back(Move::Promote(origin, ahead, p));
@@ -201,7 +201,7 @@ list<Move> Board::generatePawnMoves(int origin) const
             if(rank == promoRank)
             {
                 // Iterate through all non-pawns FIXME improve, this is garbage!
-                for(int pt = 4; pt < 16; pt++)
+                for(int pt = 4; pt < 15; pt++)
                 {
                     Piece p = Piece((PieceType) pt, oPiece.color(), true);
                     moves.push_back(Move::PromoCapture(origin, target, p, tPiece));
