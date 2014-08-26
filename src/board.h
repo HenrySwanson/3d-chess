@@ -26,6 +26,8 @@ class Board
     /** Generates all pseudo-legal moves that the given color can make. */
     std::list<Move> generatePseudoLegalMoves(int color) const;
 
+    // TODO generate all legal moves
+
     /**
      * Generates all pseudo-legal moves that the piece on this square can make.
      * It is safe to call this method on a non-piece (NIL or BORDER); it will
@@ -35,6 +37,11 @@ class Board
 
     /** Generates all possible castling moves for the given team. */
     std::list<Move> generateCastlingMoves(bool color) const;
+
+    /** Returns true if the king of the specified color is in check. */
+    bool isInCheck(bool color) const;
+
+    // TODO implement move making and unmaking
 
   private:
     /** Generates all pseudo-legal moves for a pawn. */ 

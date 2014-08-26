@@ -152,6 +152,23 @@ list<Move> Board::generateCastlingMoves(bool color) const
     return moves;
 }
 
+bool Board::isInCheck(bool color) const
+{
+    list<Move> opponents_moves = generatePseudoLegalMoves(!color);
+    list<Move>::const_iterator it;
+    for(it = opponents_moves.begin(); it != opponents_moves.end(); it++)
+    {
+        if(it->type() == CAPTURE || it->type() == PROMO_CAPTURE)
+        {
+            Piece captured = it->captured();
+            if(captured.type() == KING)
+                return true;
+        }
+    }
+
+    return false;
+}
+
 list<Move> Board::generatePawnMoves(int origin) const
 {
     list<Move> moves;
@@ -163,9 +180,12 @@ list<Move> Board::generatePawnMoves(int origin) const
     int twoAhead = ahead + forward;
 
     int rank = (origin / 144) - 2;
-    // TODO make less (?:)-y
-    int startingRank = (oPt == W_PAWN ? 1 : 6);
-    int promoRank = (oPt == W_PAWN ? 6 : 1);
+
+    // Mmm... Tasty bitwise hacks.     // WHITE    BLACK
+    int color_flag = -(oPt == W_PAWN); //  -1        0
+    int color_mask = color_flag & 0x7; //   7        0
+    int startingRank = color_mask ^ 6; //   1        6
+    int promoRank = color_mask ^ 1;    //   6        1
 
     // Can we move forward?
     if(pieces_[ahead].type() == NIL)
@@ -173,10 +193,10 @@ list<Move> Board::generatePawnMoves(int origin) const
         // Are we currently on the second-to-last rank?
         if(rank == promoRank)
         {
-            // Iterate through all non-pawns FIXME improve, this is garbage! (global const array?)
-            for(int pt = 4; pt < 15; pt++)
+            // Iterate through all possible promotions
+            for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
             {
-                Piece p = Piece((PieceType) pt, oPiece.color(), true);
+                Piece p = Piece(PROMOTION_PIECES[i], oPiece.color(), true);
                 moves.push_back(Move::Promote(origin, ahead, p));
             }
         }
@@ -200,17 +220,19 @@ list<Move> Board::generatePawnMoves(int origin) const
             // Are we currently on the second-to-last rank?
             if(rank == promoRank)
             {
-                // Iterate through all non-pawns FIXME improve, this is garbage!
-                for(int pt = 4; pt < 15; pt++)
+                // Iterate through all possible promotions
+                for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
                 {
-                    Piece p = Piece((PieceType) pt, oPiece.color(), true);
-                    moves.push_back(Move::PromoCapture(origin, target, p, tPiece));
+                    Piece p = Piece(PROMOTION_PIECES[i], oPiece.color(), true);
+                    moves.push_back(Move::PromoCapture(origin, target, p,
+                            tPiece));
                 }
             }
             else
                 moves.push_back(Move::Capture(origin, target, tPiece));
         }
 
+        // Can we perform en passant?
         if(target == ep_location_)
             moves.push_back(Move::EP(origin, ep_location_));
 

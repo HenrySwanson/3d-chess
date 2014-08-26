@@ -22,6 +22,17 @@ const bool WHITE = false;
 /** The value corresponding to a black piece. */
 const bool BLACK = true;
 
+/** The number of pieces that can be promoted to. */
+const int NUM_PROMOTION_PIECES = 11;
+
+/** The pieces that can be promoted to. */
+const PieceType PROMOTION_PIECES [] = {
+    KNIGHT, GRIFFIN, DRAGON, UNICORN,
+    ROOK, BISHOP, MACE,
+    WIZARD, ARCHER, CANNON,
+    QUEEN
+};
+
 /* TODO I'll make this a bitfield later.
  *
  * Bits 1-4 - type
