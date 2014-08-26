@@ -59,14 +59,16 @@ class Piece
     bool isOn(bool color) const;
 
     /**
-     * Returns true if this piece is neither NIL nor BORDER, and it has the
-     * same color as the specified piece.
+     * Returns true if the specified piece is neither NIL nor BORDER, and it
+     * has the same color as this piece. Undefined if this piece is NIL or
+     * BORDER.
      */
     bool isFriend(Piece p) const;
 
     /**
-     * Returns true if this piece is neither NIL nor BORDER, and it has the
-     * opposite color as the specified piece.
+     * Returns true if the specified piece is neither NIL nor BORDER, and it
+     * has the opposite color of this piece. Undefined if this piece is NIL or
+     * BORDER.
      */
     bool isEnemy(Piece p) const;
 

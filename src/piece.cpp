@@ -29,12 +29,12 @@ bool Piece::isOn(bool color) const
 
 bool Piece::isFriend(Piece p) const
 {
-    return isOn(p.color_);
+    return p.isOn(color_);
 }
 
 bool Piece::isEnemy(Piece p) const
 {
-    return isOn(!p.color_);
+    return p.isOn(!color_);
 }
 
 bool Piece::operator==(const Piece& p) const
