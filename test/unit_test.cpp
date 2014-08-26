@@ -103,8 +103,6 @@ void MissionControl::logBool(const char* file, int line, const char* expr,
             expr << " should have been " << expected << "." << endl;
 }
 
-
-
 // TODO "unescape" strings
 void MissionControl::logStrCmp(const char* file, int line, const char* expr_a,
         const char* expr_b, const char* op, const char* val_a,
@@ -123,6 +121,7 @@ int MissionControl::num_tests_completed_ = 0;
 int MissionControl::num_tests_failed_ = 0;
 std::ofstream MissionControl::logfile_;
 
+/** Main. Exactly what you'd expect. */
 int main(void)
 {
     MissionControl::runAll();
