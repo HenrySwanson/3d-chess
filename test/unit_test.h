@@ -40,10 +40,13 @@ class MissionControl
 
     static void logBool(const char* file, int line, const char* expr,
             bool expected, bool fatal);
+
+    // TODO log str comparison
+
     // TODO log comparison (<, ==, !=, <=)
     //     [to get types right, use templates. Foo<var> is Foo<Type>]
     //     [or provide type in macro, if you want C compatibility.]
-    // TODO log str comparison
+
     // TODO log float/double comparisons with tolerance
 
   private:

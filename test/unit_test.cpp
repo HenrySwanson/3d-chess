@@ -1,8 +1,10 @@
 #include "unit_test.h"
 
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <list>
-#include <cstring>
+
 
 using std::list;
 using std::cout;
@@ -39,7 +41,14 @@ UnitTest MissionControl::createAndRegister(const char* suite_name,
 void MissionControl::runAll()
 {
     // TODO what's convention?
-    logfile_.open("unit_tests.log");
+    logfile_.open("log/unit_tests.log");
+
+    if(!logfile_.is_open())
+    {
+        cout << "Failed to open log file, exiting..." << endl;
+        exit(-1);
+    }
+
     logfile_ << std::boolalpha;
 
     cout << "Beginning tests..." << endl;
