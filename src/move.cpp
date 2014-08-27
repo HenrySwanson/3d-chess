@@ -92,6 +92,25 @@ Piece Move::promoted() const
     return promoted_;
 }
 
+bool Move::operator==(const Move& m) const
+{
+    bool match = (type_ == m.type_) && (origin_ == m.origin_) &&
+            (target_ == m.target_);
+
+    if(type_ == CAPTURE || type_ == PROMO_CAPTURE)
+        match &= (captured_ != m.captured_);
+
+    if(type_ == PROMOTE || type_ == PROMO_CAPTURE)
+        match &= (promoted_ != m.promoted_);
+
+    return match;
+}
+
+bool Move::operator!=(const Move& m) const
+{
+    return !(*this == m);
+}
+
 int mailbox(int x, int y, int z)
 {
     return (z + 2) * 144 + (y + 2) * 12 + (x + 2);

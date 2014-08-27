@@ -2,6 +2,7 @@
 
 #include "unit_test.h"
 
+#include <algorithm>
 #include <string>
 #include <sstream>
 
@@ -9,211 +10,167 @@ using std::list;
 using std::string;
 using std::stringstream;
 
-// TODO maybe move these into the appropriate cpp files, wrapped in an #ifdef?
-// perhaps as << overloads
-
-/**
- * Converts the piece into a string representation.
- * Not that useful, but unlike pieces, strings can be sorted.
- */
-string toString(Piece p)
+list<string> stringifyTargets(list<Move> moves)
 {
-    stringstream ss;
+    list<string> strs;
 
-    if(p.type() == NIL)
-        return "Nil";
-
-    if(p.type() == BORDER)
-        return "Border";
-
-    string names [16] = {
-        "", "", "Pawn", "Pawn", "Knight", "Griffin", "Dragon", "Unicorn",
-        "Rook", "Bishop", "Mace", "Wizard", "Archer", "Cannon", "Queen", "King"
-    };
+    list<Move>::const_iterator it;
+    for(it = moves.begin(); it != moves.end(); it++)
+    {
+        stringstream ss;
+        int i = it->target();
+        ss << "(" << unmailboxX(i) << ", " << unmailboxY(i) << ", " <<
+                unmailboxZ(i) << ")";
+        strs.push_back(ss.str());
+    }
     
-    string color = (p.color() == WHITE ? "White" : "Black");
-
-    string moved = (p.moved() ? "(M)" : "(S)");
-
-    ss << color << " " << names[p.type()] << " " << moved;
-
-    return ss.str();
+    return strs;   
 }
 
-/**
- * Converts the move into a string representation.
- * Not that useful, but unlike moves, strings can be sorted.
- */
-string toString(Move m)
+void matchQuietMoves(PieceType pt, int origin, int targets [], int num_targets)
 {
-    stringstream ss;
+    // Sets up the board
+    Board b;
+    b.putPiece(Piece(pt, WHITE, false), origin);
 
-    int ox = unmailboxX(m.origin());
-    int oy = unmailboxY(m.origin());
-    int oz = unmailboxZ(m.origin());
+    // These hold the target squares as strings
+    list<string> from_array;
+    list<string> from_list;
 
-    int tx = unmailboxX(m.target());
-    int ty = unmailboxY(m.target());
-    int tz = unmailboxZ(m.target());
-
-    switch(m.type())
+    // Convert integer array to string representing coordinates
+    for(int i = 0; i < num_targets; i++)
     {
-      case QUIET:
-        ss << "Quiet: (" << ox << ", " << oy << ", " << oz << ") -> (" << tx <<
-                ", " << ty << ", " << tz << ")";
-        break;
-      case DOUBLE_PAWN_PUSH:
-        ss << "DPP: (" << ox << ", " << oy << ", " << oz << ") -> (" << tx <<
-                ", " << ty << ", " << tz << ")";
-        break;
-      case CAPTURE:
-        ss << "Capture: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ") - " <<
-                toString(m.captured());
-        break;
-      case EN_PASSANT:
-        ss << "EP: (" << ox << ", " << oy << ", " << oz << ") -> (" << tx <<
-                ", " << ty << ", " << tz << ")";
-        break;
-      case CASTLE:
-        ss << "Castle: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ")";
-        break;
-      case PROMOTE:
-        ss << "Promote: (" << ox << ", " << oy << ", " << oz << ") -> (" <<
-                tx << ", " << ty << ", " << tz << ") = " <<
-                toString(m.promoted());
-        break;
-      case PROMO_CAPTURE:
-        ss << "Promo-capture: (" << ox << ", " << oy << ", " << oz <<
-                ") -> (" << tx << ", " << ty << ", " << tz << ") = " <<
-                toString(m.promoted()) << " - " << toString(m.captured());
-        break;
+        stringstream ss;
+        ss << "(" << targets[3 * i] << ", " << targets[3 * i + 1] << ", " <<
+                targets[3 * i + 2] << ")";
+        from_array.push_back(ss.str());
     }
 
-    return ss.str();
+    // Convert move array to string representing target coordinates
+    from_list = stringifyTargets(b.generateMoves(origin));
+
+    // Sorts both arrays so that we just need to check equality now
+    from_array.sort();
+    from_list.sort();
+
+    // Strings to store the concatenated results
+    string s1, s2;
+    list<string>::const_iterator s_it;
+
+    // Concatenates the results
+    for(s_it = from_array.begin(); s_it != from_array.end(); s_it++)
+        s1 += *s_it + " ";
+    for(s_it = from_list.begin(); s_it != from_list.end(); s_it++)
+        s2 += *s_it + " ";
+
+    // The actual assertion
+    EXPECT_STR_EQ(s1.c_str(), s2.c_str());
 }
 
-PieceType getPieceTypeFromChar(char name, bool color)
-{
-    switch(name)
-    {
-      case 'P': return (color == WHITE ? W_PAWN : B_PAWN);
-      case 'N': return KNIGHT;
-      case 'G': return GRIFFIN;
-      case 'D': return DRAGON;
-      case 'U': return UNICORN;
-      case 'R': return ROOK;
-      case 'B': return BISHOP;
-      case 'M': return MACE;
-      case 'W': return WIZARD;
-      case 'A': return ARCHER;
-      case 'C': return CANNON;
-      case 'Q': return QUEEN;
-      case 'K': return KING;
-      default:  return NIL;
-    }
-}
-
-/**
- * Puts pieces on the board, and then generates all the moves that the first
- * piece can make. Then it converts the moves to strings, sorts them, and
- * concatenates them. If this new string matches the given string, returns
- * true, otherwise false.
- * 
- * Parameters:
- *     name - the name of the test
- *     pieces, indices - pieces and their locations
- *     expected - the string of concatenated sorted moves we expect to get
- */
-void testConfiguration(string name, list<Piece> pieces, list<int> indices,
-        string expected)
+void testCompoundPiece(PieceType pt, PieceType parts [], int num_parts,
+        int origin)
 {
     Board b;
+    list<Move> compoundMoves;
+    list<Move> componentMoves;
 
-    list<Piece>::iterator p_it = pieces.begin();
-    list<int>::iterator i_it = indices.begin();
-    while(p_it != pieces.end() && i_it != indices.end())
-        b.putPiece(*p_it++, *i_it++);
+    // Generates moves from the compound piece
+    b.putPiece(Piece(pt, WHITE, false), origin);
+    compoundMoves = b.generateMoves(origin);
 
-    list<Move> moves = b.generateMoves(indices.front());
+    // Puts down one piece, generates moves, then replaces it with another
+    // piece, and appends those moves, ...
+    for(int i = 0; i < num_parts; i++)
+    {
+        b.putPiece(Piece(parts[i], WHITE, false), origin);
+        list<Move> temp = b.generateMoves(origin);
+        componentMoves.splice(componentMoves.end(), temp);
+    }
 
-    list<string> strs;
-    for(list<Move>::iterator it = moves.begin(); it != moves.end(); it++)
-        strs.push_back(toString(*it));
-    strs.sort();
+    list<string> compoundStrs = stringifyTargets(compoundMoves);
+    list<string> componentStrs = stringifyTargets(componentMoves);
 
-    string concatenated = "";
-    for(list<string>::iterator it = strs.begin(); it != strs.end(); it++)
-        concatenated += (*it + "\n");
+    // Sorts them and removes duplicates
+    compoundStrs.sort();
+    componentStrs.sort();
+    compoundStrs.unique();
+    componentStrs.unique();
 
-    EXPECT_STR_EQ(concatenated.c_str(), expected.c_str());
+    ASSERT_TRUE(compoundStrs == componentStrs);
 }
 
-/**
- * Reads a bizarrely formatted text file containing lists of pieces and moves.
- * It parses them, and feeds the pieces and moves to testConfiguration. This is
- * pretty janky, but it does the job. (And it's not production code, at least?)
- *
- * TODO perhaps give the file loading code to MissionControl?
- */
-TEST(Board, MoveGeneration)
+TEST(Board, Knight)
 {
-    // TODO what's convention? run from root dir, or from bin dir?
-    std::ifstream file ("test/test_board_aux.txt");
+    // TODO complete
+}
 
-    ASSERT_TRUE(file.is_open());
+TEST(Board, Griffin)
+{
+    // TODO complete
+}
 
-    string line;
-    bool loadingPieces = true; // if not, loading strings
+TEST(Board, Dragon)
+{
+    // TODO complete
+}
 
-    string test_name;
-    list<Piece> pieces;
-    list<int> indices;
-    string move_strs = "";
+TEST(Board, Unicorn)
+{
+    PieceType array [] = {KNIGHT, GRIFFIN, DRAGON};
+    testCompoundPiece(UNICORN, array, 3, mailbox(2,3,4));
+}
 
-    while(getline(file, line))
-    {
-        if(line[0] == '#' || line == "")
-            continue;
+TEST(Board, Rook)
+{
+    int array [] = {2,3,0, 2,3,1, 2,3,2, 2,3,3,        2,3,5, 2,3,6, 2,3,7,
+                    2,0,4, 2,1,4, 2,2,4,        2,4,4, 2,5,4, 2,6,4, 2,7,4,
+                    0,3,4, 1,3,4,        3,3,4, 4,3,4, 5,3,4, 6,3,4, 7,3,4};
 
-        if(line[0] == '+')
-        {
-            loadingPieces = true;
-            test_name = line.substr(1);
-        }
-        else if(line[0] == '-')
-        {
-            loadingPieces = false;
-        }
-        else if(line[0] == '=')
-        {
-            testConfiguration(test_name, pieces, indices, move_strs);
-            pieces.clear();
-            indices.clear();
-            move_strs = "";
-        }
-        else if(loadingPieces)
-        {
-            bool moved;
-            int x, y, z;
-            char name, color;
-            stringstream ss;
-            ss << line;
-            ss >> color >> name >> x >> y >> z >> moved;
+    matchQuietMoves(ROOK, mailbox(2,3,4), array, 21);
+}
 
-            bool colorBool = color == 'W' ? WHITE : BLACK;
-            PieceType pt = getPieceTypeFromChar(name, colorBool);
+TEST(Board, Bishop)
+{
+    int array [] = {0,1,4, 1,2,4,        3,4,4, 4,5,4, 5,6,4, 6,7,4,
+                    0,5,4, 1,4,4,        3,2,4, 4,1,4, 5,0,4,
+                    0,3,2, 1,3,3,        3,3,5, 4,3,6, 5,3,7,
+                    0,3,6, 1,3,5,        3,3,3, 4,3,2, 5,3,1, 6,3,0,
+                    2,0,1, 2,1,2, 2,2,3,        2,4,5, 2,5,6, 2,6,7,
+                    2,0,7, 2,1,6, 2,2,5,        2,4,3, 2,5,2, 2,6,1, 2,7,0};
 
-            Piece p = Piece(pt, colorBool, moved);
-            int i = mailbox(x,y,z);
+    matchQuietMoves(BISHOP, mailbox(2,3,4), array, 35);
+}
 
-            pieces.push_back(p);
-            indices.push_back(i);
-        }
-        else
-        {
-            move_strs += (line + "\n");
-        }
-    }
+TEST(Board, Mace)
+{
+    int array [] = {0,1,2, 1,2,3,        3,4,5, 4,5,6, 5,6,7,
+                    0,1,6, 1,2,5,        3,4,3, 4,5,2, 5,6,1, 6,7,0,
+                    0,5,2, 1,4,3,        3,2,5, 4,1,6, 5,0,7,
+                    0,5,6, 1,4,5,        3,2,3, 4,1,2, 5,0,1};
+
+    matchQuietMoves(MACE, mailbox(2,3,4), array, 21);
+}
+
+TEST(Board, Wizard)
+{
+    PieceType array [] = {ROOK, BISHOP};
+    testCompoundPiece(WIZARD, array, 2, mailbox(2,3,4));
+}
+
+TEST(Board, Archer)
+{
+    PieceType array [] = {BISHOP, MACE};
+    testCompoundPiece(ARCHER, array, 2, mailbox(2,3,4));
+}
+
+TEST(Board, Cannon)
+{
+    PieceType array [] = {ROOK, MACE};
+    testCompoundPiece(CANNON, array, 2, mailbox(2,3,4));
+}
+
+TEST(Board, Queen)
+{
+    PieceType array [] = {ROOK, BISHOP, MACE};
+    testCompoundPiece(QUEEN, array, 3, mailbox(2,3,4));
 }

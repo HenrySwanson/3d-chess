@@ -98,6 +98,9 @@ class Move
     /** Returns the piece promoted to during this move. */
     Piece promoted() const;
 
+    bool operator==(const Move& m) const;
+    bool operator!=(const Move& m) const;
+
   private:
     /** The type of this move. */
     MoveType type_;
