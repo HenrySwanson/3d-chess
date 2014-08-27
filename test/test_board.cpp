@@ -54,17 +54,17 @@ void matchQuietMoves(PieceType pt, int origin, int targets [], int num_targets)
     from_list.sort();
 
     // Strings to store the concatenated results
-    string s1, s2;
+    string array_str, list_str;
     list<string>::const_iterator s_it;
 
     // Concatenates the results
     for(s_it = from_array.begin(); s_it != from_array.end(); s_it++)
-        s1 += *s_it + " ";
+        array_str += *s_it + " ";
     for(s_it = from_list.begin(); s_it != from_list.end(); s_it++)
-        s2 += *s_it + " ";
+        list_str += *s_it + " ";
 
     // The actual assertion
-    EXPECT_STR_EQ(s1.c_str(), s2.c_str());
+    EXPECT_STR_EQ(array_str.c_str(), list_str.c_str());
 }
 
 void testCompoundPiece(PieceType pt, PieceType parts [], int num_parts,
@@ -101,17 +101,30 @@ void testCompoundPiece(PieceType pt, PieceType parts [], int num_parts,
 
 TEST(Board, Knight)
 {
-    // TODO complete
+    int array [] = {2,2,2, 2,1,3, 1,3,2, 1,1,4, 0,3,3, 0,2,4,
+                    2,2,6, 2,1,5, 1,3,6, 1,5,4, 0,3,5, 0,4,4,
+                    2,4,2, 2,5,3, 3,3,2, 3,1,4, 4,3,3, 4,2,4,
+                    2,4,6, 2,5,5, 3,3,6, 3,5,4, 4,3,5, 4,4,4};
+
+    matchQuietMoves(KNIGHT, mailbox(2,3,4), array, 24);
 }
 
 TEST(Board, Griffin)
 {
-    // TODO complete
+    int array [] = {1,2,2, 1,2,6, 1,4,2, 1,4,6, 3,2,2, 3,2,6, 3,4,2, 3,4,6,
+                    1,1,3, 1,1,5, 1,5,3, 1,5,5, 3,1,3, 3,1,5, 3,5,3, 3,5,5,
+                    0,2,3, 0,2,5, 0,4,3, 0,4,5, 4,2,3, 4,2,5, 4,4,3, 4,4,5};
+
+    matchQuietMoves(GRIFFIN, mailbox(2,3,4), array, 24);
 }
 
 TEST(Board, Dragon)
 {
-    // TODO complete
+    int array [] = {1,1,2, 1,1,6, 1,5,2, 1,5,6, 3,1,2, 3,1,6, 3,5,2, 3,5,6,
+                    0,2,2, 0,2,6, 0,4,2, 0,4,6, 4,2,2, 4,2,6, 4,4,2, 4,4,6,
+                    0,1,3, 0,1,5, 0,5,3, 0,5,5, 4,1,3, 4,1,5, 4,5,3, 4,5,5};
+
+    matchQuietMoves(DRAGON, mailbox(2,3,4), array, 24);
 }
 
 TEST(Board, Unicorn)
@@ -174,3 +187,12 @@ TEST(Board, Queen)
     PieceType array [] = {ROOK, BISHOP, MACE};
     testCompoundPiece(QUEEN, array, 3, mailbox(2,3,4));
 }
+
+// TODO Do king movement test. Generate moves, then convert them to strings.
+// Then manually generate {-1, 0, 1}^3, add it to (2,3,4), and compare the two lists.
+
+// TODO Pawn testing. This'll be a pain: capturing, en passant, double pawn pushes, promotions, and promo-captures
+
+// TODO Capture testing. Only really need to test a sliding piece and a jumping piece for this.
+
+// TODO Castle testing. This'll suck too.
