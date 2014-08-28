@@ -10,7 +10,7 @@ using std::list;
 using std::string;
 using std::stringstream;
 
-list<string> stringifyTargets(list<Move> moves)
+list<string> stringifyTargets(const list<Move>& moves)
 {
     list<string> strs;
 
@@ -97,6 +97,12 @@ void testCompoundPiece(PieceType pt, PieceType parts [], int num_parts,
     componentStrs.unique();
 
     ASSERT_TRUE(compoundStrs == componentStrs);
+}
+
+bool containsMove(const list<Move>& li, Move m)
+{
+    list<Move>::const_iterator it = find(li.begin(), li.end(), m);
+    return (it != li.end());
 }
 
 TEST(Board, Knight)
@@ -216,7 +222,76 @@ TEST(Board, King)
     matchQuietMoves(KING, mailbox(2,3,4), array, 26);
 }
 
-// TODO Pawn testing. This'll be a pain: capturing, en passant, double pawn pushes, promotions, and promo-captures
+// Tests against Type II errors (false negatives). These pawns will be put in
+// optimal conditions; that is, they will be able to make lots of moves.
+TEST(Board, PawnII)
+{
+    Board b;
+
+    int i = mailbox(2,3,1);
+    int j = mailbox(2,3,6);
+    Piece wp (W_PAWN, WHITE, false);
+    Piece bp (B_PAWN, BLACK, false);
+    
+    b.putPiece(wp, i);
+    b.putPiece(bp, j);
+
+    b.putPiece(bp, mailbox(1,2,2));
+    b.putPiece(bp, mailbox(1,3,2));
+    b.putPiece(bp, mailbox(1,4,2));
+    b.putPiece(bp, mailbox(2,2,2));
+    b.putPiece(bp, mailbox(2,4,2));
+    b.putPiece(bp, mailbox(3,2,2));
+    b.putPiece(bp, mailbox(3,3,2));
+    b.putPiece(bp, mailbox(3,4,2));
+
+    b.putPiece(wp, mailbox(1,2,5));
+    b.putPiece(wp, mailbox(1,3,5));
+    b.putPiece(wp, mailbox(1,4,5));
+    b.putPiece(wp, mailbox(2,2,5));
+    b.putPiece(wp, mailbox(2,4,5));
+    b.putPiece(wp, mailbox(3,2,5));
+    b.putPiece(wp, mailbox(3,3,5));
+    b.putPiece(wp, mailbox(3,4,5));
+
+    list<Move> w_moves = b.generateMoves(i);
+    list<Move> b_moves = b.generateMoves(j);
+
+    EXPECT_EQ(w_moves.size(), 10);
+    EXPECT_TRUE(containsMove(w_moves, Move::Quiet(  i, mailbox(2,3,2)    )));
+    EXPECT_TRUE(containsMove(w_moves, Move::DPP(    i, mailbox(2,3,3)    )));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,2,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,3,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,4,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,2,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,4,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,2,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,3,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,4,2), bp)));
+
+    EXPECT_EQ(b_moves.size(), 10);
+    EXPECT_TRUE(containsMove(b_moves, Move::Quiet(  j, mailbox(2,3,5)    )));
+    EXPECT_TRUE(containsMove(b_moves, Move::DPP(    j, mailbox(2,3,4)    )));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,2,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,3,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,4,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,2,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,4,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,2,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,3,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,4,5), wp)));
+}
+
+// Tests against Type I errors (false postives). These pawns will be put in
+// positions such that there are moves they cannot make. That's what we test.
+TEST(Board, PawnI)
+{
+    // TODO implement! Fill a board with a bunch of pawns, and test that they _can't_ do certain things
+}
+
+// TODO en passant tests
+
+// TODO promotion/promo-capture tests
 
 // TODO Capture testing. Only really need to test a sliding piece and a jumping piece for this.
 

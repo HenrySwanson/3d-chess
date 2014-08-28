@@ -111,6 +111,16 @@ Piece Board::putPiece(Piece p, int i)
     return q;
 }
 
+int Board::getEnPassant() const
+{
+    return ep_location_;
+}
+
+void Board::setEnPassant(int i)
+{
+    ep_location_ = i;
+}
+
 list<Move> Board::generatePseudoLegalMoves(int color) const
 {
     list<Move> moves;

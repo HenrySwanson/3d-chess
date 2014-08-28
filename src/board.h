@@ -23,6 +23,12 @@ class Board
     /** Puts the specifed piece at i and returns the previous occupant. */
     Piece putPiece(Piece p, int i);
 
+    /** Gets the location of the en passant square. */
+    int getEnPassant() const;
+
+    /** Sets the location of the en passant square. */
+    void setEnPassant(int i);
+
     /** Generates all pseudo-legal moves that the given color can make. */
     std::list<Move> generatePseudoLegalMoves(int color) const;
 
