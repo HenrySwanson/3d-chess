@@ -11,7 +11,7 @@
  * metadata, such as move history, and if en passant is possible.
  * Can generate lists of all legal and pseudo-legal moves.
  */
-class Board
+class Board // TODO add castling flags
 {
   public:
     /** Generates an empty board. */

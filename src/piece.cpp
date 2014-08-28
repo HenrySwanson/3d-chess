@@ -1,10 +1,9 @@
 #include "piece.h"
 
-Piece::Piece() : type_(NIL), color_(WHITE), moved_(false)
+Piece::Piece() : type_(NIL), color_(WHITE)
 {}
 
-Piece::Piece(PieceType pt, bool color, bool moved) : type_(pt), color_(color),
-         moved_(moved)
+Piece::Piece(PieceType pt, bool color) : type_(pt), color_(color)
 {}
 
 PieceType Piece::type() const
@@ -15,11 +14,6 @@ PieceType Piece::type() const
 bool Piece::color() const
 {
     return color_;
-}
-
-bool Piece::moved() const
-{
-    return moved_;
 }
 
 bool Piece::isOn(bool color) const
@@ -39,7 +33,7 @@ bool Piece::isEnemy(Piece p) const
 
 bool Piece::operator==(const Piece& p) const
 {
-    return (type_ == p.type_) && (color_ == p.color_) && (moved_ == p.moved_);
+    return (type_ == p.type_) && (color_ == p.color_);
 }
 
 bool Piece::operator!=(const Piece& p) const

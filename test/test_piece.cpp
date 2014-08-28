@@ -2,18 +2,17 @@
 
 #include "unit_test.h"
 
-void constructor_test(PieceType pt, bool color, bool moved)
+void constructor_test(PieceType pt, bool color)
 {
-    Piece p (pt, color, moved);
+    Piece p (pt, color);
     EXPECT_EQ(pt, p.type());
     EXPECT_EQ(color, p.color());
-    EXPECT_EQ(moved, p.moved());
 }
 
 TEST(Piece, Constructor)
 {
-    constructor_test(W_PAWN, WHITE, true);
-    constructor_test(B_PAWN, BLACK, false);
-    constructor_test(KNIGHT, WHITE, false);
-    constructor_test(ROOK, BLACK, true);
+    constructor_test(W_PAWN, WHITE);
+    constructor_test(B_PAWN, BLACK);
+    constructor_test(KNIGHT, WHITE);
+    constructor_test(ROOK, BLACK);
 }

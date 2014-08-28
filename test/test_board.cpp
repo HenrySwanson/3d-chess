@@ -31,7 +31,7 @@ void matchQuietMoves(PieceType pt, int origin, int targets [], int num_targets)
 {
     // Sets up the board
     Board b;
-    b.putPiece(Piece(pt, WHITE, false), origin);
+    b.putPiece(Piece(pt, WHITE), origin);
 
     // These hold the target squares as strings
     list<string> from_array;
@@ -75,14 +75,14 @@ void testCompoundPiece(PieceType pt, PieceType parts [], int num_parts,
     list<Move> componentMoves;
 
     // Generates moves from the compound piece
-    b.putPiece(Piece(pt, WHITE, false), origin);
+    b.putPiece(Piece(pt, WHITE), origin);
     compoundMoves = b.generateMoves(origin);
 
     // Puts down one piece, generates moves, then replaces it with another
     // piece, and appends those moves, ...
     for(int i = 0; i < num_parts; i++)
     {
-        b.putPiece(Piece(parts[i], WHITE, false), origin);
+        b.putPiece(Piece(parts[i], WHITE), origin);
         list<Move> temp = b.generateMoves(origin);
         componentMoves.splice(componentMoves.end(), temp);
     }
@@ -230,8 +230,8 @@ TEST(Board, PawnII)
 
     int i = mailbox(2,3,1);
     int j = mailbox(2,3,6);
-    Piece wp (W_PAWN, WHITE, false);
-    Piece bp (B_PAWN, BLACK, false);
+    Piece wp (W_PAWN, WHITE);
+    Piece bp (B_PAWN, BLACK);
     
     b.putPiece(wp, i);
     b.putPiece(bp, j);

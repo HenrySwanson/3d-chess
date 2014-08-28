@@ -37,12 +37,11 @@ const PieceType PROMOTION_PIECES [] = {
  *
  * Bits 1-4 - type
  * Bit 5 - color
- * Bit 6 - moved
  */
 
 /**
- * Represents a chess piece, including its color and whether it has moved.
- * Can also represent the lack of a piece, with the values NIL and BORDER.
+ * Represents a chess piece, including its color. Can also represent the lack
+ * of a piece, with the values NIL and BORDER.
  */
 class Piece
 {
@@ -51,7 +50,7 @@ class Piece
     Piece();
 
     /** Constructs a piece with the given data. */
-    Piece(PieceType pt, bool color, bool moved);
+    Piece(PieceType pt, bool color);
 
 
     /** Returns this piece's type. */
@@ -59,9 +58,6 @@ class Piece
 
     /** Returns this piece's color. */
     bool color() const;
-
-    /** Returns true if this piece has moved. */
-    bool moved() const;
 
     /**
      * Returns true if this piece is neither NIL nor BORDER, and it has the
@@ -93,9 +89,6 @@ class Piece
 
     /** The color of this piece. */
     bool color_;
-
-    /** Whether this piece has moved. */
-    bool moved_;
 };
 
 #endif

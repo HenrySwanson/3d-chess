@@ -91,12 +91,12 @@ namespace {
 Board::Board()
 {
     for(int i = 0; i < 1728; i++)
-        pieces_[i] = Piece(BORDER, WHITE, false);
+        pieces_[i] = Piece(BORDER, WHITE);
 
     for(int i = 0; i < 8; i++)
         for(int j = 0; j < 8; j++)
             for(int k = 0; k < 8; k++)
-                pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE, false);
+                pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE);
 }
 
 Piece Board::getPiece(int i) const
@@ -206,7 +206,7 @@ list<Move> Board::generatePawnMoves(int origin) const
             // Iterate through all possible promotions
             for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
             {
-                Piece p = Piece(PROMOTION_PIECES[i], oPiece.color(), true);
+                Piece p = Piece(PROMOTION_PIECES[i], oPiece.color());
                 moves.push_back(Move::Promote(origin, ahead, p));
             }
         }
@@ -233,7 +233,7 @@ list<Move> Board::generatePawnMoves(int origin) const
                 // Iterate through all possible promotions
                 for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
                 {
-                    Piece p = Piece(PROMOTION_PIECES[i], oPiece.color(), true);
+                    Piece p = Piece(PROMOTION_PIECES[i], oPiece.color());
                     moves.push_back(Move::PromoCapture(origin, target, p,
                             tPiece));
                 }
