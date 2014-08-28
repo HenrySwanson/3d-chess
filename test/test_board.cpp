@@ -27,6 +27,7 @@ list<string> stringifyTargets(const list<Move>& moves)
     return strs;   
 }
 
+// TODO assert all moves are quiet!
 void matchQuietMoves(PieceType pt, int origin, int targets [], int num_targets)
 {
     // Sets up the board
@@ -222,20 +223,32 @@ TEST(Board, King)
     matchQuietMoves(KING, mailbox(2,3,4), array, 26);
 }
 
-// Tests against Type II errors (false negatives). These pawns will be put in
-// optimal conditions; that is, they will be able to make lots of moves.
+/*
+ * Tests against Type II errors (false negatives). These pawns will be put in
+ * optimal conditions; that is, they will be able to make lots of moves, which
+ * we expect to find in the move lists.
+ */
 TEST(Board, PawnII)
 {
-    Board b;
+    /*
+     * Two pawns, one white, one black, on their starting ranks (at locations i
+     * and j). Every square that they can capture to will be filled with a pawn
+     * of the opposite color. There should be 8 captures, one quiet move, and
+     * one double pawn push for each pawn.
+     */
 
+    // Declare board, locations, and pawns.
+    Board b;
     int i = mailbox(2,3,1);
     int j = mailbox(2,3,6);
     Piece wp (W_PAWN, WHITE);
     Piece bp (B_PAWN, BLACK);
-    
+
+    // Put down pawns
     b.putPiece(wp, i);
     b.putPiece(bp, j);
 
+    // Put down capture targets (also pawns)
     b.putPiece(bp, mailbox(1,2,2));
     b.putPiece(bp, mailbox(1,3,2));
     b.putPiece(bp, mailbox(1,4,2));
@@ -254,10 +267,10 @@ TEST(Board, PawnII)
     b.putPiece(wp, mailbox(3,3,5));
     b.putPiece(wp, mailbox(3,4,5));
 
+    // Generate movelists and check their contents
     list<Move> w_moves = b.generateMoves(i);
     list<Move> b_moves = b.generateMoves(j);
 
-    EXPECT_EQ(w_moves.size(), 10);
     EXPECT_TRUE(containsMove(w_moves, Move::Quiet(  i, mailbox(2,3,2)    )));
     EXPECT_TRUE(containsMove(w_moves, Move::DPP(    i, mailbox(2,3,3)    )));
     EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,2,2), bp)));
@@ -269,7 +282,6 @@ TEST(Board, PawnII)
     EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,3,2), bp)));
     EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,4,2), bp)));
 
-    EXPECT_EQ(b_moves.size(), 10);
     EXPECT_TRUE(containsMove(b_moves, Move::Quiet(  j, mailbox(2,3,5)    )));
     EXPECT_TRUE(containsMove(b_moves, Move::DPP(    j, mailbox(2,3,4)    )));
     EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,2,5), wp)));
@@ -280,13 +292,82 @@ TEST(Board, PawnII)
     EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,2,5), wp)));
     EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,3,5), wp)));
     EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,4,5), wp)));
+
+    // Confirms that there are no other moves in the lists
+    EXPECT_EQ(w_moves.size(), 10);
+    EXPECT_EQ(b_moves.size(), 10);
 }
 
-// Tests against Type I errors (false postives). These pawns will be put in
-// positions such that there are moves they cannot make. That's what we test.
+/*
+ * Tests against Type I errors (false postives). These pawns will be put in
+ * positions such that there are moves they cannot make. We expect that the
+ * move list does _not_ contain these moves.
+ */
 TEST(Board, PawnI)
 {
-    // TODO implement! Fill a board with a bunch of pawns, and test that they _can't_ do certain things
+    /*
+     * The only relevant section of board is y = 0, and looks like:
+     * ___________________
+     * | . . A . . . . . |
+     * | . . . . . . . . |
+     * | . . . . . . . . |
+     * | . . . . . . . . |
+     * | . . . C . . D . |
+     * | . . . . . . . F |
+     * | . . . B . . . E |
+     * | . . . . . . . . |
+     * ^^^^^^^^^^^^^^^^^^^
+     * (all pieces are white pawns)
+     */
+
+    Board board;
+    Piece wp (W_PAWN, WHITE);
+    list<Move> moves;
+
+    int a = mailbox(2,0,7);
+    int b = mailbox(3,0,1);
+    int c = mailbox(3,0,3);
+    int d = mailbox(6,0,3);
+    int e = mailbox(7,0,1);
+    int f = mailbox(7,0,2);
+
+    board.putPiece(wp, a);
+    board.putPiece(wp, b);
+    board.putPiece(wp, c);
+    board.putPiece(wp, d);
+    board.putPiece(wp, e);
+    board.putPiece(wp, f);
+
+    // Pawns cannot move off the board
+    moves = board.generateMoves(a);
+    EXPECT_FALSE(containsMove(moves, Move::Quiet(a, mailbox(2,0,8))));
+
+    // Pawns cannot move forward twice if that square is non-empty
+    moves = board.generateMoves(b);
+    EXPECT_FALSE(containsMove(moves, Move::DPP(b, mailbox(3,0,3))));
+    // but they can move forward once
+    EXPECT_TRUE(containsMove(moves, Move::Quiet(b, mailbox(3,0,2))));
+
+    // Pawns cannot move forward twice if they are off their home rank
+    moves = board.generateMoves(c);
+    EXPECT_FALSE(containsMove(moves, Move::DPP(c, mailbox(3,0,5))));
+    // once more, for good measure (and because D doesn't do anything else)
+    moves = board.generateMoves(d);
+    EXPECT_FALSE(containsMove(moves, Move::DPP(d, mailbox(6,0,5))));
+
+    // Pawns cannot move forward at all if they are immediately obstructed
+    moves = board.generateMoves(e);
+    EXPECT_FALSE(containsMove(moves, Move::Quiet(e, mailbox(7,0,2))));
+    EXPECT_FALSE(containsMove(moves, Move::DPP(e, mailbox(7,0,3))));
+
+    // Pawns cannot capture their teammates, nil spaces, or borders
+    moves = board.generateMoves(f);
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(6,0,3),
+            board.getPiece(mailbox(6,0,3)) ))); // White pawn
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(7,1,3),
+            board.getPiece(mailbox(7,1,3)) ))); // Nil
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(8,0,3),
+            board.getPiece(mailbox(8,0,3)) ))); // Border
 }
 
 // TODO en passant tests
@@ -294,5 +375,6 @@ TEST(Board, PawnI)
 // TODO promotion/promo-capture tests
 
 // TODO Capture testing. Only really need to test a sliding piece and a jumping piece for this.
+// make sure to test _against_ capturing own pieces though (nil spaces and borders are covered in the normal tests)
 
 // TODO Castle testing. This'll suck too.
