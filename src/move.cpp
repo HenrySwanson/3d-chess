@@ -98,10 +98,10 @@ bool Move::operator==(const Move& m) const
             (target_ == m.target_);
 
     if(type_ == CAPTURE || type_ == PROMO_CAPTURE)
-        match &= (captured_ != m.captured_);
+        match &= (captured_ == m.captured_);
 
     if(type_ == PROMOTE || type_ == PROMO_CAPTURE)
-        match &= (promoted_ != m.promoted_);
+        match &= (promoted_ == m.promoted_);
 
     return match;
 }
