@@ -46,7 +46,7 @@ void MissionControl::runAll()
 
     if(!logfile_.is_open())
     {
-        cout << "Failed to open log file, exiting..." << endl;
+        cout << "Failed to open \"log/unit_tests.log\", exiting..." << endl;
         exit(-1);
     }
 
