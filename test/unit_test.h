@@ -159,7 +159,7 @@ void MissionControl::logCmp(const char* file, int line, const char* expr_a,
 
 /** Asserts that the given condition is true. */
 #define ASSERT_TRUE(b)                                                        \
-    _IF_NOT( b )                                                              \
+    _IF_NOT( (b) )                                                            \
     {                                                                         \
         MissionControl::logBool(__FILE__, __LINE__, #b, true);                \
         return;                                                               \
@@ -167,14 +167,14 @@ void MissionControl::logCmp(const char* file, int line, const char* expr_a,
 
 /** Expects that the given condition is true. */
 #define EXPECT_TRUE(b)                                                        \
-    _IF_NOT( b )                                                              \
+    _IF_NOT( (b) )                                                            \
     {                                                                         \
         MissionControl::logBool(__FILE__, __LINE__, #b, true);                \
     }
 
 /** Asserts that the given condition is false. */
 #define ASSERT_FALSE(b)                                                       \
-    _IF_NOT( !b )                                                             \
+    _IF_NOT( !(b) )                                                           \
     {                                                                         \
         MissionControl::logBool(__FILE__, __LINE__, #b, false);               \
         return;                                                               \
@@ -182,7 +182,7 @@ void MissionControl::logCmp(const char* file, int line, const char* expr_a,
 
 /** Expects that the given condition is false. */
 #define EXPECT_FALSE(b)                                                       \
-    _IF_NOT( !b )                                                             \
+    _IF_NOT( !(b) )                                                           \
     {                                                                         \
         MissionControl::logBool(__FILE__, __LINE__, #b, false);               \
     }
