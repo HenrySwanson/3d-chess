@@ -2,16 +2,20 @@
 #define CHESS_BOARD_H
 
 #include <list>
+#include <stack>
 
 #include "move.h"
 #include "piece.h"
+
+// TODO add move history stack, captured stack, and implement castling flags
+// (another stack, probably. 6 bits per side)
 
 /**
  * Represents an 8 x 8 x 8 chessboard, the pieces on it, and all necessary
  * metadata, such as move history, and if en passant is possible.
  * Can generate lists of all legal and pseudo-legal moves.
  */
-class Board // TODO add castling flags
+class Board
 {
   public:
     /** Generates an empty board. */
@@ -23,16 +27,10 @@ class Board // TODO add castling flags
     /** Puts the specifed piece at i and returns the previous occupant. */
     Piece putPiece(Piece p, int i);
 
-    /** Gets the location of the en passant square. */
-    int getEnPassant() const;
-
-    /** Sets the location of the en passant square. */
-    void setEnPassant(int i);
-
     /** Generates all pseudo-legal moves that the given color can make. */
     std::list<Move> generatePseudoLegalMoves(int color) const;
 
-    // TODO generate all legal moves
+    // TODO generate all legal moves (and have an isLegal(Move))
 
     /**
      * Generates all pseudo-legal moves that the piece on this square can make.
@@ -46,6 +44,8 @@ class Board // TODO add castling flags
 
     /** Returns true if the king of the specified color is in check. */
     bool isInCheck(bool color) const;
+
+    // TODO checkmate and stalemate
 
     // TODO implement move making and unmaking
 
@@ -71,8 +71,12 @@ class Board // TODO add castling flags
      */
     Piece pieces_ [1728];
 
-    /** Stores the location of the en passant square. */
-    int ep_location_;
+    std::stack<Move> history_;
+    std::stack<Piece> captured_;
+    bool ep_possible_;
+    std::stack<int> ep_locations_;
+    std::stack<unsigned char> castling_rights_white_;
+    std::stack<unsigned char> castling_rights_black_;
 };
 
 #endif

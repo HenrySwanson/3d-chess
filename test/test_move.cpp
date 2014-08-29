@@ -24,11 +24,9 @@ TEST(Move, Capture)
 {
     int i = mailbox(3,4,1);
     int j = mailbox(3,4,3);
-    Piece p (BISHOP, BLACK);
-    Move m = Move::Capture(i, j, p);
+    Move m = Move::Capture(i, j);
     EXPECT_EQ(m.origin(), i);
     EXPECT_EQ(m.target(), j);
-    EXPECT_TRUE(m.captured() == p);
 }
 
 TEST(Move, EP)
@@ -65,10 +63,8 @@ TEST(Move, PromoCapture)
     int i = mailbox(3,1,6);
     int j = mailbox(3,1,7);
     Piece p (QUEEN, WHITE);
-    Piece q (DRAGON, BLACK);
-    Move m = Move::PromoCapture(i, j, p, q);
+    Move m = Move::PromoCapture(i, j, p);
     EXPECT_TRUE(m.origin() == i);
     EXPECT_TRUE(m.target() == j);
     EXPECT_TRUE(m.promoted() == p);
-    EXPECT_TRUE(m.captured() == q);
 }

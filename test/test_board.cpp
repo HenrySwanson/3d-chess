@@ -297,27 +297,27 @@ TEST(Board, PawnII)
     list<Move> w_moves = b.generateMoves(i);
     list<Move> b_moves = b.generateMoves(j);
 
-    EXPECT_TRUE(containsMove(w_moves, Move::Quiet(  i, mailbox(2,3,2)    )));
-    EXPECT_TRUE(containsMove(w_moves, Move::DPP(    i, mailbox(2,3,3)    )));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,2,2), bp)));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,3,2), bp)));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,4,2), bp)));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,2,2), bp)));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,4,2), bp)));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,2,2), bp)));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,3,2), bp)));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,4,2), bp)));
+    EXPECT_TRUE(containsMove(w_moves, Move::Quiet(  i, mailbox(2,3,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::DPP(    i, mailbox(2,3,3))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,2,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,3,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,4,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,2,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,4,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,2,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,3,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,4,2))));
 
-    EXPECT_TRUE(containsMove(b_moves, Move::Quiet(  j, mailbox(2,3,5)    )));
-    EXPECT_TRUE(containsMove(b_moves, Move::DPP(    j, mailbox(2,3,4)    )));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,2,5), wp)));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,3,5), wp)));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,4,5), wp)));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,2,5), wp)));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,4,5), wp)));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,2,5), wp)));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,3,5), wp)));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,4,5), wp)));
+    EXPECT_TRUE(containsMove(b_moves, Move::Quiet(  j, mailbox(2,3,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::DPP(    j, mailbox(2,3,4))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,2,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,3,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,4,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,2,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,4,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,2,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,3,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,4,5))));
 
     // Confirms that there are no other moves in the lists
     EXPECT_EQ(w_moves.size(), 10);
@@ -388,38 +388,9 @@ TEST(Board, PawnI)
 
     // Pawns cannot capture their teammates, nil spaces, or borders
     moves = board.generateMoves(f);
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(6,0,3),
-            board.getPiece(mailbox(6,0,3)) ))); // White pawn
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(7,1,3),
-            board.getPiece(mailbox(7,1,3)) ))); // Nil
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(8,0,3),
-            board.getPiece(mailbox(8,0,3)) ))); // Border
-}
-
-/** Tests that en passant behaves correctly. */
-TEST(Board, EnPassant)
-{
-    Board b;
-    Piece wp (W_PAWN, WHITE);
-    list<Move> moves;
-
-    int i = mailbox(2,3,4);
-    int j = mailbox(1,3,5);
-    Move m = Move::EP(i, j);
-
-    // Puts down the pawn
-    b.putPiece(wp, i);
-    moves = b.generateMoves(i);
-
-    // No en passant possible
-    EXPECT_FALSE(containsMove(moves, m));
-
-    // Sets en passant square
-    b.setEnPassant(j);
-    moves = b.generateMoves(i);
-
-    // En passant is possible
-    EXPECT_TRUE(containsMove(moves, m));
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(6,0,3)))); // White pawn
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(7,1,3)))); // Nil
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(8,0,3)))); // Border
 }
 
 /** Tests that promotions and promo-captures behave correctly. */
@@ -455,7 +426,7 @@ TEST(Board, PromoMaybeCapture)
     for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
     {
         Piece p (PROMOTION_PIECES[t], WHITE);
-        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p, br)));
+        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p)));
     }
 
     // Remove the obstruction? Both types of moves.
@@ -466,7 +437,7 @@ TEST(Board, PromoMaybeCapture)
     {
         Piece p (PROMOTION_PIECES[t], WHITE);
         EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, p)));
-        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p, br)));
+        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p)));
     }
 }
 
@@ -497,17 +468,18 @@ TEST(Board, Capture)
 
     // Can't move onto the knight, but can capture it
     EXPECT_FALSE(containsMove(moves, Move::Quiet(i, j)));
-    EXPECT_TRUE(containsMove(moves, Move::Capture(i, j, bn)));
+    EXPECT_TRUE(containsMove(moves, Move::Capture(i, j)));
 
     // Can't move past it
     EXPECT_FALSE(containsMove(moves, Move::Quiet(i, mailbox(5,3,4))));
 
     // It also can't capture the pawn
-    EXPECT_FALSE(containsMove(moves, Move::Capture(i, k, wp)));
+    EXPECT_FALSE(containsMove(moves, Move::Capture(i, k)));
 
     // Knight can capture the pawn
     moves = b.generateMoves(j);
-    EXPECT_TRUE(containsMove(moves, Move::Capture(j, k, wp)));
+    EXPECT_TRUE(containsMove(moves, Move::Capture(j, k)));
 }
 
+// TODO en passant testing. This'll suck.
 // TODO Castle testing. This'll suck too.

@@ -97,6 +97,8 @@ Board::Board()
         for(int j = 0; j < 8; j++)
             for(int k = 0; k < 8; k++)
                 pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE);
+
+    ep_possible_ = false;
 }
 
 Piece Board::getPiece(int i) const
@@ -109,16 +111,6 @@ Piece Board::putPiece(Piece p, int i)
     Piece q = pieces_[i];
     pieces_[i] = p;
     return q;
-}
-
-int Board::getEnPassant() const
-{
-    return ep_location_;
-}
-
-void Board::setEnPassant(int i)
-{
-    ep_location_ = i;
 }
 
 list<Move> Board::generatePseudoLegalMoves(int color) const
@@ -170,7 +162,7 @@ bool Board::isInCheck(bool color) const
     {
         if(it->type() == CAPTURE || it->type() == PROMO_CAPTURE)
         {
-            Piece captured = it->captured();
+            Piece captured = getPiece(it->origin());
             if(captured.type() == KING)
                 return true;
         }
@@ -234,17 +226,16 @@ list<Move> Board::generatePawnMoves(int origin) const
                 for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
                 {
                     Piece p = Piece(PROMOTION_PIECES[i], oPiece.color());
-                    moves.push_back(Move::PromoCapture(origin, target, p,
-                            tPiece));
+                    moves.push_back(Move::PromoCapture(origin, target, p));
                 }
             }
             else
-                moves.push_back(Move::Capture(origin, target, tPiece));
+                moves.push_back(Move::Capture(origin, target));
         }
 
-        // Can we perform en passant?
-        if(target == ep_location_)
-            moves.push_back(Move::EP(origin, ep_location_));
+        // TODO Can we perform en passant?
+        if(ep_possible_ && ep_locations_.top() == target)
+            moves.push_back(Move::EP(origin, target));
 
     }
 
@@ -273,7 +264,7 @@ list<Move> Board::generateNonPawnMoves(int origin) const
             {
                 // Was it an enemy piece?
                 if(oPiece.isEnemy(tPiece))
-                    moves.push_back(Move::Capture(origin, target, tPiece));
+                    moves.push_back(Move::Capture(origin, target));
                 break;
             }
             moves.push_back(Move::Quiet(origin, target));

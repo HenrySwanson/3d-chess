@@ -65,11 +65,8 @@ class Move
     /** Constructs a double pawn push from origin to target. */
     static Move DPP(int origin, int target);
 
-    /**
-     * Constructs a capturing move from origin to target, capturing the
-     * the specified piece.
-     */
-    static Move Capture(int origin, int target, Piece capt);
+    /** Constructs a capturing move from origin to target. */
+    static Move Capture(int origin, int target);
 
     /** Constructs an en passant move from origin to target. */
     static Move EP(int origin, int target);
@@ -84,10 +81,10 @@ class Move
     static Move Promote(int origin, int target, Piece promo);
 
     /**
-     * Constructs a promo-capture from origin to target, where the captured
-     * and promoted-to pieces are specified.
+     * Constructs a promo-capture from origin to target, where the promoted-to
+     * piece is specified.
      */
-    static Move PromoCapture(int origin, int target, Piece promo, Piece capt);
+    static Move PromoCapture(int origin, int target, Piece promo);
 
 
     /** Returns the type of this move. */
@@ -98,9 +95,6 @@ class Move
 
     /** Returns the target square of this move. */
     int target() const;
-
-    /** Returns the piece captured during this move. */
-    Piece captured() const;
 
     /** Returns the piece promoted to during this move. */
     Piece promoted() const;
@@ -117,9 +111,6 @@ class Move
 
     /** The target square of this move. */
     int target_;
-
-    /** The piece captured during this move. */
-    Piece captured_;
 
     /** The piece promoted to during this move. */
     Piece promoted_;

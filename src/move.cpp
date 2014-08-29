@@ -18,13 +18,12 @@ Move Move::DPP(int origin, int target)
     return m;
 }
 
-Move Move::Capture(int origin, int target, Piece capt)
+Move Move::Capture(int origin, int target)
 {
     Move m;
     m.type_ = CAPTURE;
     m.origin_ = origin;
     m.target_ = target;
-    m.captured_ = capt;
     return m;
 }
 
@@ -56,14 +55,13 @@ Move Move::Promote(int origin, int target, Piece promo)
     return m;
 }
 
-Move Move::PromoCapture(int origin, int target, Piece promo, Piece capt)
+Move Move::PromoCapture(int origin, int target, Piece promo)
 {
     Move m;
     m.type_ = PROMO_CAPTURE;
     m.origin_ = origin;
     m.target_ = target;
     m.promoted_ = promo;
-    m.captured_ = capt;
     return m;
 }
 
@@ -82,11 +80,6 @@ int Move::target() const
     return target_;
 }
 
-Piece Move::captured() const
-{
-    return captured_;
-}
-
 Piece Move::promoted() const
 {
     return promoted_;
@@ -96,9 +89,6 @@ bool Move::operator==(const Move& m) const
 {
     bool match = (type_ == m.type_) && (origin_ == m.origin_) &&
             (target_ == m.target_);
-
-    if(type_ == CAPTURE || type_ == PROMO_CAPTURE)
-        match &= (captured_ == m.captured_);
 
     if(type_ == PROMOTE || type_ == PROMO_CAPTURE)
         match &= (promoted_ == m.promoted_);
