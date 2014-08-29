@@ -130,7 +130,7 @@ bool containsMove(const list<Move>& li, Move m)
  * a compound piece.
  */
 
-TEST(Board, Knight)
+TEST(MoveGeneration, Knight)
 {
     int array [] = {
     //  0 1 2  0 2 1  1 0 2  1 2 0  2 0 1  2 1 0
@@ -143,7 +143,7 @@ TEST(Board, Knight)
     matchQuietMoves(KNIGHT, mailbox(2,3,4), array, 24);
 }
 
-TEST(Board, Griffin)
+TEST(MoveGeneration, Griffin)
 {
     int array [] = {
     //  - - -  - - +  - + -  - + +  + - -  + - +  + + -  + + +
@@ -155,7 +155,7 @@ TEST(Board, Griffin)
     matchQuietMoves(GRIFFIN, mailbox(2,3,4), array, 24);
 }
 
-TEST(Board, Dragon)
+TEST(MoveGeneration, Dragon)
 {
     int array [] = {
     //  - - -  - - +  - + -  - + +  + - -  + - +  + + -  + + +
@@ -167,13 +167,13 @@ TEST(Board, Dragon)
     matchQuietMoves(DRAGON, mailbox(2,3,4), array, 24);
 }
 
-TEST(Board, Unicorn)
+TEST(MoveGeneration, Unicorn)
 {
     PieceType array [] = {KNIGHT, GRIFFIN, DRAGON};
     testCompoundPiece(UNICORN, array, 3, mailbox(2,3,4));
 }
 
-TEST(Board, Rook)
+TEST(MoveGeneration, Rook)
 {
     int array [] = {
         2,3,0, 2,3,1, 2,3,2, 2,3,3,        2,3,5, 2,3,6, 2,3,7, // 0 0 +
@@ -184,7 +184,7 @@ TEST(Board, Rook)
     matchQuietMoves(ROOK, mailbox(2,3,4), array, 21);
 }
 
-TEST(Board, Bishop)
+TEST(MoveGeneration, Bishop)
 {
     int array [] = {
         0,1,4, 1,2,4,        3,4,4, 4,5,4, 5,6,4, 6,7,4,       // + + 0
@@ -198,7 +198,7 @@ TEST(Board, Bishop)
     matchQuietMoves(BISHOP, mailbox(2,3,4), array, 35);
 }
 
-TEST(Board, Mace)
+TEST(MoveGeneration, Mace)
 {
     int array [] = {
         0,1,2, 1,2,3,        3,4,5, 4,5,6, 5,6,7,        // + + +
@@ -210,31 +210,31 @@ TEST(Board, Mace)
     matchQuietMoves(MACE, mailbox(2,3,4), array, 21);
 }
 
-TEST(Board, Wizard)
+TEST(MoveGeneration, Wizard)
 {
     PieceType array [] = {ROOK, BISHOP};
     testCompoundPiece(WIZARD, array, 2, mailbox(2,3,4));
 }
 
-TEST(Board, Archer)
+TEST(MoveGeneration, Archer)
 {
     PieceType array [] = {BISHOP, MACE};
     testCompoundPiece(ARCHER, array, 2, mailbox(2,3,4));
 }
 
-TEST(Board, Cannon)
+TEST(MoveGeneration, Cannon)
 {
     PieceType array [] = {ROOK, MACE};
     testCompoundPiece(CANNON, array, 2, mailbox(2,3,4));
 }
 
-TEST(Board, Queen)
+TEST(MoveGeneration, Queen)
 {
     PieceType array [] = {ROOK, BISHOP, MACE};
     testCompoundPiece(QUEEN, array, 3, mailbox(2,3,4));
 }
 
-TEST(Board, King)
+TEST(MoveGeneration, King)
 {
     int array [] = {
     // (       0 0 -       )(       0 0 0       )(       0 0 1       )
@@ -254,7 +254,7 @@ TEST(Board, King)
  * optimal conditions; that is, they will be able to make lots of moves, which
  * we expect to find in the move lists.
  */
-TEST(Board, PawnII)
+TEST(MoveGeneration, PawnII)
 {
     /*
      * Two pawns, one white, one black, on their starting ranks (at locations i
@@ -329,7 +329,7 @@ TEST(Board, PawnII)
  * positions such that there are moves they cannot make. We expect that the
  * move list does _not_ contain these moves.
  */
-TEST(Board, PawnI)
+TEST(MoveGeneration, PawnI)
 {
     /*
      * The only relevant section of board is y = 0, and looks like:
@@ -394,7 +394,7 @@ TEST(Board, PawnI)
 }
 
 /** Tests that promotions and promo-captures behave correctly. */
-TEST(Board, PromoMaybeCapture)
+TEST(MoveGeneration, PromoMaybeCapture)
 {
     Board b;
     Piece wp (W_PAWN, WHITE);
@@ -446,7 +446,7 @@ TEST(Board, PromoMaybeCapture)
  * other tests involving piece motion, it's sufficient to just test one jumping
  * and one sliding piece.
  */
-TEST(Board, Capture)
+TEST(MoveGeneration, Capture)
 {
     Board b;
     Piece wr (ROOK, WHITE);
@@ -481,5 +481,243 @@ TEST(Board, Capture)
     EXPECT_TRUE(containsMove(moves, Move::Capture(j, k)));
 }
 
-// TODO en passant testing. This'll suck.
+TEST(MoveGeneration, EnPassant)
+{
+    // Useful constants
+    Piece wp (W_PAWN, WHITE);
+    Piece bp (B_PAWN, BLACK);
+
+    /*
+     * For reference, the squares are laid out like this:
+     * _________________
+     * | . a . . e . . | 6
+     * | . b . . . . g | 5
+     * | . c d . f . h | 4
+     * +---------------+
+     *   0 1 2 3 4 5 6
+     */
+    int a = mailbox(1,0,6);
+    int b = mailbox(1,0,5);
+    int c = mailbox(1,0,4);
+    int d = mailbox(2,0,4);
+    int e = mailbox(4,0,6);
+    int f = mailbox(4,0,4);
+    int g = mailbox(6,0,4);
+    int h = mailbox(6,0,5);
+
+    // Because the ability to perform en passant is triggered by another move,
+    // we have to execute a sequence of moves.
+    Move first = Move::DPP(a, c);
+    Move second = Move::Quiet(h, g);
+    Move third = Move::DPP(e, f);
+
+    // Put down the pieces
+    Board board;
+    board.putPiece(bp, a);
+    board.putPiece(wp, d);
+    board.putPiece(bp, e);
+    board.putPiece(wp, h);
+
+    list<Move> moves;
+
+    // After the first move,
+    board.makeMove(first);
+    moves = board.generatePseudoLegalMoves(WHITE);
+    // D can perform en passant, because it's diagonal to the target square,
+    EXPECT_TRUE(containsMove(moves, Move::EP(d, b)));
+    // But H can't, because it isn't.
+    EXPECT_FALSE(containsMove(moves, Move::EP(h, b)));
+
+    // Do two more moves (doesn't really matter which)
+    board.makeMove(second);
+    board.makeMove(third);
+    moves = board.generateMoves(d);
+    // D lost the chance to do en passant
+    EXPECT_FALSE(containsMove(moves, Move::EP(d, b)));
+}
+
 // TODO Castle testing. This'll suck too.
+
+TEST(MoveMaking, Quiet)
+{
+    // The rook will move from i to j
+    Piece wr (ROOK, WHITE);
+    int i = mailbox(6,3,5);
+    int j = mailbox(6,6,5);
+    Move m = Move::Quiet(i, j);
+
+    Board b;
+    b.putPiece(wr, i);
+
+    b.makeMove(m);
+
+    // Ideally, origin is empty, and the rook is at target.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j) == wr);
+
+    b.undoMove();
+
+    // When we undo, the reverse should be true.
+    EXPECT_TRUE(b.getPiece(i) == wr);
+    EXPECT_TRUE(b.getPiece(j).type() == NIL);
+}
+
+TEST(MoveMaking, DPP)
+{
+    // The pawn will move from i to j
+    Piece wp (W_PAWN, WHITE);
+    int i = mailbox(3,5,1);
+    int j = mailbox(3,5,3);
+    Move m = Move::DPP(i, j);
+
+    // Put the pieces down
+    Board b;
+    b.putPiece(wp, i);
+
+    b.makeMove(m);
+
+    // Ideally, origin is empty, and the rook is at target.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j) == wp);
+
+    b.undoMove();
+
+    // When we undo, the reverse should be true.
+    EXPECT_TRUE(b.getPiece(i) == wp);
+    EXPECT_TRUE(b.getPiece(j).type() == NIL);
+}
+
+TEST(MoveMaking, Capture)
+{
+    // The rook will capture the knight
+    Piece wr (ROOK, WHITE);
+    Piece bn (KNIGHT, BLACK);
+    int i = mailbox(6,3,5);
+    int j = mailbox(6,6,5);
+    Move m = Move::Capture(i, j);
+
+    // Put the pieces down
+    Board b;
+    b.putPiece(wr, i);
+    b.putPiece(bn, j);
+
+    b.makeMove(m);
+
+    // After capture, origin should be empty, but target should be the rook.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j) == wr);
+
+    b.undoMove();
+
+    // When we undo, both pieces should be where they started.
+    EXPECT_TRUE(b.getPiece(i) == wr);
+    EXPECT_TRUE(b.getPiece(j) == bn);
+}
+
+TEST(MoveMaking, EnPassant)
+{
+    Piece wp (W_PAWN, WHITE);
+    Piece bp (B_PAWN, BLACK);
+
+    /*
+     * For reference, the squares are laid out like this:
+     * _________
+     * | . j . | 6
+     * | . k . | 5
+     * | . l i | 4
+     * +-------+
+     *   1 2 3
+     */
+    int i = mailbox(2,5,4);
+    int j = mailbox(3,5,6);
+    int k = mailbox(3,5,5);
+    int l = mailbox(3,5,4);
+
+    Move first = Move::DPP(j, l);
+    Move second = Move::EP(i, k);
+
+    Board b;
+    b.putPiece(wp, i);
+    b.putPiece(bp, j);
+
+    b.makeMove(first);
+    b.makeMove(second);
+
+    // After en passant, the only piece should be the white pawn on k.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j).type() == NIL);
+    EXPECT_TRUE(b.getPiece(k) == wp);
+    EXPECT_TRUE(b.getPiece(l).type() == NIL);
+
+    b.undoMove();
+
+    // Undoing the en passant, the white pawn should return to i, but the black
+    // pawn should reappear on l.
+    EXPECT_TRUE(b.getPiece(i) == wp);
+    EXPECT_TRUE(b.getPiece(j).type() == NIL);
+    EXPECT_TRUE(b.getPiece(k).type() == NIL);
+    EXPECT_TRUE(b.getPiece(l) == bp);
+
+    b.undoMove();
+
+    // Undoing the double pawn push for good measure.
+    EXPECT_TRUE(b.getPiece(i) == wp);
+    EXPECT_TRUE(b.getPiece(j) == bp);
+    EXPECT_TRUE(b.getPiece(k).type() == NIL);
+    EXPECT_TRUE(b.getPiece(l).type() == NIL);
+}
+
+// TODO implement castle move making tests
+
+TEST(MoveMaking, Promotion)
+{
+    // The pawn should move from i to j and promote to the queen.
+    Piece wp (W_PAWN, WHITE);
+    Piece wq (QUEEN, WHITE);
+    int i = mailbox(5,1,6);
+    int j = mailbox(5,1,7);
+    Move m = Move::Promote(i, j, wq);
+
+    Board b;
+    b.putPiece(wp, i);
+
+    b.makeMove(m);
+
+    // The only piece should be the queen on j.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j) == wq);
+
+    b.undoMove();
+
+    // After undoing, the pawn should be back where it was.
+    EXPECT_TRUE(b.getPiece(i) == wp);
+    EXPECT_TRUE(b.getPiece(j).type() == NIL);
+}
+
+TEST(MoveMaking, PromoCapture)
+{
+    // The pawn should move from i to j, capturing the knight,
+    // and promote to the queen.
+    Piece wp (W_PAWN, WHITE);
+    Piece wq (QUEEN, WHITE);
+    Piece bn (KNIGHT, BLACK);
+    int i = mailbox(5,1,6);
+    int j = mailbox(5,2,7);
+    Move m = Move::PromoCapture(i, j, wq);
+
+    Board b;
+    b.putPiece(wp, i);
+    b.putPiece(bn, j);
+
+    b.makeMove(m);
+
+    // The only piece should be the queen on j.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j) == wq);
+
+    b.undoMove();
+
+    // After undoing, the pawn and knight should be back where they were.
+    EXPECT_TRUE(b.getPiece(i) == wp);
+    EXPECT_TRUE(b.getPiece(j) == bn);
+}

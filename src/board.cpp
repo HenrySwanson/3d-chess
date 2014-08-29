@@ -97,8 +97,6 @@ Board::Board()
         for(int j = 0; j < 8; j++)
             for(int k = 0; k < 8; k++)
                 pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE);
-
-    ep_possible_ = false;
 }
 
 Piece Board::getPiece(int i) const
@@ -171,6 +169,96 @@ bool Board::isInCheck(bool color) const
     return false;
 }
 
+void Board::makeMove(Move m)
+{
+    MoveType type = m.type();
+    int forward = (getPiece(m.origin()).color() == WHITE) ? 144 : -144;
+
+    switch(type)
+    {
+      case QUIET:
+        break;
+      case DOUBLE_PAWN_PUSH:
+        break;
+      case CAPTURE:
+        captured_.push(pieces_[m.target()]);
+        break;
+      case EN_PASSANT:
+        pieces_[m.target() - forward] = Piece(NIL, WHITE);
+        break;
+      case CASTLE:
+        // TODO implement
+        break;
+      case PROMOTE:
+        pieces_[m.origin()] = m.promoted();
+        break;
+      case PROMO_CAPTURE:
+        pieces_[m.origin()] = m.promoted();
+        captured_.push(pieces_[m.target()]);
+        break;
+    }
+
+    // Moves piece from origin to target, and clears the origin
+    pieces_[m.target()] = pieces_[m.origin()];
+    pieces_[m.origin()] = Piece(NIL, WHITE);
+
+    // We can only perform en passant next turn if this turn was a DPP
+    if(type == DOUBLE_PAWN_PUSH)
+        ep_locations_.push(m.origin() + forward);
+    else
+        ep_locations_.push(0);
+
+    // Records move
+    history_.push(m);
+}
+
+void Board::undoMove()
+{
+    if(history_.empty())
+        return;
+
+    // Recalls the most recent move
+    Move m = history_.top();
+    history_.pop();
+
+    // Recalls the previous en passant square, if any
+    ep_locations_.pop();
+
+    // Moves piece from target to origin, and clears the target
+    pieces_[m.origin()] = pieces_[m.target()];
+    pieces_[m.target()] = Piece(NIL, WHITE);
+
+    MoveType type = m.type();
+    bool color = pieces_[m.origin()].color();
+    int forward = (color == WHITE) ? 144 : -144;
+
+    switch(type)
+    {
+      case QUIET:
+        break;
+      case DOUBLE_PAWN_PUSH:
+        break;
+      case CAPTURE:
+        pieces_[m.target()] = captured_.top();
+        captured_.pop();
+        break;
+      case EN_PASSANT:
+        pieces_[m.target() - forward] = Piece(color == WHITE ? B_PAWN : W_PAWN, !color);
+        break;
+      case CASTLE:
+        // TODO implement
+        break;
+      case PROMOTE:
+        pieces_[m.origin()] = Piece(color == WHITE ? W_PAWN : B_PAWN, color);
+        break;
+      case PROMO_CAPTURE:
+        pieces_[m.origin()] = Piece(color == WHITE ? W_PAWN : B_PAWN, color);
+        pieces_[m.target()] = captured_.top();
+        captured_.pop();
+        break;
+    }
+}
+
 list<Move> Board::generatePawnMoves(int origin) const
 {
     list<Move> moves;
@@ -233,8 +321,8 @@ list<Move> Board::generatePawnMoves(int origin) const
                 moves.push_back(Move::Capture(origin, target));
         }
 
-        // TODO Can we perform en passant?
-        if(ep_possible_ && ep_locations_.top() == target)
+        // Can we perform en passant?
+        if(!ep_locations_.empty() && ep_locations_.top() == target)
             moves.push_back(Move::EP(origin, target));
 
     }

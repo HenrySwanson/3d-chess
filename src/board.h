@@ -47,7 +47,9 @@ class Board
 
     // TODO checkmate and stalemate
 
-    // TODO implement move making and unmaking
+    void makeMove(Move m);
+
+    void undoMove();
 
   private:
     /** Generates all pseudo-legal moves for a pawn. */ 
@@ -71,12 +73,32 @@ class Board
      */
     Piece pieces_ [1728];
 
+    /** Contains all the moves that have been done on this board. */
     std::stack<Move> history_;
-    std::stack<Piece> captured_;
-    bool ep_possible_;
+
+    /**
+     * For each turn, contains the location of the en passant square, or 0 if
+     * there is none.
+     */
     std::stack<int> ep_locations_;
+
+    /**
+     * For each turn, the nth bit is set if White has castling rights along
+     * the nth axis. (6 axes total)
+     */
     std::stack<unsigned char> castling_rights_white_;
+
+    /**
+     * For each turn, the nth bit is set if Black has castling rights along
+     * the nth axis. (6 axes total)
+     */
     std::stack<unsigned char> castling_rights_black_;
+
+    /**
+     * Contains the pieces captured during this game in order. Note that this
+     * is _not_ a per-turn structure.
+     */
+    std::stack<Piece> captured_;
 };
 
 #endif
