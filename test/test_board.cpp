@@ -10,6 +10,10 @@ using std::list;
 using std::string;
 using std::stringstream;
 
+/**
+ * Given a list of moves, this takes all their targets and converts them to
+ * strings of the form "(x, y, z)".
+ */
 list<string> stringifyTargets(const list<Move>& moves)
 {
     list<string> strs;
@@ -27,7 +31,13 @@ list<string> stringifyTargets(const list<Move>& moves)
     return strs;   
 }
 
-// TODO assert all moves are quiet!
+/**
+ * A very kludgey way to compare moves with integer arrays (because those are
+ * easy to type into a source file, and to read). It makes a blank board, puts
+ * a white piece of the given type at the given location, then computes all the
+ * moves it can make. It returns true if the targets of these moves are exactly
+ * the targets given in the integer array (regardless of order).
+ */
 void matchQuietMoves(PieceType pt, int origin, int targets [], int num_targets)
 {
     // Sets up the board
@@ -68,6 +78,11 @@ void matchQuietMoves(PieceType pt, int origin, int targets [], int num_targets)
     EXPECT_STR_EQ(array_str.c_str(), list_str.c_str());
 }
 
+/**
+ * Puts a piece of type "pt" at the given location and generates all the moves
+ * it can make. It then repeats this for the types given in "parts", and
+ * concatenates those together. It returns true if the two lists are the same.
+ */
 void testCompoundPiece(PieceType pt, PieceType parts [], int num_parts,
         int origin)
 {
@@ -97,14 +112,23 @@ void testCompoundPiece(PieceType pt, PieceType parts [], int num_parts,
     compoundStrs.unique();
     componentStrs.unique();
 
-    ASSERT_TRUE(compoundStrs == componentStrs);
+    EXPECT_TRUE(compoundStrs == componentStrs);
 }
 
+/**
+ * Returns true if the given list contains the given move.
+ */
 bool containsMove(const list<Move>& li, Move m)
 {
     list<Move>::const_iterator it = find(li.begin(), li.end(), m);
     return (it != li.end());
 }
+
+/*
+ * The following tests are to guarantee that non-pawn pieces have the correct
+ * move directions. They only differ in what the array is set to, or if it is
+ * a compound piece.
+ */
 
 TEST(Board, Knight)
 {
@@ -223,6 +247,8 @@ TEST(Board, King)
     matchQuietMoves(KING, mailbox(2,3,4), array, 26);
 }
 
+// Next come several pawn tests
+
 /*
  * Tests against Type II errors (false negatives). These pawns will be put in
  * optimal conditions; that is, they will be able to make lots of moves, which
@@ -239,10 +265,10 @@ TEST(Board, PawnII)
 
     // Declare board, locations, and pawns.
     Board b;
-    int i = mailbox(2,3,1);
-    int j = mailbox(2,3,6);
     Piece wp (W_PAWN, WHITE);
     Piece bp (B_PAWN, BLACK);
+    int i = mailbox(2,3,1);
+    int j = mailbox(2,3,6);
 
     // Put down pawns
     b.putPiece(wp, i);
@@ -370,11 +396,118 @@ TEST(Board, PawnI)
             board.getPiece(mailbox(8,0,3)) ))); // Border
 }
 
-// TODO en passant tests
+/** Tests that en passant behaves correctly. */
+TEST(Board, EnPassant)
+{
+    Board b;
+    Piece wp (W_PAWN, WHITE);
+    list<Move> moves;
 
-// TODO promotion/promo-capture tests
+    int i = mailbox(2,3,4);
+    int j = mailbox(1,3,5);
+    Move m = Move::EP(i, j);
 
-// TODO Capture testing. Only really need to test a sliding piece and a jumping piece for this.
-// make sure to test _against_ capturing own pieces though (nil spaces and borders are covered in the normal tests)
+    // Puts down the pawn
+    b.putPiece(wp, i);
+    moves = b.generateMoves(i);
+
+    // No en passant possible
+    EXPECT_FALSE(containsMove(moves, m));
+
+    // Sets en passant square
+    b.setEnPassant(j);
+    moves = b.generateMoves(i);
+
+    // En passant is possible
+    EXPECT_TRUE(containsMove(moves, m));
+}
+
+/** Tests that promotions and promo-captures behave correctly. */
+TEST(Board, PromoMaybeCapture)
+{
+    Board b;
+    Piece wp (W_PAWN, WHITE);
+    Piece br (ROOK, BLACK);
+    int i = mailbox(1,4,6);
+    int j = mailbox(1,4,7);
+    int k = mailbox(1,5,7);
+    list<Move> moves;
+
+    // Nothing in the way? Promotions only.
+    b.putPiece(wp, i);
+    moves = b.generateMoves(i);
+    EXPECT_EQ((signed) moves.size(), NUM_PROMOTION_PIECES);
+    for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
+    {
+        Piece p (PROMOTION_PIECES[t], WHITE);
+        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, p)));
+    }
+
+    // Add an obstruction? Nothing to do here.
+    b.putPiece(br, j);
+    moves = b.generateMoves(i);
+    EXPECT_EQ(moves.size(), 0);
+
+    // Add something to capture? Promo-captures only.
+    b.putPiece(br, k);
+    moves = b.generateMoves(i);
+    EXPECT_EQ((signed) moves.size(), NUM_PROMOTION_PIECES);
+    for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
+    {
+        Piece p (PROMOTION_PIECES[t], WHITE);
+        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p, br)));
+    }
+
+    // Remove the obstruction? Both types of moves.
+    b.putPiece(Piece(NIL, WHITE), j);
+    moves = b.generateMoves(i);
+    EXPECT_EQ((signed) moves.size(), 2 * NUM_PROMOTION_PIECES);
+    for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
+    {
+        Piece p (PROMOTION_PIECES[t], WHITE);
+        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, p)));
+        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p, br)));
+    }
+}
+
+/**
+ * Tests that capturing is possible, and blocks movement. Because of all the
+ * other tests involving piece motion, it's sufficient to just test one jumping
+ * and one sliding piece.
+ */
+TEST(Board, Capture)
+{
+    Board b;
+    Piece wr (ROOK, WHITE);
+    Piece bn (KNIGHT, BLACK);
+    Piece wp (W_PAWN, WHITE);
+    int i = mailbox(2,3,4);
+    int j = mailbox(4,3,4);
+    int k = mailbox(2,2,4);
+
+    // Put down the rook, knight, and pawn
+    b.putPiece(wr, i);
+    b.putPiece(bn, j);
+    b.putPiece(wp, k);
+
+    list<Move> moves = b.generateMoves(i);
+
+    // Rook can still move toward the knight
+    EXPECT_TRUE(containsMove(moves, Move::Quiet(i, mailbox(3,3,4))));
+
+    // Can't move onto the knight, but can capture it
+    EXPECT_FALSE(containsMove(moves, Move::Quiet(i, j)));
+    EXPECT_TRUE(containsMove(moves, Move::Capture(i, j, bn)));
+
+    // Can't move past it
+    EXPECT_FALSE(containsMove(moves, Move::Quiet(i, mailbox(5,3,4))));
+
+    // It also can't capture the pawn
+    EXPECT_FALSE(containsMove(moves, Move::Capture(i, k, wp)));
+
+    // Knight can capture the pawn
+    moves = b.generateMoves(j);
+    EXPECT_TRUE(containsMove(moves, Move::Capture(j, k, wp)));
+}
 
 // TODO Castle testing. This'll suck too.

@@ -46,6 +46,13 @@ enum MoveType {
  * TODO decide which to use!
  */
 
+// XXX how am i supposed to correctly undo a move following an en passant? I
+// can't just restore the ep square, because I wouldn't know what it is...
+// Possible solution: have makeMove(Move), and undo(). I'd have to have a
+// stack containing all the moves made so far, but that would actually be just
+// fine. Plus, I could remove "captured" from Move, and just throw those in a
+// stack as well.
+
 /**
  * Contains all the data necessary to make and unmake a chess move.
  */
