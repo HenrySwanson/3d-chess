@@ -78,13 +78,13 @@ class Move
      * Constructs a promotion move from origin to target, with the pawn
      * becoming the specified piece.
      */
-    static Move Promote(int origin, int target, Piece promo);
+    static Move Promote(int origin, int target, PieceType promo);
 
     /**
      * Constructs a promo-capture from origin to target, where the promoted-to
      * piece is specified.
      */
-    static Move PromoCapture(int origin, int target, Piece promo);
+    static Move PromoCapture(int origin, int target, PieceType promo);
 
 
     /** Returns the type of this move. */
@@ -97,23 +97,20 @@ class Move
     int target() const;
 
     /** Returns the piece promoted to during this move. */
-    Piece promoted() const;
+    PieceType promoted() const;
 
     bool operator==(const Move& m) const;
     bool operator!=(const Move& m) const;
 
   private:
-    /** The type of this move. */
-    MoveType type_;
-
-    /** The origin square of this move. */
-    int origin_;
-
-    /** The target square of this move. */
-    int target_;
-
-    /** The piece promoted to during this move. */
-    Piece promoted_;
+    /**
+     * A bitfield. Where LSB is Bit 0,
+     *   Bits 0-2 - type
+     *   Bits 3-13 - origin
+     *   Bits 14-24 - target
+     *   Bits 25-28 - promoted type
+     */
+    unsigned int data_;
 };
 
 /**

@@ -175,7 +175,8 @@ bool Board::isInCheck(bool color) const
 void Board::makeMove(Move m)
 {
     MoveType type = m.type();
-    int forward = (getPiece(m.origin()).color() == WHITE) ? 144 : -144;
+    bool color = getPiece(m.origin()).color();
+    int forward = (color == WHITE) ? 144 : -144;
 
     switch(type)
     {
@@ -193,10 +194,10 @@ void Board::makeMove(Move m)
         // TODO implement
         break;
       case PROMOTE:
-        pieces_[m.origin()] = m.promoted();
+        pieces_[m.origin()] = Piece(m.promoted(), color);
         break;
       case PROMO_CAPTURE:
-        pieces_[m.origin()] = m.promoted();
+        pieces_[m.origin()] = Piece(m.promoted(), color);
         captured_.push(pieces_[m.target()]);
         break;
     }
@@ -290,8 +291,8 @@ list<Move> Board::generatePawnMoves(int origin) const
             // Iterate through all possible promotions
             for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
             {
-                Piece p = Piece(PROMOTION_PIECES[i], oPiece.color());
-                moves.push_back(Move::Promote(origin, ahead, p));
+                PieceType pt = PROMOTION_PIECES[i];
+                moves.push_back(Move::Promote(origin, ahead, pt));
             }
         }
         else
@@ -317,8 +318,8 @@ list<Move> Board::generatePawnMoves(int origin) const
                 // Iterate through all possible promotions
                 for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
                 {
-                    Piece p = Piece(PROMOTION_PIECES[i], oPiece.color());
-                    moves.push_back(Move::PromoCapture(origin, target, p));
+                    PieceType pt = PROMOTION_PIECES[i];
+                    moves.push_back(Move::PromoCapture(origin, target, pt));
                 }
             }
             else

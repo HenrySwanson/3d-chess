@@ -410,8 +410,8 @@ TEST(MoveGeneration, PromoMaybeCapture)
     EXPECT_EQ((signed) moves.size(), NUM_PROMOTION_PIECES);
     for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
     {
-        Piece p (PROMOTION_PIECES[t], WHITE);
-        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, p)));
+        PieceType pt = PROMOTION_PIECES[t];
+        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, pt)));
     }
 
     // Add an obstruction? Nothing to do here.
@@ -425,8 +425,8 @@ TEST(MoveGeneration, PromoMaybeCapture)
     EXPECT_EQ((signed) moves.size(), NUM_PROMOTION_PIECES);
     for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
     {
-        Piece p (PROMOTION_PIECES[t], WHITE);
-        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p)));
+        PieceType pt = PROMOTION_PIECES[t];
+        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, pt)));
     }
 
     // Remove the obstruction? Both types of moves.
@@ -435,9 +435,9 @@ TEST(MoveGeneration, PromoMaybeCapture)
     EXPECT_EQ((signed) moves.size(), 2 * NUM_PROMOTION_PIECES);
     for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
     {
-        Piece p (PROMOTION_PIECES[t], WHITE);
-        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, p)));
-        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, p)));
+        PieceType pt = PROMOTION_PIECES[t];
+        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, pt)));
+        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, pt)));
     }
 }
 
@@ -676,7 +676,7 @@ TEST(MoveMaking, Promotion)
     Piece wq (QUEEN, WHITE);
     int i = mailbox(5,1,6);
     int j = mailbox(5,1,7);
-    Move m = Move::Promote(i, j, wq);
+    Move m = Move::Promote(i, j, QUEEN);
 
     Board b;
     b.putPiece(wp, i);
@@ -703,7 +703,7 @@ TEST(MoveMaking, PromoCapture)
     Piece bn (KNIGHT, BLACK);
     int i = mailbox(5,1,6);
     int j = mailbox(5,2,7);
-    Move m = Move::PromoCapture(i, j, wq);
+    Move m = Move::PromoCapture(i, j, QUEEN);
 
     Board b;
     b.putPiece(wp, i);

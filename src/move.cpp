@@ -3,97 +3,75 @@
 Move Move::Quiet(int origin, int target)
 {
     Move m;
-    m.type_ = QUIET;
-    m.origin_ = origin;
-    m.target_ = target;
+    m.data_ = QUIET | (origin << 3) | (target << 14);
     return m;
 }
 
 Move Move::DPP(int origin, int target)
 {
     Move m;
-    m.type_ = DOUBLE_PAWN_PUSH;
-    m.origin_ = origin;
-    m.target_ = target;
+    m.data_ = DOUBLE_PAWN_PUSH | (origin << 3) | (target << 14);
     return m;
 }
 
 Move Move::Capture(int origin, int target)
 {
     Move m;
-    m.type_ = CAPTURE;
-    m.origin_ = origin;
-    m.target_ = target;
+    m.data_ = CAPTURE | (origin << 3) | (target << 14);
     return m;
 }
 
 Move Move::EP(int origin, int target)
 {
     Move m;
-    m.type_ = EN_PASSANT;
-    m.origin_ = origin;
-    m.target_ = target;
+    m.data_ = EN_PASSANT | (origin << 3) | (target << 14);
     return m;
 }
 
 Move Move::Castle(int origin, int target)
 {
     Move m;
-    m.type_ = CASTLE;
-    m.origin_ = origin;
-    m.target_ = target;
+    m.data_ = CASTLE | (origin << 3) | (target << 14);
     return m;
 }
 
-Move Move::Promote(int origin, int target, Piece promo)
+Move Move::Promote(int origin, int target, PieceType promo)
 {
     Move m;
-    m.type_ = PROMOTE;
-    m.origin_ = origin;
-    m.target_ = target;
-    m.promoted_ = promo;
+    m.data_ = PROMOTE | (origin << 3) | (target << 14) | (promo << 25);
     return m;
 }
 
-Move Move::PromoCapture(int origin, int target, Piece promo)
+Move Move::PromoCapture(int origin, int target, PieceType promo)
 {
     Move m;
-    m.type_ = PROMO_CAPTURE;
-    m.origin_ = origin;
-    m.target_ = target;
-    m.promoted_ = promo;
+    m.data_ = PROMO_CAPTURE | (origin << 3) | (target << 14) | (promo << 25);
     return m;
 }
 
 MoveType Move::type() const
 {
-    return type_;
+    return static_cast<MoveType>(data_ & 0x7);
 }
 
 int Move::origin() const
 {
-    return origin_;
+    return (data_ >> 3) & 0x7FF;
 }
 
 int Move::target() const
 {
-    return target_;
+    return (data_ >> 14) & 0x7FF;
 }
 
-Piece Move::promoted() const
+PieceType Move::promoted() const
 {
-    return promoted_;
+    return static_cast<PieceType>((data_ >> 25) & 0xFF);
 }
 
 bool Move::operator==(const Move& m) const
 {
-    bool match = (type_ == m.type_) && (origin_ == m.origin_) &&
-            (target_ == m.target_);
-
-    if(type_ == PROMOTE || type_ == PROMO_CAPTURE)
-        match &= (promoted_ == m.promoted_);
-
-    return match;
+    return data_ == m.data_;
 }
 
 bool Move::operator!=(const Move& m) const
