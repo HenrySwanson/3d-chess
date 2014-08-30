@@ -33,12 +33,6 @@ const PieceType PROMOTION_PIECES [] = {
     QUEEN
 };
 
-/* TODO I'll make this a bitfield later.
- *
- * Bits 1-4 - type
- * Bit 5 - color
- */
-
 /**
  * Represents a chess piece, including its color. Can also represent the lack
  * of a piece, with the values NIL and BORDER.
@@ -84,11 +78,12 @@ class Piece
     bool operator!=(const Piece& p) const;
 
   private:
-    /** The type of this piece. */
-    PieceType type_;
-
-    /** The color of this piece. */
-    bool color_;
+    /**
+     * A bitfield. Where LSB is Bit 0,
+     *   Bits 0-3 - type
+     *   Bit 4 - color
+     */
+    unsigned char data_;
 };
 
 #endif
