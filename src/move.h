@@ -16,45 +16,8 @@ enum MoveType {
 };
 
 /**
- * As it stands, I have three ways of encoding this into a bitfield.
- *
- * Way 1:
- *   If bit 1 is set, this is a promo-capture.
- *     Bit 2 - Color of pawn
- *     Bits 3-13 - Origin square
- *     Bits 14-17 - Displacement from target to origin, as encoded in PIECE_DIRECTIONS
- *     Bits 18-23 - Promoted piece
- *     Bits 24-29 - Captured piece
- *   Else, it is a different move.
- *     Bits 2-4 Move type
- *     Bits 5-15 Origin square
- *     Bits 16-26 Target square
- *     Bits 27-32 Captured/promoted piece
- *
- * Way 2: Same as Way 2: but instead of origin and displacement, we have
- *  origin_x_and_y and target_x_and_y, which can range from 0 to 143 (8 bits!).
- *  Then find some way of encoding which rank (maybe just a single bit!).
- *
- * Way 3:
- *   We unmailbox our squares, so they only take up 9 bits now.
- *   Bits 1-9 - Origin square
- *   Bits 10-18 - Target square
- *   Bits 19-24 - Captured piece
- *   Bits 25-28 - Promoted piece type
- *   Bits 29-31 - Move type
- *
- * TODO decide which to use!
- */
-
-// XXX how am i supposed to correctly undo a move following an en passant? I
-// can't just restore the ep square, because I wouldn't know what it is...
-// Possible solution: have makeMove(Move), and undo(). I'd have to have a
-// stack containing all the moves made so far, but that would actually be just
-// fine. Plus, I could remove "captured" from Move, and just throw those in a
-// stack as well.
-
-/**
- * Contains all the data necessary to make and unmake a chess move.
+ * Represents a chess move. Does not contain all of the necessary data to
+ * unmake a move, but the Board class contains everything that Move lacks.
  */
 class Move
 {

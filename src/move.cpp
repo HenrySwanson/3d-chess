@@ -66,7 +66,7 @@ int Move::target() const
 
 PieceType Move::promoted() const
 {
-    return static_cast<PieceType>((data_ >> 25) & 0xFF);
+    return static_cast<PieceType>((data_ >> 25) & 0xF);
 }
 
 bool Move::operator==(const Move& m) const
