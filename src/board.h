@@ -7,9 +7,6 @@
 #include "move.h"
 #include "piece.h"
 
-// TODO add move history stack, captured stack, and implement castling flags
-// (another stack, probably. 6 bits per side)
-
 /**
  * Represents an 8 x 8 x 8 chessboard, the pieces on it, and all necessary
  * metadata, such as move history, and if en passant is possible.
@@ -39,7 +36,7 @@ class Board
      */
     std::list<Move> generateMoves(int origin) const;
 
-    /** Generates all possible castling moves for the given team. */
+    /** Generates all pseudo-legal castling moves for the given team. */
     std::list<Move> generateCastlingMoves(bool color) const;
 
     /** Returns true if the king of the specified color is in check. */
@@ -57,6 +54,8 @@ class Board
 
     /** Generates all pseudo-legal moves for a non-pawn piece. */ 
     std::list<Move> generateNonPawnMoves(int origin) const;
+
+    void updateCastlingRights(bool color, int origin);
 
     /**
      * Represents the pieces on the board. This is a "mailbox" representation,

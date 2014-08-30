@@ -536,7 +536,48 @@ TEST(MoveGeneration, EnPassant)
     EXPECT_FALSE(containsMove(moves, Move::EP(d, b)));
 }
 
-// TODO Castle testing. This'll suck too.
+TEST(MoveGeneration, Castle)
+{
+    // All castling partners will be in their starting places
+    Piece wk (KING, WHITE);
+    Piece wr (ROOK, WHITE);
+    Piece ww (WIZARD, WHITE);
+    // This bishop will block a castling path next turn
+    Piece bb (BISHOP, BLACK);
+    // King square
+    int i = mailbox(4,4,0);
+
+    Board b;
+    b.putPiece(wk, i);
+    b.putPiece(wr, mailbox(0,4,0));
+    b.putPiece(wr, mailbox(7,4,0));
+    b.putPiece(wr, mailbox(4,0,0));
+    b.putPiece(wr, mailbox(4,7,0));
+    b.putPiece(ww, mailbox(0,0,0));
+    b.putPiece(ww, mailbox(7,7,0));
+    b.putPiece(bb, mailbox(5,2,0));
+
+    // Should be able to castle everywhere
+    list<Move> moves = b.generateCastlingMoves(WHITE);
+    EXPECT_EQ(moves.size(), 6);
+    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(2,4,0))));
+    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(6,4,0))));
+    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(4,2,0))));
+    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(4,6,0))));
+    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(2,2,0))));
+    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(6,6,0))));
+
+    // One of the rooks moves, losing castling rights
+    b.makeMove(Move::Quiet(mailbox(0,4,0), mailbox(0,4,2)));
+    // Black bishop moves into the way of another rook
+    b.makeMove(Move::Quiet(mailbox(5,2,0), mailbox(4,1,0)));
+    // The rook moves back to its original spot
+    b.makeMove(Move::Quiet(mailbox(0,4,2), mailbox(0,4,0)));
+
+    // But we should only be able to castle to 4 places now
+    moves = b.generateCastlingMoves(WHITE);
+    EXPECT_EQ(moves.size(), 4);
+}
 
 TEST(MoveMaking, Quiet)
 {
@@ -667,7 +708,67 @@ TEST(MoveMaking, EnPassant)
     EXPECT_TRUE(b.getPiece(l).type() == NIL);
 }
 
-// TODO implement castle move making tests
+TEST(MoveMaking, CastleKingside)
+{
+    Piece wk (KING, WHITE);
+    Piece wr (ROOK, WHITE);
+
+    int i = mailbox(4,4,0);
+    int j = mailbox(4,5,0);
+    int k = mailbox(4,6,0);
+    int l = mailbox(4,7,0);
+
+    Board b;
+    b.putPiece(wk, i);
+    b.putPiece(wr, l);
+
+    b.makeMove(Move::Castle(i, k));
+
+    // The king should be on k, and the rook on j.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j) == wr);
+    EXPECT_TRUE(b.getPiece(k) == wk);
+    EXPECT_TRUE(b.getPiece(l).type() == NIL);
+
+    b.undoMove();
+
+    // Both pieces should be back where they started
+    EXPECT_TRUE(b.getPiece(i) == wk);
+    EXPECT_TRUE(b.getPiece(j).type() == NIL);
+    EXPECT_TRUE(b.getPiece(k).type() == NIL);
+    EXPECT_TRUE(b.getPiece(l) == wr);    
+}
+
+TEST(MoveMaking, CastleQueenside)
+{
+    Piece bk (KING, BLACK);
+    Piece br (ROOK, BLACK);
+
+    int i = mailbox(4,4,7);
+    int j = mailbox(3,3,7);
+    int k = mailbox(2,2,7);
+    int l = mailbox(0,0,7);
+
+    Board b;
+    b.putPiece(bk, i);
+    b.putPiece(br, l);
+
+    b.makeMove(Move::Castle(i, k));
+
+    // The king should be on k, and the rook on j.
+    EXPECT_TRUE(b.getPiece(i).type() == NIL);
+    EXPECT_TRUE(b.getPiece(j) == br);
+    EXPECT_TRUE(b.getPiece(k) == bk);
+    EXPECT_TRUE(b.getPiece(l).type() == NIL);
+
+    b.undoMove();
+
+    // Both pieces should be back where they started
+    EXPECT_TRUE(b.getPiece(i) == bk);
+    EXPECT_TRUE(b.getPiece(j).type() == NIL);
+    EXPECT_TRUE(b.getPiece(k).type() == NIL);
+    EXPECT_TRUE(b.getPiece(l) == br);    
+}
 
 TEST(MoveMaking, Promotion)
 {
