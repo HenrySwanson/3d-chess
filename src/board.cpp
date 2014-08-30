@@ -97,6 +97,9 @@ Board::Board()
         for(int j = 0; j < 8; j++)
             for(int k = 0; k < 8; k++)
                 pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE);
+
+    ep_locations_.push(0);
+    castling_rights_.push(0xFFFF);
 }
 
 Piece Board::getPiece(int i) const
@@ -243,7 +246,8 @@ void Board::undoMove()
         captured_.pop();
         break;
       case EN_PASSANT:
-        pieces_[m.target() - forward] = Piece(color == WHITE ? B_PAWN : W_PAWN, !color);
+        pieces_[m.target() - forward] = Piece((color == WHITE) ?
+                B_PAWN : W_PAWN, !color);
         break;
       case CASTLE:
         // TODO implement
@@ -322,7 +326,7 @@ list<Move> Board::generatePawnMoves(int origin) const
         }
 
         // Can we perform en passant?
-        if(!ep_locations_.empty() && ep_locations_.top() == target)
+        if(ep_locations_.top() == target)
             moves.push_back(Move::EP(origin, target));
 
     }

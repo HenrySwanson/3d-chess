@@ -84,15 +84,9 @@ class Board
 
     /**
      * For each turn, the nth bit is set if White has castling rights along
-     * the nth axis. (6 axes total)
+     * the nth axis, and the n+6th bit is set if Black does. (6 axes each)
      */
-    std::stack<unsigned char> castling_rights_white_;
-
-    /**
-     * For each turn, the nth bit is set if Black has castling rights along
-     * the nth axis. (6 axes total)
-     */
-    std::stack<unsigned char> castling_rights_black_;
+    std::stack<unsigned short> castling_rights_;
 
     /**
      * Contains the pieces captured during this game in order. Note that this
