@@ -6,6 +6,11 @@ Piece::Piece() : data_(0)
 Piece::Piece(PieceType pt, bool color) : data_(pt ^ (color << 4))
 {}
 
+Piece Piece::Pawn(bool color)
+{
+    return Piece(color == WHITE ? W_PAWN : B_PAWN, color);
+}
+
 PieceType Piece::type() const
 {
     return static_cast<PieceType>(data_ & 0xF);

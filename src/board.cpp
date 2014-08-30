@@ -1,5 +1,9 @@
 #include "board.h"
 
+// TODO have some functions that, given WHITE or BLACK, return things like
+// promotion row, pawn home row, king squares, castling_rights_ offset, etc.
+// To find these, search (color == WHITE) or such.
+
 using std::list;
 
 /**
@@ -88,6 +92,7 @@ namespace {
          157, 155, 133, 131, -157, -155, -133, -131}
     };
 
+    // TODO should I overhaul this?
     static const int KING_SQUARE [2] = {mailbox(4,4,0), mailbox(4,4,7)};
     static const int CASTLE_DIRECTIONS [6] = {1, 12, 13, -1, -12, -13};
     static const int CASTLE_DISTANCES  [6] = {3,  3,  3,  4,   4,   4};
@@ -295,8 +300,7 @@ void Board::undoMove()
         captured_.pop();
         break;
       case EN_PASSANT:
-        pieces_[m.target() - forward] = Piece((color == WHITE) ?
-                B_PAWN : W_PAWN, !color);
+        pieces_[m.target() - forward] = Piece::Pawn(!color);
         break;
       case CASTLE:
         // The king moves two squares, so we can find the direction by halving
@@ -308,10 +312,10 @@ void Board::undoMove()
         pieces_[m.origin() + dir] = Piece(NIL, WHITE);
         break;
       case PROMOTE:
-        pieces_[m.origin()] = Piece(color == WHITE ? W_PAWN : B_PAWN, color);
+        pieces_[m.origin()] = Piece::Pawn(color);
         break;
       case PROMO_CAPTURE:
-        pieces_[m.origin()] = Piece(color == WHITE ? W_PAWN : B_PAWN, color);
+        pieces_[m.origin()] = Piece::Pawn(color);
         pieces_[m.target()] = captured_.top();
         captured_.pop();
         break;

@@ -15,6 +15,8 @@ enum MoveType {
     PROMO_CAPTURE
 };
 
+// TODO maybe add color and castling axis?
+
 /**
  * Represents a chess move. Does not contain all of the necessary data to
  * unmake a move, but the Board class contains everything that Move lacks.

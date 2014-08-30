@@ -46,6 +46,8 @@ class Piece
     /** Constructs a piece with the given data. */
     Piece(PieceType pt, bool color);
 
+    /** Constructs a pawn of the given color. */
+    static Piece Pawn(bool color);
 
     /** Returns this piece's type. */
     PieceType type() const;

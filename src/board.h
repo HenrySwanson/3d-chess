@@ -44,8 +44,10 @@ class Board
 
     // TODO checkmate and stalemate
 
+    /** Performs the given move. Does not check for (pseudo-)legality. */
     void makeMove(Move m);
 
+    /** Undoes the most recent move. Does nothing if there was none. */
     void undoMove();
 
   private:
@@ -55,6 +57,7 @@ class Board
     /** Generates all pseudo-legal moves for a non-pawn piece. */ 
     std::list<Move> generateNonPawnMoves(int origin) const;
 
+    /** When a move is made, updates the castling rights accordingly. */
     void updateCastlingRights(bool color, int origin);
 
     /**
