@@ -1,15 +1,10 @@
 #include "board.h"
 
-// TODO have some functions that, given WHITE or BLACK, return things like
-// promotion row, pawn home row, king squares, castling_rights_ offset, etc.
-// To find these, search (color == WHITE) or such.
-
 using std::list;
 
 /**
- * The first 3 following lookup tables are all indexed by PieceType. If the
- * order of them changes, make sure to update this as well. The last is an
- * arbitrary order.
+ * The following lookup tables are all indexed by PieceType. If the order of
+ * them changes, make sure to update this as well.
  */
 namespace {
     /**
@@ -17,7 +12,7 @@ namespace {
      * PIECE_DIRECTIONS is (the rest is garbage).
      */
     static const int NUM_DIRECTIONS [16] = {
-        0, 0, 9, 9,
+        0, 0, 8, 8,
         24, 24, 24, 72,
         6, 12, 8,
         18, 20, 14,
@@ -42,10 +37,10 @@ namespace {
         /* NIL, BORDER */
         {}, {},
 
-        /* W_PAWN - First entry is a move, the rest are captures */
-        { 144, 157, 156, 155, 145, 143, 133, 132, 131},
-        /* B_PAWN - First entry is a move, the rest are captures */
-        {-144,-157,-156,-155,-145,-143,-133,-132,-131},
+        /* W_PAWN - Captures only */
+        {157, 156, 155, 145, 143, 133, 132, 131},
+        /* B_PAWN - Captures only */
+        {-157,-156,-155,-145,-143,-133,-132,-131},
 
 
         /* KNIGHT */
@@ -91,11 +86,45 @@ namespace {
          13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132,
          157, 155, 133, 131, -157, -155, -133, -131}
     };
+}
 
-    // TODO should I overhaul this?
-    static const int KING_SQUARE [2] = {mailbox(4,4,0), mailbox(4,4,7)};
-    static const int CASTLE_DIRECTIONS [6] = {1, 12, 13, -1, -12, -13};
-    static const int CASTLE_DISTANCES  [6] = {3,  3,  3,  4,   4,   4};
+/** Returns the square that the king of the given team starts on. */
+static int kingSquare(bool color)
+{
+    int z = (color == WHITE) ? 0 : 7;
+    return mailbox(4,4,z);
+}
+
+/** Returns the direction along which the king castles. */
+static int castleDir(int axis)
+{
+    int array [6] = {1, 12, 13, -1, -12, -13};
+    return array[axis];
+}
+
+/** Returns the distance from the king to the rook. */
+static int castleDist(int axis)
+{
+   return (axis < 3) ? 3 : 4;
+}
+
+/**
+ * If color is WHITE, returns 1 << axis.
+ * If it's BLACK, returns 1 << (axis + 6).
+ */
+static int castleMask(bool color, int axis)
+{
+   int offset = (color == WHITE) ? 0 : 6;
+   return (1 << (offset + axis)); 
+}
+
+/**
+ * If color is WHITE, returns 0b111111.
+ * If it's BLACK, returns 0b111111 << 6.
+ */
+static int castleMaskAll(bool color)
+{
+   return (color == WHITE) ? 0x3F : 0xFC;
 }
 
 Board::Board()
@@ -109,7 +138,7 @@ Board::Board()
                 pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE);
 
     ep_locations_.push(0);
-    castling_rights_.push(0xFFFF);
+    castling_rights_.push(0x0FFF);
 }
 
 Piece Board::getPiece(int i) const
@@ -163,65 +192,49 @@ list<Move> Board::generateCastlingMoves(bool color) const
 {
     list<Move> moves;
 
-    int mask = (color == WHITE) ? 1 : (1 << 6);
-    int king_sq = KING_SQUARE[color];
+    int king_sq = kingSquare(color);
 
     for(int axis = 0; axis < 6; axis++)
     {
         // Get the direction of travel
-        int dir = CASTLE_DIRECTIONS[axis];
+        int dir = castleDir(axis);
 
         // Yes, that is a goto. Yes, I know it's frowned upon. But for this
-        // particular control flow, it's the right tool for the job.
-        if(!(castling_rights_.top() & mask))
-            goto failed;
-
-        // Check if the path is clear
-        for(int dist = 1; dist < CASTLE_DISTANCES[axis]; dist++)
+        // particular circumstance, it's the cleanest tool for the job.
+        if(castling_rights_.top() & castleMask(color, axis))
         {
-            if(getPiece(king_sq + dist * dir).type() != NIL)
-                goto failed;
+            // Check if the path is clear
+            for(int dist = 1; dist < castleDist(axis); dist++)
+            {
+                if(pieces_[king_sq + dist * dir].type() != NIL)
+                    goto failed;
+            }
+
+            moves.push_back(Move::Castle(king_sq, king_sq + 2 * dir));
         }
 
-        moves.push_back(Move::Castle(king_sq, king_sq + 2 * dir));
-
         failed:
-        mask <<= 1; // moves the masking bit up one, to match axis++
+            ; // empty statement
     }
 
     return moves;
 }
 
-bool Board::isInCheck(bool color) const
-{
-    list<Move> opponents_moves = generatePseudoLegalMoves(!color);
-    list<Move>::const_iterator it;
-    for(it = opponents_moves.begin(); it != opponents_moves.end(); it++)
-    {
-        if(it->type() == CAPTURE || it->type() == PROMO_CAPTURE)
-        {
-            Piece captured = getPiece(it->origin());
-            if(captured.type() == KING)
-                return true;
-        }
-    }
-
-    return false;
-}
-
 void Board::makeMove(Move m)
 {
     MoveType type = m.type();
-    bool color = getPiece(m.origin()).color();
+    bool color = pieces_[m.origin()].color();
     int forward = (color == WHITE) ? 144 : -144;
 
-    int dir, rook_sq; // Used for castling only
+    int next_ep = 0;  // Modified in DPP only
+    int dir, dist, rook_sq; // Used for castling only
 
     switch(type)
     {
       case QUIET:
         break;
       case DOUBLE_PAWN_PUSH:
+        next_ep = m.origin() + forward;
         break;
       case CAPTURE:
         captured_.push(pieces_[m.target()]);
@@ -230,10 +243,12 @@ void Board::makeMove(Move m)
         pieces_[m.target() - forward] = Piece(NIL, WHITE);
         break;
       case CASTLE:
-        // The king moves two squares, so we can find the direction by halving
+        // The king moves two squares, so we can find the direction by halving,
         dir = (m.target() - m.origin()) >> 1;
-        // and the rook square by adding it 3 or 4 times.
-        rook_sq = m.origin() + dir * ((dir > 0) ? 3 : 4);
+        // the distance, by the sign of the direction,
+        dist = (dir > 0) ? 3 : 4;
+        // and the rook square by combining those.
+        rook_sq = m.origin() + dir * dist;
         // Move the rook
         pieces_[m.origin() + dir] = pieces_[rook_sq];
         pieces_[rook_sq] = Piece(NIL, WHITE);
@@ -251,11 +266,8 @@ void Board::makeMove(Move m)
     pieces_[m.target()] = pieces_[m.origin()];
     pieces_[m.origin()] = Piece(NIL, WHITE);
 
-    // We can only perform en passant next turn if this turn was a DPP
-    if(type == DOUBLE_PAWN_PUSH)
-        ep_locations_.push(m.origin() + forward);
-    else
-        ep_locations_.push(0);
+    // Push the next en passant location
+    ep_locations_.push(next_ep);
 
     // Maybe we moved the king or rooks/wizards?
     updateCastlingRights(color, m.origin());
@@ -287,12 +299,11 @@ void Board::undoMove()
     bool color = pieces_[m.origin()].color();
     int forward = (color == WHITE) ? 144 : -144;
 
-    int dir, rook_sq; // Used for castling only
+    int dir, dist, rook_sq; // Used for castling only
 
     switch(type)
     {
       case QUIET:
-        break;
       case DOUBLE_PAWN_PUSH:
         break;
       case CAPTURE:
@@ -303,10 +314,12 @@ void Board::undoMove()
         pieces_[m.target() - forward] = Piece::Pawn(!color);
         break;
       case CASTLE:
-        // The king moves two squares, so we can find the direction by halving
+        // The king moves two squares, so we can find the direction by halving,
         dir = (m.target() - m.origin()) >> 1;
-        // and the rook square by adding it 3 or 4 times.
-        rook_sq = m.origin() + dir * ((dir > 0) ? 3 : 4);
+        // the distance, by the sign of the direction,
+        dist = (dir > 0) ? 3 : 4;
+        // and the rook square by combining those.
+        rook_sq = m.origin() + dir * dist;
         // Move the rook back
         pieces_[rook_sq] = pieces_[m.origin() + dir];
         pieces_[m.origin() + dir] = Piece(NIL, WHITE);
@@ -322,23 +335,38 @@ void Board::undoMove()
     }
 }
 
+bool Board::isInCheck(bool color) const
+{
+    list<Move> opponents_moves = generatePseudoLegalMoves(!color);
+    list<Move>::const_iterator it;
+    for(it = opponents_moves.begin(); it != opponents_moves.end(); it++)
+    {
+        if(it->type() == CAPTURE || it->type() == PROMO_CAPTURE)
+        {
+            Piece captured = pieces_[it->origin()];
+            if(captured.type() == KING)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+//----PRIVATE----
+
 list<Move> Board::generatePawnMoves(int origin) const
 {
     list<Move> moves;
-    Piece oPiece = pieces_[origin];
-    PieceType oPt = oPiece.type();
+    Piece p = pieces_[origin];
+    bool color = p.color();
 
-    int forward = PIECE_DIRECTIONS[oPt][0];
+    int forward = (color == WHITE) ? 144 : -144;
     int ahead = origin + forward;
     int twoAhead = ahead + forward;
 
     int rank = (origin / 144) - 2;
-
-    // Mmm... Tasty bitwise hacks.     // WHITE    BLACK
-    int color_flag = -(oPt == W_PAWN); //  -1        0
-    int color_mask = color_flag & 0x7; //   7        0
-    int startingRank = color_mask ^ 6; //   1        6
-    int promoRank = color_mask ^ 1;    //   6        1
+    int homeRank = (color == WHITE) ? 1 : 6;
+    int promoRank = 7 - homeRank;
 
     // Can we move forward?
     if(pieces_[ahead].type() == NIL)
@@ -357,18 +385,18 @@ list<Move> Board::generatePawnMoves(int origin) const
             moves.push_back(Move::Quiet(origin, ahead));
 
         // Can we perform a double pawn push?
-        if(rank == startingRank && pieces_[twoAhead].type() == NIL)
+        if(rank == homeRank && pieces_[twoAhead].type() == NIL)
             moves.push_back(Move::DPP(origin, twoAhead));
     }
 
-    // We start at 1, because the first entry is a forward move
-    for(int i = 1; i < NUM_DIRECTIONS[oPt]; i++)
+    // Can we capture things?
+    for(int i = 0; i < NUM_DIRECTIONS[p.type()]; i++)
     {
-        int target = origin + PIECE_DIRECTIONS[oPt][i];
-        Piece tPiece = pieces_[target];
+        int target = origin + PIECE_DIRECTIONS[p.type()][i];
+        Piece target_piece = pieces_[target];
 
         // Is this an enemy piece?
-        if(oPiece.isEnemy(tPiece))
+        if(p.isEnemy(target_piece))
         {
             // Are we currently on the second-to-last rank?
             if(rank == promoRank)
@@ -396,10 +424,10 @@ list<Move> Board::generatePawnMoves(int origin) const
 list<Move> Board::generateNonPawnMoves(int origin) const
 {
     list<Move> moves;
-    Piece oPiece = pieces_[origin];
-    PieceType oPt = oPiece.type();
+    Piece p = pieces_[origin];
+    PieceType type = p.type();
 
-    int num_dirs = NUM_DIRECTIONS[oPt];
+    int num_dirs = NUM_DIRECTIONS[type];
 
     // Iterate through every permissible move direction
     for(int i = 0; i < num_dirs; i++)
@@ -407,21 +435,21 @@ list<Move> Board::generateNonPawnMoves(int origin) const
         int target = origin;
         while(true) // this is so sliding pieces continue moving
         {
-            target += PIECE_DIRECTIONS[oPt][i];
-            Piece tPiece = pieces_[target];
+            target += PIECE_DIRECTIONS[type][i];
+            Piece target_piece = pieces_[target];
 
             // Did we hit something?
-            if(!tPiece.type() == NIL)
+            if(target_piece.type() != NIL)
             {
                 // Was it an enemy piece?
-                if(oPiece.isEnemy(tPiece))
+                if(p.isEnemy(target_piece))
                     moves.push_back(Move::Capture(origin, target));
                 break;
             }
             moves.push_back(Move::Quiet(origin, target));
 
             // Is this a non-sliding piece?
-            if(!SLIDING[oPt])
+            if(!SLIDING[type])
                 break;
         }
     }
@@ -432,24 +460,22 @@ list<Move> Board::generateNonPawnMoves(int origin) const
 void Board::updateCastlingRights(bool color, int origin)
 {
     // This means we only have to make one color lookup
-    int dist_from_king = origin - KING_SQUARE[color];
+    int dist_from_king = origin - kingSquare(color);
     int current_rights = castling_rights_.top();
-
-    int offset = (color == WHITE) ? 0 : 6;
 
     // If we moved the king, remove all castling rights for that side
     if(dist_from_king == 0)
     {
-        castling_rights_.push(current_rights &~ (0x3F << offset));
+        castling_rights_.push(current_rights &~ castleMaskAll(color));
         return;
     }
 
     for(int i = 0; i < 6; i++)
     {
         // If we moved a rook, remove the rights just for that axis
-        if(dist_from_king == CASTLE_DIRECTIONS[i] * CASTLE_DISTANCES[i])
+        if(dist_from_king == castleDir(i) * castleDist(i))
         {
-            castling_rights_.push(current_rights &~ (1 << (offset + i)));
+            castling_rights_.push(current_rights &~ castleMask(color, i));
             return;
         }
     }

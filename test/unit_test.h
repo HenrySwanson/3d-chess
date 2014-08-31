@@ -235,7 +235,7 @@ void MissionControl::logCmp(const char* file, int line, const char* expr_a,
 #define ASSERT_STR_CMP(a, b, op)                                              \
     _IF_NOT( strcmp((a), (b)) op 0 )                                          \
     {                                                                         \
-        MissionControl::logStrCmp(__FILE__, __LINE__, #a, #b, #op, (a), (b)); \                                                         \
+        MissionControl::logStrCmp(__FILE__, __LINE__, #a, #b, #op, (a), (b)); \
         return;                                                               \
     }
 

@@ -71,7 +71,7 @@ PieceType Move::promoted() const
 
 bool Move::operator==(const Move& m) const
 {
-    return data_ == m.data_;
+    return (data_ == m.data_);
 }
 
 bool Move::operator!=(const Move& m) const

@@ -8,6 +8,7 @@
  * movements are entirely determined by PieceType. Second, it gives us an even
  * 16 types, which fit perfectly into a nibble.
  */
+// TODO get rid of W_PAWN, B_PAWN distinction
 enum PieceType {
     NIL, BORDER, W_PAWN, B_PAWN,
     KNIGHT, GRIFFIN, DRAGON, UNICORN,

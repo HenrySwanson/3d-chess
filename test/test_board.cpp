@@ -238,7 +238,7 @@ TEST(MoveGeneration, King)
 {
     int array [] = {
     // (       0 0 -       )(       0 0 0       )(       0 0 1       )
-        1,2,3, 1,3,3, 1,4,3, 1,2,4, 1,3,4, 1,4,4, 1,2,5, 1,3,5, 1,4,5, // - 0 0 
+        1,2,3, 1,3,3, 1,4,3, 1,2,4, 1,3,4, 1,4,4, 1,2,5, 1,3,5, 1,4,5, // - 0 0
         2,2,3, 2,3,3, 2,4,3, 2,2,4,        2,4,4, 2,2,5, 2,3,5, 2,4,5, // 0 0 0
         3,2,3, 3,3,3, 3,4,3, 3,2,4, 3,3,4, 3,4,4, 3,2,5, 3,3,5, 3,4,5  // + 0 0
     //  0 - 0  0 0 0  0 + 0  0 - 0  0 0 0  0 + 0  0 - 0  0 0 0  0 + 0
@@ -388,9 +388,9 @@ TEST(MoveGeneration, PawnI)
 
     // Pawns cannot capture their teammates, nil spaces, or borders
     moves = board.generateMoves(f);
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(6,0,3)))); // White pawn
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(7,1,3)))); // Nil
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(8,0,3)))); // Border
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(6,0,3))));
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(7,1,3))));
+    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(8,0,3))));
 }
 
 /** Tests that promotions and promo-captures behave correctly. */
