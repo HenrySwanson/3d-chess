@@ -74,7 +74,7 @@ class MissionControl
     static void runAll();
 
     /** Runs the given test, assuming logging is active. */
-    static void runTest(UnitTest ut);
+    static void runTest(const UnitTest& ut);
 
     /** Logs the result of {ASSERT/EXPECT}_{TRUE/FALSE}. */
     static void logBool(const char* file, int line, const char* expr,

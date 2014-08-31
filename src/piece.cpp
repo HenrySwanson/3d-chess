@@ -26,12 +26,12 @@ bool Piece::isOn(bool color) const
     return (type() != NIL) && (type() != BORDER) && (this->color() == color);
 }
 
-bool Piece::isFriend(Piece p) const
+bool Piece::isFriend(const Piece& p) const
 {
     return p.isOn(color());
 }
 
-bool Piece::isEnemy(Piece p) const
+bool Piece::isEnemy(const Piece& p) const
 {
     return p.isOn(!color());
 }

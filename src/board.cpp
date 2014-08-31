@@ -146,7 +146,7 @@ Piece Board::getPiece(int i) const
     return pieces_[i];
 }
 
-Piece Board::putPiece(Piece p, int i)
+Piece Board::putPiece(const Piece& p, int i)
 {
     Piece q = pieces_[i];
     pieces_[i] = p;
@@ -220,7 +220,7 @@ list<Move> Board::generateCastlingMoves(bool color) const
     return moves;
 }
 
-void Board::makeMove(Move m)
+void Board::makeMove(const Move& m)
 {
     MoveType type = m.type();
     bool color = pieces_[m.origin()].color();

@@ -22,7 +22,7 @@ class Board
     Piece getPiece(int i) const;
 
     /** Puts the specifed piece at i and returns the previous occupant. */
-    Piece putPiece(Piece p, int i);
+    Piece putPiece(const Piece& p, int i);
 
     /** Generates all pseudo-legal moves that the given color can make. */
     std::list<Move> generatePseudoLegalMoves(int color) const;
@@ -42,7 +42,7 @@ class Board
     // TODO isLegal (maybe isPseudoLegal, too?)
 
     /** Performs the given move. Does not check for (pseudo-)legality. */
-    void makeMove(Move m);
+    void makeMove(const Move& m);
 
     /** Undoes the most recent move. Does nothing if there was none. */
     void undoMove();
@@ -79,7 +79,7 @@ class Board
     Piece pieces_ [1728];
 
     /** Contains all the moves that have been done on this board. */
-    std::stack<Move> history_;
+    std::stack<Move> history_; // TODO const? (see also: other stacks)
 
     /**
      * For each turn, contains the location of the en passant square, or 0 if

@@ -71,7 +71,7 @@ void MissionControl::runAll()
     logfile_.close();
 }
 
-void MissionControl::runTest(UnitTest ut)
+void MissionControl::runTest(const UnitTest& ut)
 {
     current_test_failed_ = false;
 
