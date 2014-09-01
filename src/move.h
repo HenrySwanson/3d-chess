@@ -15,7 +15,7 @@ enum MoveType {
     PROMO_CAPTURE
 };
 
-// TODO maybe add color and castling axis?
+// TODO maybe add castling axis?
 
 /**
  * Represents a chess move. Does not contain all of the necessary data to
@@ -24,36 +24,30 @@ enum MoveType {
 class Move
 {
   public:
-    /** Constructs a quiet move from origin to target. */
-    static Move Quiet(int origin, int target);
-
-    /** Constructs a double pawn push from origin to target. */
-    static Move DPP(int origin, int target);
-
-    /** Constructs a capturing move from origin to target. */
-    static Move Capture(int origin, int target);
-
-    /** Constructs an en passant move from origin to target. */
-    static Move EP(int origin, int target);
-
-    /** Constructs a castling move from origin to target. */
-    static Move Castle(int origin, int target);
+    /** Constructs a nil move. This move should never be used. */
+    Move();
 
     /**
-     * Constructs a promotion move from origin to target, with the pawn
-     * becoming the specified piece.
+     * Constructs a move of the given type for the given color, where origin is
+     * the square from which the piece departs, and target is where it arrives.
+     *
+     * Cannot be used with PROMOTE and PROMO_CAPTURE.
      */
-    static Move Promote(int origin, int target, PieceType promo);
+    Move(bool color, MoveType type, int origin, int target);
 
     /**
-     * Constructs a promo-capture from origin to target, where the promoted-to
-     * piece is specified.
+     * Just like the Move(bool, MoveType, int, int) constructor, but also
+     * specifies a piece type that is promoted to.
+     *
+     * Can only be used with PROMOTE and PROMO_CAPTURE.
      */
-    static Move PromoCapture(int origin, int target, PieceType promo);
-
+    Move(bool color, MoveType type, int origin, int target, PieceType promo);
 
     /** Returns the type of this move. */
     MoveType type() const;
+
+    /** Returns the color of the team making this move. */
+    int color() const;
 
     /** Returns the origin square of this move. */
     int origin() const;
@@ -70,10 +64,11 @@ class Move
   private:
     /**
      * A bitfield. Where LSB is Bit 0,
-     *   Bits 0-2 - type
-     *   Bits 3-13 - origin
-     *   Bits 14-24 - target
-     *   Bits 25-28 - promoted type
+     *   Bits 0-2  - type
+     *   Bit  3    - color
+     *   Bits 4-14 - origin
+     *   Bits 15-25 - target
+     *   Bits 26-28 - promoted type
      */
     unsigned int data_;
 };

@@ -2,67 +2,30 @@
 
 #include "unit_test.h"
 
-TEST(Move, Quiet)
+TEST(Move, StandardConstructor)
 {
+    bool color = BLACK;
+    MoveType type = CAPTURE;
     int i = mailbox(3,4,1);
     int j = mailbox(3,4,6);
-    Move m = Move::Quiet(i, j);
+    Move m = Move(color, type, i, j);
+    EXPECT_EQ(m.type(), type);
+    EXPECT_EQ(m.color(), color);
     EXPECT_EQ(m.origin(), i);
     EXPECT_EQ(m.target(), j);
 }
 
-TEST(Move, DPP)
+TEST(Move, ExtraConstructor)
 {
-    int i = mailbox(3,4,1);
-    int j = mailbox(3,4,3);
-    Move m = Move::DPP(i, j);
+    bool color = WHITE;
+    MoveType type = PROMOTE;
+    int i = mailbox(3,4,6);
+    int j = mailbox(3,4,7);
+    PieceType promo = QUEEN;
+    Move m = Move(color, type, i, j, QUEEN);
+    EXPECT_EQ(m.type(), type);
+    EXPECT_EQ(m.color(), color);
     EXPECT_EQ(m.origin(), i);
     EXPECT_EQ(m.target(), j);
-}
-
-TEST(Move, Capture)
-{
-    int i = mailbox(3,4,1);
-    int j = mailbox(3,4,3);
-    Move m = Move::Capture(i, j);
-    EXPECT_EQ(m.origin(), i);
-    EXPECT_EQ(m.target(), j);
-}
-
-TEST(Move, EP)
-{
-    int i = mailbox(5,2,4);
-    int j = mailbox(4,3,5);
-    Move m = Move::EP(i, j);
-    EXPECT_EQ(m.origin(), i);
-    EXPECT_EQ(m.target(), j);
-}
-
-TEST(Move, Castle)
-{
-    int i = mailbox(4,4,0);
-    int j = mailbox(4,7,0);
-    Move m = Move::Castle(i, j);
-    EXPECT_EQ(m.origin(), i);
-    EXPECT_EQ(m.target(), j);
-}
-
-TEST(Move, Promote)
-{
-    int i = mailbox(3,1,6);
-    int j = mailbox(3,1,7);
-    Move m = Move::Promote(i, j, WIZARD);
-    EXPECT_EQ(m.origin(), i);
-    EXPECT_EQ(m.target(), j);
-    EXPECT_TRUE(m.promoted() == WIZARD);
-}
-
-TEST(Move, PromoCapture)
-{
-    int i = mailbox(3,1,6);
-    int j = mailbox(3,1,7);
-    Move m = Move::PromoCapture(i, j, QUEEN);
-    EXPECT_TRUE(m.origin() == i);
-    EXPECT_TRUE(m.target() == j);
-    EXPECT_TRUE(m.promoted() == QUEEN);
+    EXPECT_EQ(m.promoted(), promo);
 }

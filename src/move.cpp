@@ -1,52 +1,22 @@
 #include "move.h"
 
-Move Move::Quiet(int origin, int target)
+#include <cassert>
+
+Move::Move()
 {
-    Move m;
-    m.data_ = QUIET | (origin << 3) | (target << 14);
-    return m;
+    data_ = 0;
 }
 
-Move Move::DPP(int origin, int target)
+Move::Move(bool color, MoveType type, int origin, int target)
 {
-    Move m;
-    m.data_ = DOUBLE_PAWN_PUSH | (origin << 3) | (target << 14);
-    return m;
+    assert(type != PROMOTE && type != PROMO_CAPTURE);
+    data_ = (type) | (color << 3) | (origin << 4) | (target << 15);
 }
 
-Move Move::Capture(int origin, int target)
+Move::Move(bool color, MoveType type, int origin, int target, PieceType promo)
 {
-    Move m;
-    m.data_ = CAPTURE | (origin << 3) | (target << 14);
-    return m;
-}
-
-Move Move::EP(int origin, int target)
-{
-    Move m;
-    m.data_ = EN_PASSANT | (origin << 3) | (target << 14);
-    return m;
-}
-
-Move Move::Castle(int origin, int target)
-{
-    Move m;
-    m.data_ = CASTLE | (origin << 3) | (target << 14);
-    return m;
-}
-
-Move Move::Promote(int origin, int target, PieceType promo)
-{
-    Move m;
-    m.data_ = PROMOTE | (origin << 3) | (target << 14) | (promo << 25);
-    return m;
-}
-
-Move Move::PromoCapture(int origin, int target, PieceType promo)
-{
-    Move m;
-    m.data_ = PROMO_CAPTURE | (origin << 3) | (target << 14) | (promo << 25);
-    return m;
+    assert(type == PROMOTE || type == PROMO_CAPTURE);
+    data_ = (type) | (color << 3) | (origin << 4) | (target << 15) | (promo << 26);
 }
 
 MoveType Move::type() const
@@ -54,19 +24,24 @@ MoveType Move::type() const
     return static_cast<MoveType>(data_ & 0x7);
 }
 
+int Move::color() const
+{
+    return (data_ >> 3) & 0x1;
+}
+
 int Move::origin() const
 {
-    return (data_ >> 3) & 0x7FF;
+    return (data_ >> 4) & 0x7FF;
 }
 
 int Move::target() const
 {
-    return (data_ >> 14) & 0x7FF;
+    return (data_ >> 15) & 0x7FF;
 }
 
 PieceType Move::promoted() const
 {
-    return static_cast<PieceType>((data_ >> 25) & 0xF);
+    return static_cast<PieceType>((data_ >> 26) & 0xF);
 }
 
 bool Move::operator==(const Move& m) const

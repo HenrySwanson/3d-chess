@@ -297,27 +297,27 @@ TEST(MoveGeneration, PawnII)
     list<Move> w_moves = b.generateMoves(i);
     list<Move> b_moves = b.generateMoves(j);
 
-    EXPECT_TRUE(containsMove(w_moves, Move::Quiet(  i, mailbox(2,3,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::DPP(    i, mailbox(2,3,3))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,2,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,3,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(1,4,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,2,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(2,4,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,2,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,3,2))));
-    EXPECT_TRUE(containsMove(w_moves, Move::Capture(i, mailbox(3,4,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, QUIET, i, mailbox(2,3,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, DOUBLE_PAWN_PUSH, i, mailbox(2,3,3))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(1,2,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(1,3,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(1,4,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(2,2,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(2,4,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(3,2,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(3,3,2))));
+    EXPECT_TRUE(containsMove(w_moves, Move(WHITE, CAPTURE, i, mailbox(3,4,2))));
 
-    EXPECT_TRUE(containsMove(b_moves, Move::Quiet(  j, mailbox(2,3,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::DPP(    j, mailbox(2,3,4))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,2,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,3,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(1,4,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,2,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(2,4,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,2,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,3,5))));
-    EXPECT_TRUE(containsMove(b_moves, Move::Capture(j, mailbox(3,4,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, QUIET,   j, mailbox(2,3,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, DOUBLE_PAWN_PUSH, j, mailbox(2,3,4))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(1,2,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(1,3,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(1,4,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(2,2,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(2,4,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(3,2,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(3,3,5))));
+    EXPECT_TRUE(containsMove(b_moves, Move(BLACK, CAPTURE, j, mailbox(3,4,5))));
 
     // Confirms that there are no other moves in the lists
     EXPECT_EQ(w_moves.size(), 10);
@@ -366,31 +366,31 @@ TEST(MoveGeneration, PawnI)
 
     // Pawns cannot move off the board
     moves = board.generateMoves(a);
-    EXPECT_FALSE(containsMove(moves, Move::Quiet(a, mailbox(2,0,8))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, QUIET, a, mailbox(2,0,8))));
 
     // Pawns cannot move forward twice if that square is non-empty
     moves = board.generateMoves(b);
-    EXPECT_FALSE(containsMove(moves, Move::DPP(b, mailbox(3,0,3))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, DOUBLE_PAWN_PUSH, b, mailbox(3,0,3))));
     // but they can move forward once
-    EXPECT_TRUE(containsMove(moves, Move::Quiet(b, mailbox(3,0,2))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, QUIET, b, mailbox(3,0,2))));
 
     // Pawns cannot move forward twice if they are off their home rank
     moves = board.generateMoves(c);
-    EXPECT_FALSE(containsMove(moves, Move::DPP(c, mailbox(3,0,5))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, DOUBLE_PAWN_PUSH, c, mailbox(3,0,5))));
     // once more, for good measure (and because D doesn't do anything else)
     moves = board.generateMoves(d);
-    EXPECT_FALSE(containsMove(moves, Move::DPP(d, mailbox(6,0,5))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, DOUBLE_PAWN_PUSH, d, mailbox(6,0,5))));
 
     // Pawns cannot move forward at all if they are immediately obstructed
     moves = board.generateMoves(e);
-    EXPECT_FALSE(containsMove(moves, Move::Quiet(e, mailbox(7,0,2))));
-    EXPECT_FALSE(containsMove(moves, Move::DPP(e, mailbox(7,0,3))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, QUIET, e, mailbox(7,0,2))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, DOUBLE_PAWN_PUSH, e, mailbox(7,0,3))));
 
     // Pawns cannot capture their teammates, nil spaces, or borders
     moves = board.generateMoves(f);
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(6,0,3))));
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(7,1,3))));
-    EXPECT_FALSE(containsMove(moves, Move::Capture(f, mailbox(8,0,3))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, CAPTURE, f, mailbox(6,0,3))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, CAPTURE, f, mailbox(7,1,3))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, CAPTURE, f, mailbox(8,0,3))));
 }
 
 /** Tests that promotions and promo-captures behave correctly. */
@@ -411,7 +411,7 @@ TEST(MoveGeneration, PromoMaybeCapture)
     for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
     {
         PieceType pt = PROMOTION_PIECES[t];
-        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, pt)));
+        EXPECT_TRUE(containsMove(moves, Move(WHITE, PROMOTE, i, j, pt)));
     }
 
     // Add an obstruction? Nothing to do here.
@@ -426,7 +426,7 @@ TEST(MoveGeneration, PromoMaybeCapture)
     for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
     {
         PieceType pt = PROMOTION_PIECES[t];
-        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, pt)));
+        EXPECT_TRUE(containsMove(moves, Move(WHITE, PROMO_CAPTURE, i, k, pt)));
     }
 
     // Remove the obstruction? Both types of moves.
@@ -436,8 +436,8 @@ TEST(MoveGeneration, PromoMaybeCapture)
     for(int t = 0; t < NUM_PROMOTION_PIECES; t++)
     {
         PieceType pt = PROMOTION_PIECES[t];
-        EXPECT_TRUE(containsMove(moves, Move::Promote(i, j, pt)));
-        EXPECT_TRUE(containsMove(moves, Move::PromoCapture(i, k, pt)));
+        EXPECT_TRUE(containsMove(moves, Move(WHITE, PROMOTE, i, j, pt)));
+        EXPECT_TRUE(containsMove(moves, Move(WHITE, PROMO_CAPTURE, i, k, pt)));
     }
 }
 
@@ -464,21 +464,21 @@ TEST(MoveGeneration, Capture)
     list<Move> moves = b.generateMoves(i);
 
     // Rook can still move toward the knight
-    EXPECT_TRUE(containsMove(moves, Move::Quiet(i, mailbox(3,3,4))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, QUIET, i, mailbox(3,3,4))));
 
     // Can't move onto the knight, but can capture it
-    EXPECT_FALSE(containsMove(moves, Move::Quiet(i, j)));
-    EXPECT_TRUE(containsMove(moves, Move::Capture(i, j)));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, QUIET, i, j)));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, CAPTURE, i, j)));
 
     // Can't move past it
-    EXPECT_FALSE(containsMove(moves, Move::Quiet(i, mailbox(5,3,4))));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, QUIET, i, mailbox(5,3,4))));
 
     // It also can't capture the pawn
-    EXPECT_FALSE(containsMove(moves, Move::Capture(i, k)));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, CAPTURE, i, k)));
 
     // Knight can capture the pawn
     moves = b.generateMoves(j);
-    EXPECT_TRUE(containsMove(moves, Move::Capture(j, k)));
+    EXPECT_TRUE(containsMove(moves, Move(BLACK, CAPTURE, j, k)));
 }
 
 TEST(MoveGeneration, EnPassant)
@@ -507,9 +507,9 @@ TEST(MoveGeneration, EnPassant)
 
     // Because the ability to perform en passant is triggered by another move,
     // we have to execute a sequence of moves.
-    Move first = Move::DPP(a, c);
-    Move second = Move::Quiet(h, g);
-    Move third = Move::DPP(e, f);
+    Move first = Move(BLACK, DOUBLE_PAWN_PUSH, a, c);
+    Move second = Move(WHITE, QUIET, h, g);
+    Move third = Move(BLACK, DOUBLE_PAWN_PUSH, e, f);
 
     // Put down the pieces
     Board board;
@@ -524,16 +524,16 @@ TEST(MoveGeneration, EnPassant)
     board.makeMove(first);
     moves = board.generatePseudoLegalMoves(WHITE);
     // D can perform en passant, because it's diagonal to the target square,
-    EXPECT_TRUE(containsMove(moves, Move::EP(d, b)));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, EN_PASSANT, d, b)));
     // But H can't, because it isn't.
-    EXPECT_FALSE(containsMove(moves, Move::EP(h, b)));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, EN_PASSANT, h, b)));
 
     // Do two more moves (doesn't really matter which)
     board.makeMove(second);
     board.makeMove(third);
     moves = board.generateMoves(d);
     // D lost the chance to do en passant
-    EXPECT_FALSE(containsMove(moves, Move::EP(d, b)));
+    EXPECT_FALSE(containsMove(moves, Move(WHITE, EN_PASSANT, d, b)));
 }
 
 TEST(MoveGeneration, Castle)
@@ -560,19 +560,19 @@ TEST(MoveGeneration, Castle)
     // Should be able to castle everywhere
     list<Move> moves = b.generateCastlingMoves(WHITE);
     EXPECT_EQ(moves.size(), 6);
-    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(2,4,0))));
-    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(6,4,0))));
-    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(4,2,0))));
-    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(4,6,0))));
-    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(2,2,0))));
-    EXPECT_TRUE(containsMove(moves, Move::Castle(i, mailbox(6,6,0))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, CASTLE, i, mailbox(2,4,0))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, CASTLE, i, mailbox(6,4,0))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, CASTLE, i, mailbox(4,2,0))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, CASTLE, i, mailbox(4,6,0))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, CASTLE, i, mailbox(2,2,0))));
+    EXPECT_TRUE(containsMove(moves, Move(WHITE, CASTLE, i, mailbox(6,6,0))));
 
     // One of the rooks moves, losing castling rights
-    b.makeMove(Move::Quiet(mailbox(0,4,0), mailbox(0,4,2)));
+    b.makeMove(Move(WHITE, QUIET, mailbox(0,4,0), mailbox(0,4,2)));
     // Black bishop moves into the way of another rook
-    b.makeMove(Move::Quiet(mailbox(5,2,0), mailbox(4,1,0)));
+    b.makeMove(Move(BLACK, QUIET, mailbox(5,2,0), mailbox(4,1,0)));
     // The rook moves back to its original spot
-    b.makeMove(Move::Quiet(mailbox(0,4,2), mailbox(0,4,0)));
+    b.makeMove(Move(WHITE, QUIET, mailbox(0,4,2), mailbox(0,4,0)));
 
     // But we should only be able to castle to 4 places now
     moves = b.generateCastlingMoves(WHITE);
@@ -585,7 +585,7 @@ TEST(MoveMaking, Quiet)
     Piece wr (ROOK, WHITE);
     int i = mailbox(6,3,5);
     int j = mailbox(6,6,5);
-    Move m = Move::Quiet(i, j);
+    Move m = Move(WHITE, QUIET, i, j);
 
     Board b;
     b.putPiece(wr, i);
@@ -609,7 +609,7 @@ TEST(MoveMaking, DPP)
     Piece wp (W_PAWN, WHITE);
     int i = mailbox(3,5,1);
     int j = mailbox(3,5,3);
-    Move m = Move::DPP(i, j);
+    Move m = Move(WHITE, DOUBLE_PAWN_PUSH, i, j);
 
     // Put the pieces down
     Board b;
@@ -635,7 +635,7 @@ TEST(MoveMaking, Capture)
     Piece bn (KNIGHT, BLACK);
     int i = mailbox(6,3,5);
     int j = mailbox(6,6,5);
-    Move m = Move::Capture(i, j);
+    Move m = Move(WHITE, CAPTURE, i, j);
 
     // Put the pieces down
     Board b;
@@ -674,8 +674,8 @@ TEST(MoveMaking, EnPassant)
     int k = mailbox(3,5,5);
     int l = mailbox(3,5,4);
 
-    Move first = Move::DPP(j, l);
-    Move second = Move::EP(i, k);
+    Move first = Move(BLACK, DOUBLE_PAWN_PUSH, j, l);
+    Move second = Move(WHITE, EN_PASSANT, i, k);
 
     Board b;
     b.putPiece(wp, i);
@@ -722,7 +722,7 @@ TEST(MoveMaking, CastleKingside)
     b.putPiece(wk, i);
     b.putPiece(wr, l);
 
-    b.makeMove(Move::Castle(i, k));
+    b.makeMove(Move(WHITE, CASTLE, i, k));
 
     // The king should be on k, and the rook on j.
     EXPECT_TRUE(b.getPiece(i).type() == NIL);
@@ -753,7 +753,7 @@ TEST(MoveMaking, CastleQueenside)
     b.putPiece(bk, i);
     b.putPiece(br, l);
 
-    b.makeMove(Move::Castle(i, k));
+    b.makeMove(Move(BLACK, CASTLE, i, k));
 
     // The king should be on k, and the rook on j.
     EXPECT_TRUE(b.getPiece(i).type() == NIL);
@@ -777,7 +777,7 @@ TEST(MoveMaking, Promotion)
     Piece wq (QUEEN, WHITE);
     int i = mailbox(5,1,6);
     int j = mailbox(5,1,7);
-    Move m = Move::Promote(i, j, QUEEN);
+    Move m = Move(WHITE, PROMOTE, i, j, QUEEN);
 
     Board b;
     b.putPiece(wp, i);
@@ -804,7 +804,7 @@ TEST(MoveMaking, PromoCapture)
     Piece bn (KNIGHT, BLACK);
     int i = mailbox(5,1,6);
     int j = mailbox(5,2,7);
-    Move m = Move::PromoCapture(i, j, QUEEN);
+    Move m = Move(WHITE, PROMO_CAPTURE, i, j, QUEEN);
 
     Board b;
     b.putPiece(wp, i);

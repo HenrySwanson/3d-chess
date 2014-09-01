@@ -2,6 +2,9 @@
 
 using std::list;
 
+/** Represents the lack of an en passant square for the turn. */
+const int NO_EP_SQUARE = 0;
+
 /**
  * The following lookup tables are all indexed by PieceType. If the order of
  * them changes, make sure to update this as well.
@@ -137,7 +140,7 @@ Board::Board()
             for(int k = 0; k < 8; k++)
                 pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE);
 
-    ep_locations_.push(0);
+    ep_locations_.push(NO_EP_SQUARE);
     castling_rights_.push(0x0FFF);
 }
 
@@ -210,7 +213,7 @@ list<Move> Board::generateCastlingMoves(bool color) const
                     goto failed;
             }
 
-            moves.push_back(Move::Castle(king_sq, king_sq + 2 * dir));
+            moves.push_back(Move(color, CASTLE, king_sq, king_sq + 2 * dir));
         }
 
         failed:
@@ -226,7 +229,7 @@ void Board::makeMove(const Move& m)
     bool color = pieces_[m.origin()].color();
     int forward = (color == WHITE) ? 144 : -144;
 
-    int next_ep = 0;  // Modified in DPP only
+    int next_ep = NO_EP_SQUARE;  // Modified in DPP only
     int dir, dist, rook_sq; // Used for castling only
 
     switch(type)
@@ -378,15 +381,15 @@ list<Move> Board::generatePawnMoves(int origin) const
             for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
             {
                 PieceType pt = PROMOTION_PIECES[i];
-                moves.push_back(Move::Promote(origin, ahead, pt));
+                moves.push_back(Move(color, PROMOTE, origin, ahead, pt));
             }
         }
         else
-            moves.push_back(Move::Quiet(origin, ahead));
+            moves.push_back(Move(color, QUIET, origin, ahead));
 
         // Can we perform a double pawn push?
         if(rank == homeRank && pieces_[twoAhead].type() == NIL)
-            moves.push_back(Move::DPP(origin, twoAhead));
+            moves.push_back(Move(color, DOUBLE_PAWN_PUSH, origin, twoAhead));
     }
 
     // Can we capture things?
@@ -405,16 +408,16 @@ list<Move> Board::generatePawnMoves(int origin) const
                 for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
                 {
                     PieceType pt = PROMOTION_PIECES[i];
-                    moves.push_back(Move::PromoCapture(origin, target, pt));
+                    moves.push_back(Move(color, PROMO_CAPTURE, origin, target, pt));
                 }
             }
             else
-                moves.push_back(Move::Capture(origin, target));
+                moves.push_back(Move(color, CAPTURE, origin, target));
         }
 
         // Can we perform en passant?
         if(ep_locations_.top() == target)
-            moves.push_back(Move::EP(origin, target));
+            moves.push_back(Move(color, EN_PASSANT, origin, target));
 
     }
 
@@ -426,6 +429,7 @@ list<Move> Board::generateNonPawnMoves(int origin) const
     list<Move> moves;
     Piece p = pieces_[origin];
     PieceType type = p.type();
+    bool color = p.color();
 
     int num_dirs = NUM_DIRECTIONS[type];
 
@@ -443,10 +447,10 @@ list<Move> Board::generateNonPawnMoves(int origin) const
             {
                 // Was it an enemy piece?
                 if(p.isEnemy(target_piece))
-                    moves.push_back(Move::Capture(origin, target));
+                    moves.push_back(Move(color, CAPTURE, origin, target));
                 break;
             }
-            moves.push_back(Move::Quiet(origin, target));
+            moves.push_back(Move(color, QUIET, origin, target));
 
             // Is this a non-sliding piece?
             if(!SLIDING[type])
