@@ -223,6 +223,17 @@ list<Move> Board::generateCastlingMoves(bool color) const
     return moves;
 }
 
+bool Board::isLegalMove(const Move& m) const // TODO make non-const version that uses undo
+{
+    Board copy (*this);
+    bool color = pieces_[m.origin()].color();
+
+    copy.makeMove(m);
+    return copy.isInCheck(color);
+
+    // TODO handle castling separately
+}
+
 void Board::makeMove(const Move& m)
 {
     MoveType type = m.type();
@@ -355,6 +366,16 @@ bool Board::isInCheck(bool color) const
     return false;
 }
 
+bool Board::isInCheckmate(bool color) const
+{
+    return isInCheck(color) && isInSomemate(color);
+}
+
+bool Board::isInStalemate(bool color) const
+{
+    return !isInCheck(color) && isInSomemate(color);
+}
+
 //----PRIVATE----
 
 list<Move> Board::generatePawnMoves(int origin) const
@@ -483,4 +504,19 @@ void Board::updateCastlingRights(bool color, int origin)
             return;
         }
     }
+}
+
+bool Board::isInSomemate(bool color) const
+{
+    list<Move> moves = generatePseudoLegalMoves(color);
+
+    list<Move>::const_iterator it;
+    for(it = moves.begin(); it != moves.end(); it++)
+    {
+        if(isLegalMove(*it))
+        {
+            return false;
+        }
+    }
+    return true;
 }

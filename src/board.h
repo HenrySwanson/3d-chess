@@ -24,6 +24,7 @@ class Board
     /** Puts the specifed piece at i and returns the previous occupant. */
     Piece putPiece(const Piece& p, int i);
 
+
     /** Generates all pseudo-legal moves that the given color can make. */
     std::list<Move> generatePseudoLegalMoves(int color) const;
 
@@ -39,7 +40,10 @@ class Board
     /** Generates all pseudo-legal castling moves for the given team. */
     std::list<Move> generateCastlingMoves(bool color) const;
 
-    // TODO isLegal (maybe isPseudoLegal, too?)
+    /** Returns true if the given move is legal for this configuration. */
+    bool isLegalMove(const Move& m) const;
+
+    // TODO maybe isPseudoLegal, too?
 
     /** Performs the given move. Does not check for (pseudo-)legality. */
     void makeMove(const Move& m);
@@ -51,7 +55,13 @@ class Board
     /** Returns true if the king of the specified color is in check. */
     bool isInCheck(bool color) const;
 
-    // TODO checkmate and stalemate
+    /** Returns true if the king of the specified color is in check. */
+    bool isInCheckmate(bool color) const;
+
+    /** Returns true if the king of the specified color is in check. */
+    bool isInStalemate(bool color) const;
+
+    // TODO determine move (so that the UI can figure out what move the player wanted)
 
   private:
     /** Generates all pseudo-legal moves for a pawn. */ 
@@ -62,6 +72,9 @@ class Board
 
     /** When a move is made, updates the castling rights accordingly. */
     void updateCastlingRights(bool color, int origin);
+
+    /** Returns true if all moves for the given side put the king in check. */
+    bool isInSomemate(bool color) const;
 
     /**
      * Represents the pieces on the board. This is a "mailbox" representation,

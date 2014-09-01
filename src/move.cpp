@@ -57,7 +57,6 @@ bool Move::operator!=(const Move& m) const
 int mailbox(int x, int y, int z)
 {
     return (z + 2) * 144 + (y + 2) * 12 + (x + 2);
-    //return x + 12 * y + 144 * z + 314;
 }
 
 int unmailboxX(int i)
