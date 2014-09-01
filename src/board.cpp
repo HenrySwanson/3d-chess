@@ -5,91 +5,90 @@ using std::list;
 /** Represents the lack of an en passant square for the turn. */
 const int NO_EP_SQUARE = 0;
 
-/**
+/*
  * The following lookup tables are all indexed by PieceType. If the order of
  * them changes, make sure to update this as well.
  */
-namespace {
-    /**
-     * This array just tells you how long the relevant row of
-     * PIECE_DIRECTIONS is (the rest is garbage).
-     */
-    static const int NUM_DIRECTIONS [16] = {
-        0, 0, 8, 8,
-        24, 24, 24, 72,
-        6, 12, 8,
-        18, 20, 14,
-        26, 26
-    };
 
-    /** Whether the indexing piece is a sliding piece */
-    static const bool SLIDING [16] = {
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        1, 1, 1,
-        1, 1, 1,
-        1, 0
-    };
+/**
+ * This array just tells you how long the relevant row of
+ * PIECE_DIRECTIONS is (the rest is garbage).
+ */
+static const int NUM_DIRECTIONS [16] = {
+    0, 0, 8, 8,
+    24, 24, 24, 72,
+    6, 12, 8,
+    18, 20, 14,
+    26, 26
+};
 
-    /**
-     * The directions that the indexing piece can move in. Since the pieces are
-     * stored in a linear array, we can encode an offset triple (x,y,z) as a
-     * single integer offset.
-     */
-    static const int PIECE_DIRECTIONS [16][72] = {
-        /* NIL, BORDER */
-        {}, {},
+/** Whether the indexing piece is a sliding piece */
+static const bool SLIDING [16] = {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    1, 1, 1,
+    1, 1, 1,
+    1, 0
+};
 
-        /* W_PAWN - Captures only */
-        {157, 156, 155, 145, 143, 133, 132, 131},
-        /* B_PAWN - Captures only */
-        {-157,-156,-155,-145,-143,-133,-132,-131},
+/**
+ * The directions that the indexing piece can move in. Since the pieces are
+ * stored in a linear array, we can encode an offset triple (x,y,z) as a
+ * single integer offset.
+ */
+static const int PIECE_DIRECTIONS [16][72] = {
+    /* NIL, BORDER */
+    {}, {},
+
+    /* W_PAWN - Captures only */
+    {157, 156, 155, 145, 143, 133, 132, 131},
+    /* B_PAWN - Captures only */
+    {-157,-156,-155,-145,-143,-133,-132,-131},
 
 
-        /* KNIGHT */
-        {  14,  10,  25,  23, 146, 142, 289, 287, 168, 120, 300, 276,
-          -14, -10, -25, -23,-146,-142,-289,-287,-168,-120,-300,-276},
-        /* GRIFFIN */
-        { 158, 154, 134, 130, 169, 121, 167, 119, 301, 275, 299, 277,
-         -158,-154,-134,-130,-169,-121,-167,-119,-301,-275,-299,-277},
-        /* DRAGON */
-        { 313, 311, 265, 263, 302, 278, 298, 274, 170, 118, 166, 122,
-         -313,-311,-265,-263,-302,-278,-298,-274,-170,-118,-166,-122},
-        /* UNICORN */
-        {  14,  10,  25,  23, 146, 142, 289, 287, 168, 120, 300, 276,
-          -14, -10, -25, -23,-146,-142,-289,-287,-168,-120,-300,-276,
-          158, 154, 134, 130, 169, 121, 167, 119, 301, 275, 299, 277,
-         -158,-154,-134,-130,-169,-121,-167,-119,-301,-275,-299,-277,
-          313, 311, 265, 263, 302, 278, 298, 274, 170, 118, 166, 122,
-         -313,-311,-265,-263,-302,-278,-298,-274,-170,-118,-166,-122},
+    /* KNIGHT */
+    {  14,  10,  25,  23, 146, 142, 289, 287, 168, 120, 300, 276,
+      -14, -10, -25, -23,-146,-142,-289,-287,-168,-120,-300,-276},
+    /* GRIFFIN */
+    { 158, 154, 134, 130, 169, 121, 167, 119, 301, 275, 299, 277,
+     -158,-154,-134,-130,-169,-121,-167,-119,-301,-275,-299,-277},
+    /* DRAGON */
+    { 313, 311, 265, 263, 302, 278, 298, 274, 170, 118, 166, 122,
+     -313,-311,-265,-263,-302,-278,-298,-274,-170,-118,-166,-122},
+    /* UNICORN */
+    {  14,  10,  25,  23, 146, 142, 289, 287, 168, 120, 300, 276,
+      -14, -10, -25, -23,-146,-142,-289,-287,-168,-120,-300,-276,
+      158, 154, 134, 130, 169, 121, 167, 119, 301, 275, 299, 277,
+     -158,-154,-134,-130,-169,-121,-167,-119,-301,-275,-299,-277,
+      313, 311, 265, 263, 302, 278, 298, 274, 170, 118, 166, 122,
+     -313,-311,-265,-263,-302,-278,-298,-274,-170,-118,-166,-122},
 
-        /* ROOK */
-        {1, 12, 144, -1, -12, -144},
-        /* BISHOP */
-        {13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132},
-        /* MACE */
-        {157, 155, 133, 131, -157, -155, -133, -131},
+    /* ROOK */
+    {1, 12, 144, -1, -12, -144},
+    /* BISHOP */
+    {13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132},
+    /* MACE */
+    {157, 155, 133, 131, -157, -155, -133, -131},
 
-        /* WIZARD */
-        {1, 12, 144, -1, -12, -144,
-         13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132},
-        /* ARCHER */
-        {13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132,
-         157, 155, 133, 131, -157, -155, -133, -131},
-        /* CANNON */
-        {1, 12, 144, -1, -12, -144,
-         157, 155, 133, 131, -157, -155, -133, -131},
+    /* WIZARD */
+    {1, 12, 144, -1, -12, -144,
+     13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132},
+    /* ARCHER */
+    {13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132,
+     157, 155, 133, 131, -157, -155, -133, -131},
+    /* CANNON */
+    {1, 12, 144, -1, -12, -144,
+     157, 155, 133, 131, -157, -155, -133, -131},
 
-        /* QUEEN */
-        {1, 12, 144, -1, -12, -144,
-         13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132,
-         157, 155, 133, 131, -157, -155, -133, -131},
-        /* KING */
-        {1, 12, 144, -1, -12, -144,
-         13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132,
-         157, 155, 133, 131, -157, -155, -133, -131}
-    };
-}
+    /* QUEEN */
+    {1, 12, 144, -1, -12, -144,
+     13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132,
+     157, 155, 133, 131, -157, -155, -133, -131},
+    /* KING */
+    {1, 12, 144, -1, -12, -144,
+     13, 11, 145, 143, 156, 132, -13, -11, -145, -143, -156, -132,
+     157, 155, 133, 131, -157, -155, -133, -131}
+};
 
 //----HELPER METHODS----
 
@@ -241,8 +240,7 @@ bool Board::isLegalMove(const Move& m) const // TODO make non-const version that
 void Board::makeMove(const Move& m)
 {
     MoveType type = m.type();
-    bool color = pieces_[m.origin()].color();
-    int forward = (color == WHITE) ? 144 : -144;
+    int forward = (m.color() == WHITE) ? 144 : -144;
 
     int next_ep = NO_EP_SQUARE;  // Modified in DPP only
     int dir, dist, rook_sq; // Used for castling only
@@ -272,10 +270,10 @@ void Board::makeMove(const Move& m)
         pieces_[rook_sq] = Piece(NIL, WHITE);
         break;
       case PROMOTE:
-        pieces_[m.origin()] = Piece(m.promoted(), color);
+        pieces_[m.origin()] = Piece(m.promoted(), m.color());
         break;
       case PROMO_CAPTURE:
-        pieces_[m.origin()] = Piece(m.promoted(), color);
+        pieces_[m.origin()] = Piece(m.promoted(), m.color());
         captured_.push(pieces_[m.target()]);
         break;
     }
@@ -288,7 +286,7 @@ void Board::makeMove(const Move& m)
     ep_locations_.push(next_ep);
 
     // Maybe we moved the king or rooks/wizards?
-    updateCastlingRights(color, m.origin());
+    updateCastlingRights(m.color(), m.origin());
 
     // Records move
     history_.push(m);
@@ -314,8 +312,7 @@ void Board::undoMove()
     pieces_[m.target()] = Piece(NIL, WHITE);
 
     MoveType type = m.type();
-    bool color = pieces_[m.origin()].color();
-    int forward = (color == WHITE) ? 144 : -144;
+    int forward = (m.color() == WHITE) ? 144 : -144;
 
     int dir, dist, rook_sq; // Used for castling only
 
@@ -329,7 +326,7 @@ void Board::undoMove()
         captured_.pop();
         break;
       case EN_PASSANT:
-        pieces_[m.target() - forward] = Piece::Pawn(!color);
+        pieces_[m.target() - forward] = Piece::Pawn(!m.color());
         break;
       case CASTLE:
         // The king moves two squares, so we can find the direction by halving,
@@ -343,16 +340,18 @@ void Board::undoMove()
         pieces_[m.origin() + dir] = Piece(NIL, WHITE);
         break;
       case PROMOTE:
-        pieces_[m.origin()] = Piece::Pawn(color);
+        pieces_[m.origin()] = Piece::Pawn(m.color());
         break;
       case PROMO_CAPTURE:
-        pieces_[m.origin()] = Piece::Pawn(color);
+        pieces_[m.origin()] = Piece::Pawn(m.color());
         pieces_[m.target()] = captured_.top();
         captured_.pop();
         break;
     }
 }
 
+// TODO this is very slow, and it's called in many places. Consider re-writing
+// or cacheing the result
 bool Board::isInCheck(bool color) const
 {
     list<Move> opponents_moves = generatePseudoLegalMoves(!color);

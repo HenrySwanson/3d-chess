@@ -18,6 +18,8 @@ class Board
     /** Generates an empty board. */
     Board();
 
+    // TODO setup (check email for initial configuration)
+
     /** Retrieves the piece at i. */
     Piece getPiece(int i) const;
 
