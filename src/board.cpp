@@ -91,6 +91,8 @@ namespace {
     };
 }
 
+//----HELPER METHODS----
+
 /** Returns the square that the king of the given team starts on. */
 static int kingSquare(bool color)
 {
@@ -129,6 +131,8 @@ static int castleMaskAll(bool color)
 {
    return (color == WHITE) ? 0x3F : 0xFC;
 }
+
+//----CLASS METHODS----
 
 Board::Board()
 {

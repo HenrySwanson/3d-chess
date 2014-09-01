@@ -2,10 +2,12 @@ CC = g++
 CFLAGS = -Wall -g
 LFLAGS = -g
 
+#TODO move unit_test.* to include
+
 CORE_SRCS = $(wildcard src/*.cpp)
 CORE_OBJS = $(patsubst %.cpp, %.o, $(CORE_SRCS))
 
-TEST_SRCS = $(wildcard test/test_*.cpp)
+TEST_SRCS = $(wildcard test/*.cpp)
 TEST_OBJS = $(patsubst %.cpp, %.o, $(TEST_SRCS))
 
 .PHONY : all check clean
@@ -20,7 +22,7 @@ clean :
 	rm -rf src/*.d test/*.d
 	rm  -f bin/unit_tests
 
-bin/unit_tests : $(CORE_OBJS) $(TEST_OBJS) test/unit_test.cpp
+bin/unit_tests : $(CORE_OBJS) $(TEST_OBJS)
 	$(CC) $(LFLAGS) $^ -o $@
 
 %.o : %.cpp
