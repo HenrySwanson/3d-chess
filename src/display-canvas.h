@@ -32,6 +32,16 @@ class DisplayCanvas : public wxGLCanvas
     /** The VBO for the grid. */
     GLuint grid_vbo_;
 
+
+    /** The shading program for the pieces. */
+    GLuint piece_program_;
+
+    /** The VAO for the pieces. */
+    GLuint piece_vao_;
+
+    /** The VBO for the grid. */
+    GLuint piece_vbo_;
+
     // TODO use indexed drawing to do pieces
 
 
@@ -41,12 +51,11 @@ class DisplayCanvas : public wxGLCanvas
     /** The vertical angle the board is viewed from. */
     float phi_;
 
+    wxPoint old_mouse_pos_;
 
-    /** The view matrix. Takes worldspace to cameraspace. */
-    glm::mat4 camera_;
+    void handleMouseDown(wxMouseEvent& evt);
 
-    /** The projection matrix. Takes cameraspace to screenspace. */
-    glm::mat4 projection_;
+    void handleMouseDrag(wxMouseEvent& evt);
 
     /**
      * Initializes all the OpenGL specific variables and sets up global state.
@@ -58,11 +67,17 @@ class DisplayCanvas : public wxGLCanvas
     /** Initializes the VAO and VBO for the grid. */
     void initializeGrid();
 
+    /** Initializes the VAOs and VBO for the pieces. */
+    void initializePieces();
+
     /** Renders the board to the panel. */
     void render(wxPaintEvent& evt);
 
     /** Renders the grid to the panel. */
-    void renderGrid();
+    void renderGrid(glm::mat4 vp);
+
+    /** Renders the pieces to the panel. */
+    void renderPieces(glm::mat4 vp);
 };
 
 #endif
