@@ -20,7 +20,7 @@ static const int NUM_DIRECTIONS [16] = {
     26, 26
 };
 
-/** Whether the indexing piece is a sliding piece */
+/** Whether the indexing piece is a sliding piece. */
 static const bool SLIDING [16] = {
     0, 0, 0, 0,
     0, 0, 0, 0,
@@ -266,12 +266,41 @@ list<Move> Board::generateCastlingMoves(bool color) const
 bool Board::isLegalMove(const Move& m) const // TODO make non-const version that uses undo
 {
     Board copy (*this);
-    bool color = pieces_[m.origin()].color();
 
-    copy.makeMove(m);
-    return copy.isInCheck(color);
+    if(m.type() == CASTLE)
+    {
+        // Note: we don't need to move the rook/wizard to determine
+        // intermediate check. Only the king.
+        int dir = (m.target() - m.origin()) / 2;
+        int middle = m.origin() + dir;
 
-    // TODO handle castling separately
+        // Are we in check?
+        if(copy.isInCheck(m.color()))
+            return false;
+
+        // Move king one square
+        copy.pieces_[middle] = copy.pieces_[m.origin()];
+        copy.pieces_[m.origin()] = Piece(NIL, WHITE);
+
+        // Are we passing through check?
+        if(copy.isInCheck(m.color()))
+            return false;
+
+        // Move king another square
+        copy.pieces_[m.target()] = copy.pieces_[middle];
+        copy.pieces_[middle] = Piece(NIL, WHITE);
+
+        // Do we end up in check?
+        if(copy.isInCheck(m.color()))
+            return false;
+
+        return true;
+    }
+    else
+    {
+        copy.makeMove(m);
+        return !copy.isInCheck(m.color());
+    }
 }
 
 void Board::makeMove(const Move& m)
@@ -297,7 +326,7 @@ void Board::makeMove(const Move& m)
         break;
       case CASTLE:
         // The king moves two squares, so we can find the direction by halving,
-        dir = (m.target() - m.origin()) >> 1;
+        dir = (m.target() - m.origin()) / 2;
         // the distance, by the sign of the direction,
         dist = (dir > 0) ? 3 : 4;
         // and the rook square by combining those.
@@ -367,7 +396,7 @@ void Board::undoMove()
         break;
       case CASTLE:
         // The king moves two squares, so we can find the direction by halving,
-        dir = (m.target() - m.origin()) >> 1;
+        dir = (m.target() - m.origin()) / 2;
         // the distance, by the sign of the direction,
         dist = (dir > 0) ? 3 : 4;
         // and the rook square by combining those.
