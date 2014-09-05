@@ -3,14 +3,10 @@
 
 #include <GL/glew.h>
 
-GLuint makeProgram();
-
-GLuint makeVao(GLuint program, GLuint vbo);
-
-GLuint makeVbo();
-
-GLuint makeBoth(GLuint program);
-
-GLuint makeGridVao(GLuint program);
+/**
+ * Loads vertex and fragment shader code from files, compiles them, then links
+ * them into a shader program. Returns the ID of this program.
+ */
+GLuint makeProgram(const char* vert_shader_src, const char* frag_shader_src);
 
 #endif

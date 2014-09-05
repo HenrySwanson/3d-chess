@@ -1,19 +1,32 @@
 #include "opengl-helper.h"
 
-#include <iostream>
 #include <cstring>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <sstream>
 
-static const GLchar * vert_shader_src = "#version 150 \n uniform mat4 projection; uniform mat4 camera; in vec3 vert; void main() { gl_Position = projection * camera * vec4(vert, 1); }";
-static const GLchar * frag_shader_src = "#version 150 \n out vec4 finalColor; void main() { finalColor = vec4(1.0, 1.0, 1.0, 1.0); }";
-
-GLuint makeShader(GLenum type, const GLchar * src_code)
+GLuint loadShaderFromFile(const char* filePath, GLenum type)
 {
+    std::ifstream in_file;
+    in_file.open(filePath, std::ios::in | std::ios::binary);
+
+    if(!in_file.is_open())
+        std::cout << "Failed to open file: " << filePath << std::endl;
+
+    // Read the file into the stringstream
+    std::stringstream ss;
+    ss << in_file.rdbuf();
+
+    // And pop it out as a C-string
+    const char* c_str = ss.str().c_str();
+
+    // Generate the shader, load the source code, and compile
     GLuint shader = glCreateShader(type);
-
-    glShaderSource(shader, 1, &src_code, NULL);
-
+    glShaderSource(shader, 1, &c_str, NULL);
     glCompileShader(shader);
 
+    // Make sure compilation succeeded
     GLint status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if(status == GL_FALSE)
@@ -34,17 +47,19 @@ GLuint makeShader(GLenum type, const GLchar * src_code)
     return shader;
 }
 
-// TODO add error checking
-GLuint makeProgram()
+GLuint makeProgram(const char* vert_shader_src, const char* frag_shader_src)
 {
-    GLuint vert_shader = makeShader(GL_VERTEX_SHADER, vert_shader_src);
-    GLuint frag_shader = makeShader(GL_FRAGMENT_SHADER, frag_shader_src);
+    // Load both (compiled) shaders
+    GLuint vert_shader = loadShaderFromFile(vert_shader_src, GL_VERTEX_SHADER);
+    GLuint frag_shader = loadShaderFromFile(frag_shader_src, GL_FRAGMENT_SHADER);
 
+    // Generate program, attach shaders and link together
     GLuint program = glCreateProgram();
     glAttachShader(program, vert_shader);
     glAttachShader(program, frag_shader);
     glLinkProgram(program);
 
+    // Make sure linking succeeded
     GLint status;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
     if(status == GL_FALSE)
@@ -54,47 +69,4 @@ GLuint makeProgram()
     }
 
     return program;   
-}
-
-GLuint makeGridVao(GLuint program)
-{
-    GLuint vao, vbo;
-
-    // Make and bind the VAO and VBO
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    // Write vertices for the lines of the grid
-    GLfloat vertexData [3 * 2 * 81 * 3];
-    for(int i = 0; i < 9; i++)
-    {
-        for(int j = 0; j < 9; j++)
-        {
-            int index = (i * 9 + j) * 3 * 2 * 3;
-            GLfloat a = i * 0.25f - 1.0f;
-            GLfloat b = j * 0.25f - 1.0f;
-            GLfloat lines [] = {
-                a, b,-1,  a, b, 1,
-                a,-1, b,  a, 1, b,
-               -1, a, b,  1, a, b
-            };
-            memcpy(vertexData + index, lines, 18 * sizeof(float));
-        }
-    }
-
-    // Load that array into the VBO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
-    
-    // connect the xyz to the "vert" attribute of the vertex shader
-    GLuint in_vert = glGetAttribLocation(program, "vert");
-    glEnableVertexAttribArray(in_vert);
-    glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    
-    // unbind the VBO and VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    return vao;
 }

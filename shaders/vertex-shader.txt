@@ -1,0 +1,11 @@
+#version 150
+
+uniform mat4 camera;
+uniform mat4 projection;
+
+in vec3 vert;
+
+void main(void) {
+    gl_Position = projection * camera * vec4(vert, 1);
+}
+
