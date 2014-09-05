@@ -19,7 +19,8 @@ GLuint loadShaderFromFile(const char* filePath, GLenum type)
     ss << in_file.rdbuf();
 
     // And pop it out as a C-string
-    const char* c_str = ss.str().c_str();
+    std::string str = ss.str();
+    const char* c_str = str.c_str();
 
     // Generate the shader, load the source code, and compile
     GLuint shader = glCreateShader(type);
