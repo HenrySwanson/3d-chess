@@ -38,8 +38,40 @@ TEST(Piece, Constructor)
     constructor_test(ROOK, BLACK);
 }
 
-// TODO do isOn, isFriend, etc tests
+TEST(Piece, Helpers)
+{
+    Piece nil (NIL, WHITE);
+    Piece wp (W_PAWN, WHITE);
+    Piece br (ROOK, BLACK);
 
+    // Nil shouldn't be on either side
+    EXPECT_FALSE(nil.isOn(WHITE));
+    EXPECT_FALSE(nil.isOn(BLACK));
+
+    // The pieces should be on the right sides
+    EXPECT_TRUE(wp.isOn(WHITE));
+    EXPECT_TRUE(br.isOn(BLACK));
+    EXPECT_FALSE(wp.isOn(BLACK));
+    EXPECT_FALSE(br.isOn(WHITE));
+
+    // Nil is neither friend nor enemy
+    EXPECT_FALSE(wp.isFriend(nil));
+    EXPECT_FALSE(br.isFriend(nil));
+    EXPECT_FALSE(wp.isEnemy(nil));
+    EXPECT_FALSE(br.isEnemy(nil));
+
+    // But the two pieces are enemies
+    EXPECT_TRUE(wp.isEnemy(br));
+    EXPECT_TRUE(br.isEnemy(wp));
+    EXPECT_FALSE(wp.isFriend(br));
+    EXPECT_FALSE(br.isFriend(wp));
+
+    // And friends with themselves
+    EXPECT_TRUE(wp.isFriend(wp));
+    EXPECT_TRUE(br.isFriend(br));
+    EXPECT_FALSE(wp.isEnemy(wp));
+    EXPECT_FALSE(br.isEnemy(br));
+}
 
 TEST(Move, Constructor)
 {
