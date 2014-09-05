@@ -1,5 +1,6 @@
 #include "display-canvas.h"
 
+#include <glm/gtx/color_space.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -14,8 +15,10 @@ static const float EYE_RAD = 15;
 // Attributes to set up the OpenGL context
 static int OPEN_GL_ATTRIBS [] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0};
 
-DisplayCanvas::DisplayCanvas(wxWindow *parent) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
+DisplayCanvas::DisplayCanvas(wxWindow *parent, Board* board) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
 {
+    board_ = board;
+
     context_ = new wxGLContext(this); // TODO possibly destruct?
 
     theta_ = 0;
@@ -51,17 +54,21 @@ void DisplayCanvas::handleMouseDrag(wxMouseEvent& evt)
 
 void DisplayCanvas::initializeOpenGL()
 {
+    // Initialize GLEW
     GLenum err = glewInit();
     if(err != GLEW_OK)
         std::cout << "GLEW failed to initialize!" << std::endl;
 
+    // Enable depth test and backface culling
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS); 
     glEnable(GL_CULL_FACE);
 
+    // Create programs
     grid_program_ = makeProgram("shaders/grid.vertexshader", "shaders/grid.fragmentshader");
     piece_program_ = makeProgram("shaders/piece.vertexshader", "shaders/piece.fragmentshader");
 
+    // Create VAOs and VBOs
     initializeGrid();
     initializePieces();
 }
@@ -96,7 +103,7 @@ void DisplayCanvas::initializeGrid()
     // Load that array into the VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
     
-    // Configure the "vert" variable of the vertex shader
+    // Configure the "vert" variable of the shader program
     GLuint in_vert = glGetAttribLocation(grid_program_, "vert");
     glEnableVertexAttribArray(in_vert);
     glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -117,15 +124,15 @@ void DisplayCanvas::initializePieces()
     // Fill an array with data
     GLfloat vertexData [3 * 3 * 4] = {
         0.8, 0.2, 0.0,    0.2, 0.2, 0.0,    0.5, 0.8, 0.0,
-        0.8, 0.2, 0.0,    0.5, 0.8, 0.0,    0.5, 0.5, 0.5,
-        0.5, 0.8, 0.0,    0.2, 0.2, 0.0,    0.5, 0.5, 0.5,
-        0.2, 0.2, 0.0,    0.8, 0.2, 0.0,    0.5, 0.5, 0.5
+        0.8, 0.2, 0.0,    0.5, 0.8, 0.0,    0.5, 0.5, 0.7,
+        0.5, 0.8, 0.0,    0.2, 0.2, 0.0,    0.5, 0.5, 0.7,
+        0.2, 0.2, 0.0,    0.8, 0.2, 0.0,    0.5, 0.5, 0.7
     };
 
     // Load that array into the VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
-    // Configure the "vert" variable of the vertex shader
+    // Configure the "vert" variable of the shader program
     GLuint in_vert = glGetAttribLocation(grid_program_, "vert");
     glEnableVertexAttribArray(in_vert);
     glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -196,6 +203,7 @@ void DisplayCanvas::renderGrid(glm::mat4 vp)
     glUseProgram(0);
 }
 
+// TODO render actual pieces
 void DisplayCanvas::renderPieces(glm::mat4 vp)
 {
     glUseProgram(piece_program_);
@@ -206,8 +214,14 @@ void DisplayCanvas::renderPieces(glm::mat4 vp)
         {
             for(int k = 0; k < 8; k++)
             {
+                // Compute model 
                 glm::vec3 corner = glm::vec3(i - 4, j - 4, k - 4);
                 glm::mat4 model = glm::translate(glm::mat4(), corner);
+
+                // Compute hue
+                PieceType pt = board_->getPiece(mailbox(i,j,k)).type();
+                float hue = (int) pt * (360.0f / 16);
+                glm::vec3 color = glm::rgbColor(glm::vec3(hue, 1, 1));
 
                 // Bind uniform variables
                 GLuint vp_loc = glGetUniformLocation(piece_program_, "VP");
@@ -215,7 +229,7 @@ void DisplayCanvas::renderPieces(glm::mat4 vp)
                 GLuint color_loc = glGetUniformLocation(piece_program_, "color");
                 glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
                 glUniformMatrix4fv(m_loc, 1, false, glm::value_ptr(model));
-                glUniform3f(color_loc, 1.0f, 0.0f, 0.0f);
+                glUniform3f(color_loc, color.r, color.g, color.b);
 
                 // Bind the VAO and draw
                 glBindVertexArray(piece_vao_);

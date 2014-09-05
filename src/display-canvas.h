@@ -1,12 +1,15 @@
 #ifndef CHESS_DISPLAYCANVAS_H
 #define CHESS_DISPLAYCANVAS_H
 
+// GLEW must be declared before GL
 #include "opengl-helper.h"
 
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
 
 #include <glm/glm.hpp>
+
+#include "board.h"
 
 /**
  * A panel that displays the chessboard. This is the class that will be most
@@ -16,9 +19,13 @@ class DisplayCanvas : public wxGLCanvas
 {
   public:
     /** Constructs a blank canvas, and creates all relevant buffers. */
-    DisplayCanvas(wxWindow *parent);
+    DisplayCanvas(wxWindow *parent, Board* board);
 
   private:
+    /** The board that this panel displays and modifies. */
+    Board* board_;
+
+
     /** The OpenGL context for this window. */
     wxGLContext* context_;
 
@@ -42,8 +49,6 @@ class DisplayCanvas : public wxGLCanvas
     /** The VBO for the grid. */
     GLuint piece_vbo_;
 
-    // TODO use indexed drawing to do pieces
-
 
     /** The horizontal angle the board is viewed from. */
     float theta_;
@@ -51,11 +56,15 @@ class DisplayCanvas : public wxGLCanvas
     /** The vertical angle the board is viewed from. */
     float phi_;
 
+    /** Used to store the last known location of the mouse. */
     wxPoint old_mouse_pos_;
 
+    /** Sets the old mouse position. */
     void handleMouseDown(wxMouseEvent& evt);
 
+    /** Handles mouse dragging and the resulting camera rotation. */
     void handleMouseDrag(wxMouseEvent& evt);
+
 
     /**
      * Initializes all the OpenGL specific variables and sets up global state.
@@ -69,6 +78,7 @@ class DisplayCanvas : public wxGLCanvas
 
     /** Initializes the VAOs and VBO for the pieces. */
     void initializePieces();
+
 
     /** Renders the board to the panel. */
     void render(wxPaintEvent& evt);

@@ -20,7 +20,8 @@ class Gui3D : public wxFrame
     ~Gui3D();
 
     /** The board that this GUI displays and modifies. */
-    Board board;
+    Board* board;
+
   private:
     /** The canvas on which the board is drawn. */
     DisplayCanvas* display_canvas;
