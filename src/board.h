@@ -18,7 +18,9 @@ class Board
     /** Generates an empty board. */
     Board();
 
-    // TODO setup (check email for initial configuration)
+    /** Puts pieces on the board in their initial position. */
+    void setup();
+
 
     /** Retrieves the piece at i. */
     Piece getPiece(int i) const;
@@ -94,7 +96,7 @@ class Board
     Piece pieces_ [1728];
 
     /** Contains all the moves that have been done on this board. */
-    std::stack<Move> history_; // TODO const? (see also: other stacks)
+    std::stack<Move> history_;
 
     /**
      * For each turn, contains the location of the en passant square, or 0 if

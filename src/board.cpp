@@ -1,9 +1,7 @@
 #include "board.h"
 
 using std::list;
-
-/** Represents the lack of an en passant square for the turn. */
-const int NO_EP_SQUARE = 0;
+using std::stack;
 
 /*
  * The following lookup tables are all indexed by PieceType. If the order of
@@ -90,6 +88,21 @@ static const int PIECE_DIRECTIONS [16][72] = {
      157, 155, 133, 131, -157, -155, -133, -131}
 };
 
+/** Represents the lack of an en passant square for the turn. */
+const int NO_EP_SQUARE = 0;
+
+/** Describes the initial setup of the back rank. */
+static const PieceType INITIAL_SETUP [8][8] = {
+   {  WIZARD,  DRAGON, GRIFFIN,    ROOK,    ROOK, GRIFFIN,  DRAGON,  WIZARD },
+   {  DRAGON,  CANNON,    MACE,  KNIGHT,  KNIGHT,    MACE,  CANNON,  DRAGON },
+   { GRIFFIN,    MACE,  ARCHER,  BISHOP,  BISHOP,  ARCHER,    MACE, GRIFFIN },
+   {    ROOK,  KNIGHT,  BISHOP, UNICORN,   QUEEN,  BISHOP,  KNIGHT,    ROOK },
+   {    ROOK,  KNIGHT,  BISHOP,   QUEEN,    KING,  BISHOP,  KNIGHT,    ROOK },
+   { GRIFFIN,    MACE,  ARCHER,  BISHOP,  BISHOP,  ARCHER,    MACE, GRIFFIN },
+   {  DRAGON,  CANNON,    MACE,  KNIGHT,  KNIGHT,    MACE,  CANNON,  DRAGON },
+   {  WIZARD,  DRAGON, GRIFFIN,    ROOK,    ROOK, GRIFFIN,  DRAGON,  WIZARD }
+};
+
 //----HELPER METHODS----
 
 /** Returns the square that the king of the given team starts on. */
@@ -142,6 +155,30 @@ Board::Board()
         for(int j = 0; j < 8; j++)
             for(int k = 0; k < 8; k++)
                 pieces_[mailbox(i, j, k)] = Piece(NIL, WHITE);
+
+    ep_locations_.push(NO_EP_SQUARE);
+    castling_rights_.push(0x0FFF);
+}
+
+void Board::setup()
+{
+    for(int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            PieceType pt = INITIAL_SETUP[i][j];
+            pieces_[mailbox(i,j,0)] = Piece(pt, WHITE);
+            pieces_[mailbox(i,j,7)] = Piece(pt, BLACK);
+
+            pieces_[mailbox(i,j,1)] = Piece(W_PAWN, WHITE);
+            pieces_[mailbox(i,j,6)] = Piece(B_PAWN, BLACK);
+        }
+    }
+
+    history_ = stack<Move>();
+    ep_locations_ = stack<int>();
+    castling_rights_ = stack<unsigned short>();
+    captured_ = stack<Piece>();
 
     ep_locations_.push(NO_EP_SQUARE);
     castling_rights_.push(0x0FFF);
