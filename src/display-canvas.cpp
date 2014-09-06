@@ -6,14 +6,42 @@
 
 #include <iostream>
 
-// Pi
+using glm::mat4;
+using glm::vec3;
+using glm::vec4;
+
+/** Pi */
 static const float PI = 3.1415926535f;
 
-// Distance of the camera from the board center
+/** Distance of the camera from the board center */
 static const float EYE_RAD = 15;
 
-// Attributes to set up the OpenGL context
+/** Attributes to set up the OpenGL context */
 static int OPEN_GL_ATTRIBS [] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0};
+
+/**
+ * Indexed by PieceType. Indicates the offset in the VBO that the piece's model
+ * starts at.
+ */
+static const int PIECE_MODEL_OFFSET[16] = {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0
+};
+
+/**
+ * Indexed by PieceType. Indicates the number of vertices that the piece's
+ * model uses.
+ */
+static const int PIECE_MODEL_LENGTH[16] = {
+    0, 0, 18, 18,
+    18, 18, 18, 18,
+    18, 18, 18,
+    18, 18, 18,
+    18, 18
+};
 
 DisplayCanvas::DisplayCanvas(wxWindow *parent, Board* board) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
 {
@@ -26,6 +54,7 @@ DisplayCanvas::DisplayCanvas(wxWindow *parent, Board* board) : wxGLCanvas(parent
 
     // Connect events to their handlers
     Connect(GetId(), wxEVT_LEFT_DOWN, wxMouseEventHandler(DisplayCanvas::handleMouseDown));
+    Connect(GetId(), wxEVT_LEFT_UP, wxMouseEventHandler(DisplayCanvas::handleMouseUp));
     Connect(GetId(), wxEVT_MOTION, wxMouseEventHandler(DisplayCanvas::handleMouseDrag));
     Connect(GetId(), wxEVT_PAINT, wxPaintEventHandler(DisplayCanvas::render));
 }
@@ -33,6 +62,44 @@ DisplayCanvas::DisplayCanvas(wxWindow *parent, Board* board) : wxGLCanvas(parent
 void DisplayCanvas::handleMouseDown(wxMouseEvent& evt)
 {
     old_mouse_pos_ = evt.GetPosition();
+    has_dragged_ = false;
+}
+
+// TODO avoid clicking the gridlines
+void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
+{
+    if(has_dragged_)
+        return;
+
+    // Get screen size and viewport
+    wxSize size = GetClientSize();
+    vec4 viewport(0, 0, size.x, size.y);
+
+    // Gets the location of the mouse click. wxWidgets sets the origin in the
+    // upper left, but OpenGL wants it in the lower left,
+    GLint winX = evt.GetX();
+    GLint winY = size.y - evt.GetY() - 1; // ... hence the thing here
+
+    // Gets the z-value from the depth-buffer
+    GLfloat depth;
+    glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+
+    // Did we really click anything?
+    if(depth == 1)
+        return;
+
+    // Construct vector in screen space
+    vec3 window (winX, winY, depth);
+
+    // Do the unprojection
+    vec3 loc = glm::unProject(window, view_, proj_, viewport);
+
+    // Shift from worldspace into "chess-space".
+    loc += vec3(4, 4, 4.01); // The +0.01 is to prevent the base of the piece
+                             // from sticking into the square below it.
+    loc = glm::floor(loc);
+
+    std::cout << "Cube: " << loc.x << ", " << loc.y << ", " << loc.z << std::endl;
 }
 
 void DisplayCanvas::handleMouseDrag(wxMouseEvent& evt)
@@ -40,13 +107,18 @@ void DisplayCanvas::handleMouseDrag(wxMouseEvent& evt)
     if(!evt.LeftIsDown())
         return;
 
+    has_dragged_ = true;
+
     wxPoint delta = evt.GetPosition() - old_mouse_pos_;
     old_mouse_pos_ += delta;
 
+    // The camera is inverted, as makes sense for mice. The 200 is arbitrary.
     theta_ -= (delta.x * PI / 200);
     phi_ -= (delta.y * PI / 200);
 
+    // Keep theta from drifting too far from 0
     theta_ = glm::mod(theta_, 2 * PI);
+    // Keep the user from flipping things upside-down
     phi_ = glm::clamp(phi_, 0.001f, PI - 0.001f);
 
     Refresh();
@@ -122,11 +194,13 @@ void DisplayCanvas::initializePieces()
     glBindVertexArray(piece_vao_);
 
     // Fill an array with data
-    GLfloat vertexData [3 * 3 * 4] = {
-        0.8, 0.2, 0.0,    0.2, 0.2, 0.0,    0.5, 0.8, 0.0,
-        0.8, 0.2, 0.0,    0.5, 0.8, 0.0,    0.5, 0.5, 0.7,
-        0.5, 0.8, 0.0,    0.2, 0.2, 0.0,    0.5, 0.5, 0.7,
-        0.2, 0.2, 0.0,    0.8, 0.2, 0.0,    0.5, 0.5, 0.7
+    GLfloat vertexData [3 * 3 * 6] = {
+        0.2, 0.2, 0.0,    0.8, 0.2, 0.0,    0.5, 0.5, 0.7,
+        0.8, 0.2, 0.0,    0.8, 0.8, 0.0,    0.5, 0.5, 0.7,
+        0.8, 0.8, 0.0,    0.2, 0.8, 0.0,    0.5, 0.5, 0.7,
+        0.2, 0.8, 0.0,    0.2, 0.2, 0.0,    0.5, 0.5, 0.7,
+        0.2, 0.2, 0.0,    0.2, 0.8, 0.0,    0.8, 0.2, 0.0,
+        0.8, 0.8, 0.0,    0.8, 0.2, 0.0,    0.2, 0.8, 0.0,
     };
 
     // Load that array into the VBO
@@ -165,19 +239,19 @@ void DisplayCanvas::render(wxPaintEvent& evt)
     glViewport(0, 0, screen_x, screen_y);
 
     // Locates the center of the camera, ...
-    glm::vec3 eye = glm::vec3(EYE_RAD * sin(phi_) * cos(theta_),
-                              EYE_RAD * sin(phi_) * sin(theta_),
-                              EYE_RAD * cos(phi_));
+    vec3 eye (EYE_RAD * sin(phi_) * cos(theta_),
+              EYE_RAD * sin(phi_) * sin(theta_),
+              EYE_RAD * cos(phi_));
 
     // and sets up the appropriate matrices.
-    glm::mat4 view = glm::lookAt(eye, glm::vec3(0,0,0), glm::vec3(0,0,1));
-    glm::mat4 proj = glm::perspective<float>(50.0, screen_x / screen_y, 8.0, 20.0);
+    view_ = glm::lookAt(eye, vec3(0,0,0), vec3(0,0,1));
+    proj_ = glm::perspective<float>(50.0, screen_x / screen_y, 8.0, 20.0);
 
     // Clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 vp = proj * view;
+    mat4 vp = proj_ * view_;
 
     renderGrid(vp);
     renderPieces(vp);
@@ -186,7 +260,7 @@ void DisplayCanvas::render(wxPaintEvent& evt)
     SwapBuffers();
 }
 
-void DisplayCanvas::renderGrid(glm::mat4 vp)
+void DisplayCanvas::renderGrid(mat4 vp)
 {
     glUseProgram(grid_program_);
 
@@ -204,9 +278,11 @@ void DisplayCanvas::renderGrid(glm::mat4 vp)
 }
 
 // TODO render actual pieces
-void DisplayCanvas::renderPieces(glm::mat4 vp)
+void DisplayCanvas::renderPieces(mat4 vp)
 {
+    // Bind the program and VAO
     glUseProgram(piece_program_);
+    glBindVertexArray(piece_vao_);
 
     for(int i = 0; i < 8; i++)
     {
@@ -214,16 +290,16 @@ void DisplayCanvas::renderPieces(glm::mat4 vp)
         {
             for(int k = 0; k < 8; k++)
             {
-                // Compute model 
-                glm::vec3 corner = glm::vec3(i - 4, j - 4, k - 4);
-                glm::mat4 model = glm::translate(glm::mat4(), corner);
+                // Compute model matrix
+                vec3 corner = vec3(i - 4, j - 4, k - 4);
+                mat4 model = glm::translate(mat4(), corner);
 
                 // Compute hue
                 PieceType pt = board_->getPiece(mailbox(i,j,k)).type();
                 float hue = (int) pt * (360.0f / 16);
-                glm::vec3 color = glm::rgbColor(glm::vec3(hue, 1, 1));
+                vec3 color = glm::rgbColor(vec3(hue, 1, 1));
 
-                // Bind uniform variables
+                // Set uniform variables
                 GLuint vp_loc = glGetUniformLocation(piece_program_, "VP");
                 GLuint m_loc = glGetUniformLocation(piece_program_, "M");
                 GLuint color_loc = glGetUniformLocation(piece_program_, "color");
@@ -231,9 +307,10 @@ void DisplayCanvas::renderPieces(glm::mat4 vp)
                 glUniformMatrix4fv(m_loc, 1, false, glm::value_ptr(model));
                 glUniform3f(color_loc, color.r, color.g, color.b);
 
-                // Bind the VAO and draw
-                glBindVertexArray(piece_vao_);
-                glDrawArrays(GL_TRIANGLES, 0, 12);
+                // Find the piece model in the VBO and draw!
+                int offset = PIECE_MODEL_OFFSET[pt];
+                int length = PIECE_MODEL_LENGTH[pt];
+                glDrawArrays(GL_TRIANGLES, offset, length);
             }
         }
     }

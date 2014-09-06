@@ -21,6 +21,8 @@ class DisplayCanvas : public wxGLCanvas
     /** Constructs a blank canvas, and creates all relevant buffers. */
     DisplayCanvas(wxWindow *parent, Board* board);
 
+    // TODO destruct all the things you create!
+
   private:
     /** The board that this panel displays and modifies. */
     Board* board_;
@@ -56,11 +58,25 @@ class DisplayCanvas : public wxGLCanvas
     /** The vertical angle the board is viewed from. */
     float phi_;
 
+    /** The view matrix most recently used to render the screen. */
+    glm::mat4 view_;
+
+    /** The projection matrix most recently used to render the screen. */
+    glm::mat4 proj_;
+
+
     /** Used to store the last known location of the mouse. */
     wxPoint old_mouse_pos_;
 
+    /** If the mouse is down and has moved, this is true. */
+    bool has_dragged_;
+
+
     /** Sets the old mouse position. */
     void handleMouseDown(wxMouseEvent& evt);
+
+    /** Checks if a click has occurred, and handles the resulting action. */
+    void handleMouseUp(wxMouseEvent& evt);
 
     /** Handles mouse dragging and the resulting camera rotation. */
     void handleMouseDrag(wxMouseEvent& evt);
