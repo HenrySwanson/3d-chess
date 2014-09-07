@@ -296,7 +296,10 @@ void DisplayCanvas::renderPieces(mat4 vp)
 
                 // Compute hue
                 PieceType pt = board_->getPiece(mailbox(i,j,k)).type();
-                float hue = (int) pt * (360.0f / 16);
+                if(pt == NIL || pt == BORDER)
+                    continue;
+                int tmp = (pt == W_PAWN) ? B_PAWN : pt; // Makes pawns match
+                float hue = tmp * (360.0f / 13);
                 vec3 color = glm::rgbColor(vec3(hue, 1, 1));
 
                 // Set uniform variables
