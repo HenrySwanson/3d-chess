@@ -72,6 +72,10 @@ void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
     if(has_dragged_)
         return;
 
+    // Render just the pieces (to the back buffer, to avoid flicker)
+    prerender();
+    renderPieces();
+
     vec3 world_coords;
     if(unprojectClick(evt.GetPosition(), world_coords))
     {
