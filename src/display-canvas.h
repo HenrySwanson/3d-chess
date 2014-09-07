@@ -31,6 +31,7 @@ class DisplayCanvas : public wxGLCanvas
     /** The OpenGL context for this window. */
     wxGLContext* context_;
 
+    bool opengl_initialized;
 
     /** The shading program for the grid. */
     GLuint grid_program_;
@@ -81,6 +82,13 @@ class DisplayCanvas : public wxGLCanvas
     /** Handles mouse dragging and the resulting camera rotation. */
     void handleMouseDrag(wxMouseEvent& evt);
 
+    /**
+     * Given a click location, examines the back buffer to determine where in
+     * worldspace this click occurred. Returns false and does not modify the
+     * vector if no object was clicked.
+     */
+    bool unprojectClick(wxPoint pt, glm::vec3& world_coords);
+
 
     /**
      * Initializes all the OpenGL specific variables and sets up global state.
@@ -96,14 +104,21 @@ class DisplayCanvas : public wxGLCanvas
     void initializePieces();
 
 
-    /** Renders the board to the panel. */
-    void render(wxPaintEvent& evt);
+    /** Recomputes the view and projection matrices. */
+    void updateMatrices();
 
-    /** Renders the grid to the panel. */
-    void renderGrid(glm::mat4 vp);
 
-    /** Renders the pieces to the panel. */
-    void renderPieces(glm::mat4 vp);
+    /** Displays the board on the panel. */
+    void paint(wxPaintEvent& evt);
+
+    /** Resizes the viewport and clears the back buffer. */
+    void prerender();
+
+    /** Renders the grid to the back buffer. */
+    void renderGrid();
+
+    /** Renders the pieces to the back buffer. */
+    void renderPieces();
 };
 
 #endif
