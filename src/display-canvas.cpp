@@ -60,80 +60,6 @@ DisplayCanvas::DisplayCanvas(wxWindow *parent, Board* board) : wxGLCanvas(parent
     Connect(GetId(), wxEVT_PAINT, wxPaintEventHandler(DisplayCanvas::paint));
 }
 
-void DisplayCanvas::handleMouseDown(wxMouseEvent& evt)
-{
-    old_mouse_pos_ = evt.GetPosition();
-    has_dragged_ = false;
-}
-
-// TODO avoid clicking the gridlines
-void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
-{
-    if(has_dragged_)
-        return;
-
-    // Render just the pieces (to the back buffer, to avoid flicker)
-    prerender();
-    renderPieces();
-
-    vec3 world_coords;
-    if(unprojectClick(evt.GetPosition(), world_coords))
-    {
-        // Shift from worldspace into "chess-space". The +0.01 is to prevent
-        // the base of the piece from sticking into the square below it.
-        vec3 loc = glm::floor(world_coords + vec3(4, 4, 4.01));
-        std::cout << "Cube: " << loc.x << ", " << loc.y << ", " << loc.z << std::endl;
-    }
-}
-
-void DisplayCanvas::handleMouseDrag(wxMouseEvent& evt)
-{
-    if(!evt.LeftIsDown())
-        return;
-
-    has_dragged_ = true;
-
-    wxPoint delta = evt.GetPosition() - old_mouse_pos_;
-    old_mouse_pos_ += delta;
-
-    // The camera is inverted, as makes sense for mice. The 200 is arbitrary.
-    theta_ -= (delta.x * PI / 200);
-    phi_ -= (delta.y * PI / 200);
-
-    // Keep theta from drifting too far from 0
-    theta_ = glm::mod(theta_, 2 * PI);
-    // Keep the user from flipping things upside-down
-    phi_ = glm::clamp(phi_, 0.001f, PI - 0.001f);
-
-    Refresh();
-}
-
-bool DisplayCanvas::unprojectClick(wxPoint pt, vec3& world_coords)
-{
-    // Get screen size and viewport
-    wxSize size = GetClientSize();
-    vec4 viewport(0, 0, size.x, size.y);
-
-    // Gets the location of the mouse click in window space. wxWidgets sets the
-    // origin in the upper left, but OpenGL wants it in the lower left,
-    GLint winX = pt.x;
-    GLint winY = size.y - pt.y - 1; // ... hence the thing here
-
-    // Gets the z-value from the depth-buffer
-    GLfloat winZ;
-    glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
-
-    // Did we really click anything?
-    if(winZ == 1)
-        return false;
-
-    // Do the unprojection
-    vec3 window (winX, winY, winZ);
-    world_coords = glm::unProject(window, view_, proj_, viewport);
-
-    return true;
-}
-
 void DisplayCanvas::initializeOpenGL()
 {
     SetCurrent(*context_);
@@ -230,6 +156,79 @@ void DisplayCanvas::initializePieces()
     glBindVertexArray(0);
 }
 
+void DisplayCanvas::handleMouseDown(wxMouseEvent& evt)
+{
+    old_mouse_pos_ = evt.GetPosition();
+    has_dragged_ = false;
+}
+
+void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
+{
+    if(has_dragged_)
+        return;
+
+    // Render just the pieces (to the back buffer, to avoid flicker)
+    prerender();
+    renderPieces();
+
+    vec3 world_coords;
+    if(unprojectClick(evt.GetPosition(), world_coords))
+    {
+        // Shift from worldspace into "chess-space". The +0.01 is to prevent
+        // the base of the piece from sticking into the square below it.
+        vec3 loc = glm::floor(world_coords + vec3(4, 4, 4.01));
+        std::cout << "Cube: " << loc.x << ", " << loc.y << ", " << loc.z << std::endl;
+    }
+}
+
+void DisplayCanvas::handleMouseDrag(wxMouseEvent& evt)
+{
+    if(!evt.LeftIsDown())
+        return;
+
+    has_dragged_ = true;
+
+    wxPoint delta = evt.GetPosition() - old_mouse_pos_;
+    old_mouse_pos_ += delta;
+
+    // The camera is inverted, as makes sense for mice. The 200 is arbitrary.
+    theta_ -= (delta.x * PI / 200);
+    phi_ -= (delta.y * PI / 200);
+
+    // Keep theta from drifting too far from 0
+    theta_ = glm::mod(theta_, 2 * PI);
+    // Keep the user from flipping things upside-down
+    phi_ = glm::clamp(phi_, 0.001f, PI - 0.001f);
+
+    Refresh();
+}
+
+bool DisplayCanvas::unprojectClick(wxPoint pt, vec3& world_coords)
+{
+    // Get screen size and viewport
+    wxSize size = GetClientSize();
+    vec4 viewport(0, 0, size.x, size.y);
+
+    // Gets the location of the mouse click in window space. wxWidgets sets the
+    // origin in the upper left, but OpenGL wants it in the lower left,
+    GLint winX = pt.x;
+    GLint winY = size.y - pt.y - 1; // ... hence the thing here
+
+    // Gets the z-value from the depth-buffer
+    GLfloat winZ;
+    glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+
+    // Did we really click anything?
+    if(winZ == 1)
+        return false;
+
+    // Do the unprojection
+    vec3 window (winX, winY, winZ);
+    world_coords = glm::unProject(window, view_, proj_, viewport);
+
+    return true;
+}
+
 void DisplayCanvas::updateMatrices()
 {
     // View
@@ -241,15 +240,16 @@ void DisplayCanvas::updateMatrices()
 
     // Projection
     wxSize size = GetClientSize();
-    proj_ = glm::perspective<float>(50.0, (float) size.x / size.y, 8.0, 20.0);
+    proj_ = glm::perspective<float>(50.0, (float) size.x / size.y, 8.0, 22.0);
 }
 
 void DisplayCanvas::paint(wxPaintEvent& evt)
 {
-    // If we haven't already, initialize OpenGL.
+    // If we haven't already, initialize OpenGL
     if(!opengl_initialized)
         initializeOpenGL();
 
+    // Become up-to-date
     updateMatrices();
 
     // Clear screen, then draw to it
@@ -278,15 +278,16 @@ void DisplayCanvas::prerender()
 
 void DisplayCanvas::renderGrid()
 {
+    // Bind the program and VAO
     glUseProgram(grid_program_);
+    glBindVertexArray(grid_vao_);
 
     // Bind uniform variables
     mat4 vp = proj_ * view_;
     GLuint vp_loc = glGetUniformLocation(grid_program_, "VP");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
-    // Bind the VAO and draw
-    glBindVertexArray(grid_vao_);
+    // Draw
     glDrawArrays(GL_LINES, 0, 2 * 81 * 3);
 
     // Unbind everything

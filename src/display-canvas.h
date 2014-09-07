@@ -31,7 +31,9 @@ class DisplayCanvas : public wxGLCanvas
     /** The OpenGL context for this window. */
     wxGLContext* context_;
 
+    /** Whether or not context_ has been initialized. */
     bool opengl_initialized;
+
 
     /** The shading program for the grid. */
     GLuint grid_program_;
@@ -73,23 +75,6 @@ class DisplayCanvas : public wxGLCanvas
     bool has_dragged_;
 
 
-    /** Sets the old mouse position. */
-    void handleMouseDown(wxMouseEvent& evt);
-
-    /** Checks if a click has occurred, and handles the resulting action. */
-    void handleMouseUp(wxMouseEvent& evt);
-
-    /** Handles mouse dragging and the resulting camera rotation. */
-    void handleMouseDrag(wxMouseEvent& evt);
-
-    /**
-     * Given a click location, examines the back buffer to determine where in
-     * worldspace this click occurred. Returns false and does not modify the
-     * vector if no object was clicked.
-     */
-    bool unprojectClick(wxPoint pt, glm::vec3& world_coords);
-
-
     /**
      * Initializes all the OpenGL specific variables and sets up global state.
      * This cannot be called until there is a valid OpenGL context! As a
@@ -103,6 +88,23 @@ class DisplayCanvas : public wxGLCanvas
     /** Initializes the VAOs and VBO for the pieces. */
     void initializePieces();
 
+
+    /** Sets the old mouse position. */
+    void handleMouseDown(wxMouseEvent& evt);
+
+    /** Checks if a click has occurred, and handles the resulting action. */
+    void handleMouseUp(wxMouseEvent& evt);
+
+    /** Handles mouse dragging and the resulting camera rotation. */
+    void handleMouseDrag(wxMouseEvent& evt);
+
+
+    /**
+     * Given a click location, examines the back buffer to determine where in
+     * worldspace this click occurred. Returns false and does not modify the
+     * vector if no object was clicked.
+     */
+    bool unprojectClick(wxPoint pt, glm::vec3& world_coords);
 
     /** Recomputes the view and projection matrices. */
     void updateMatrices();
