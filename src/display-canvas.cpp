@@ -43,11 +43,11 @@ static const int PIECE_MODEL_LENGTH[16] = {
     18, 18
 };
 
-DisplayCanvas::DisplayCanvas(wxWindow *parent, Board* board) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
+DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
 {
-    board_ = board;
+    presenter_ = presenter;
 
-    context_ = new wxGLContext(this); // TODO possibly destruct?
+    context_ = new wxGLContext(this);
     opengl_initialized = false;
 
     theta_ = -PI/2;
@@ -58,6 +58,22 @@ DisplayCanvas::DisplayCanvas(wxWindow *parent, Board* board) : wxGLCanvas(parent
     Connect(GetId(), wxEVT_LEFT_UP, wxMouseEventHandler(DisplayCanvas::handleMouseUp));
     Connect(GetId(), wxEVT_MOTION, wxMouseEventHandler(DisplayCanvas::handleMouseDrag));
     Connect(GetId(), wxEVT_PAINT, wxPaintEventHandler(DisplayCanvas::paint));
+}
+
+DisplayCanvas::~DisplayCanvas()
+{
+    glDeleteProgram(grid_object_.program);
+    glDeleteProgram(piece_object_.program);
+
+    glDeleteVertexArrays(1, &grid_object_.vao);
+    glDeleteVertexArrays(1, &piece_object_.vao);
+
+    glDeleteBuffers(1, &grid_object_.vbo);
+    glDeleteBuffers(1, &piece_object_.vbo);
+
+    // It's possible that deleting this obviates the need for the lines above.
+    // But I don't know.
+    delete context_;
 }
 
 void DisplayCanvas::initializeOpenGL()
@@ -75,23 +91,25 @@ void DisplayCanvas::initializeOpenGL()
     glEnable(GL_CULL_FACE);
 
     // Create programs
-    grid_program_ = makeProgram("shaders/grid.vertexshader", "shaders/grid.fragmentshader");
-    piece_program_ = makeProgram("shaders/piece.vertexshader", "shaders/piece.fragmentshader");
+    grid_object_.program = makeProgram("shaders/grid.vertexshader", "shaders/grid.fragmentshader");
+    piece_object_.program = makeProgram("shaders/piece.vertexshader", "shaders/piece.fragmentshader");
+    indicator_object_.program = makeProgram("shaders/indicator.vertexshader", "shaders/indicator.fragmentshader");
 
     // Create VAOs and VBOs
     initializeGrid();
     initializePieces();
+    initializeIndicators();
 
     opengl_initialized = true;
 }
 
 void DisplayCanvas::initializeGrid()
 {
-    // Make and bind the VAO and VBO
-    glGenBuffers(1, &grid_vbo_);
-    glBindBuffer(GL_ARRAY_BUFFER, grid_vbo_);
-    glGenVertexArrays(1, &grid_vao_);
-    glBindVertexArray(grid_vao_);
+    // Make and bind the VBO and VAO
+    glGenBuffers(1, &grid_object_.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, grid_object_.vbo);
+    glGenVertexArrays(1, &grid_object_.vao);
+    glBindVertexArray(grid_object_.vao);
 
     // Write vertices for the lines of the grid
     GLfloat vertexData [3 * 2 * 81 * 3];
@@ -116,7 +134,7 @@ void DisplayCanvas::initializeGrid()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
     
     // Configure the "vert" variable of the shader program
-    GLuint in_vert = glGetAttribLocation(grid_program_, "vert");
+    GLuint in_vert = glGetAttribLocation(grid_object_.program, "vert");
     glEnableVertexAttribArray(in_vert);
     glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     
@@ -127,11 +145,11 @@ void DisplayCanvas::initializeGrid()
 
 void DisplayCanvas::initializePieces()
 {
-    // Make and bind the VAO and VBO
-    glGenBuffers(1, &piece_vbo_);
-    glBindBuffer(GL_ARRAY_BUFFER, piece_vbo_);
-    glGenVertexArrays(1, &piece_vao_);
-    glBindVertexArray(piece_vao_);
+    // Make and bind the VBO and VAO
+    glGenBuffers(1, &piece_object_.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, piece_object_.vbo);
+    glGenVertexArrays(1, &piece_object_.vao);
+    glBindVertexArray(piece_object_.vao);
 
     // Fill an array with data
     GLfloat vertexData [3 * 3 * 6] = {
@@ -147,7 +165,40 @@ void DisplayCanvas::initializePieces()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
     // Configure the "vert" variable of the shader program
-    GLuint in_vert = glGetAttribLocation(grid_program_, "vert");
+    GLuint in_vert = glGetAttribLocation(piece_object_.program, "vert");
+    glEnableVertexAttribArray(in_vert);
+    glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    
+    // Unbind the VAO and VBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void DisplayCanvas::initializeIndicators()
+{
+    // Make and bind the VBO and VAO
+    glGenBuffers(1, &indicator_object_.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, indicator_object_.vbo);
+    glGenVertexArrays(1, &indicator_object_.vao);
+    glBindVertexArray(indicator_object_.vao);
+
+    // Fill an array with data
+    GLfloat vertexData [3 * 3 * 8] = {
+        0.5, 0.5, 0.2,    0.8, 0.5, 0.5,    0.5, 0.8, 0.5,
+        0.5, 0.5, 0.2,    0.5, 0.8, 0.5,    0.2, 0.5, 0.5,
+        0.5, 0.5, 0.2,    0.2, 0.5, 0.5,    0.5, 0.2, 0.5,
+        0.5, 0.5, 0.2,    0.5, 0.2, 0.5,    0.8, 0.5, 0.5,
+        0.5, 0.5, 0.8,    0.8, 0.5, 0.5,    0.5, 0.2, 0.5,
+        0.5, 0.5, 0.8,    0.5, 0.2, 0.5,    0.2, 0.5, 0.5,
+        0.5, 0.5, 0.8,    0.2, 0.5, 0.5,    0.5, 0.8, 0.5,
+        0.5, 0.5, 0.8,    0.5, 0.8, 0.5,    0.8, 0.5, 0.5
+    };
+
+    // Load that array into the VBO
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+
+    // Configure the "vert" variable of the shader program
+    GLuint in_vert = glGetAttribLocation(indicator_object_.program, "vert");
     glEnableVertexAttribArray(in_vert);
     glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     
@@ -167,17 +218,19 @@ void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
     if(has_dragged_)
         return;
 
-    // Render just the pieces (to the back buffer, to avoid flicker)
+    // Render just the pieces and indicators (to the back buffer, to avoid flicker)
     prerender();
     renderPieces();
+    renderIndicators();
 
     vec3 world_coords;
     if(unprojectClick(evt.GetPosition(), world_coords))
     {
-        // Shift from worldspace into "chess-space". The +0.01 is to prevent
+        // Shift from worldspace into "chess-space". The +0.02 is to prevent
         // the base of the piece from sticking into the square below it.
-        vec3 loc = glm::floor(world_coords + vec3(4, 4, 4.01));
+        vec3 loc = glm::floor(world_coords + vec3(4, 4, 4.02));
         std::cout << "Cube: " << loc.x << ", " << loc.y << ", " << loc.z << std::endl;
+        presenter_->click(loc.x, loc.y, loc.z);
     }
 }
 
@@ -256,6 +309,7 @@ void DisplayCanvas::paint(wxPaintEvent& evt)
     prerender();
     renderGrid();
     renderPieces();
+    renderIndicators();
 
     // Display our brand-new picture!
     SwapBuffers();
@@ -279,12 +333,12 @@ void DisplayCanvas::prerender()
 void DisplayCanvas::renderGrid()
 {
     // Bind the program and VAO
-    glUseProgram(grid_program_);
-    glBindVertexArray(grid_vao_);
+    glUseProgram(grid_object_.program);
+    glBindVertexArray(grid_object_.vao);
 
     // Bind uniform variables
     mat4 vp = proj_ * view_;
-    GLuint vp_loc = glGetUniformLocation(grid_program_, "VP");
+    GLuint vp_loc = glGetUniformLocation(grid_object_.program, "VP");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
     // Draw
@@ -299,12 +353,13 @@ void DisplayCanvas::renderGrid()
 void DisplayCanvas::renderPieces()
 {
     // Bind the program and VAO
-    glUseProgram(piece_program_);
-    glBindVertexArray(piece_vao_);
+    GLuint program = piece_object_.program;
+    glUseProgram(program);
+    glBindVertexArray(piece_object_.vao);
 
     // Set up view-projection matrix
     mat4 vp = proj_ * view_;
-    GLuint vp_loc = glGetUniformLocation(piece_program_, "VP");
+    GLuint vp_loc = glGetUniformLocation(program, "VP");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
     for(int i = 0; i < 8; i++)
@@ -318,7 +373,7 @@ void DisplayCanvas::renderPieces()
                 mat4 model = glm::translate(mat4(), corner);
 
                 // Compute hue
-                PieceType pt = board_->getPiece(mailbox(i,j,k)).type();
+                PieceType pt = presenter_->getPiece(i,j,k).type();
                 if(pt == NIL || pt == BORDER)
                     continue;
                 int tmp = (pt == W_PAWN) ? B_PAWN : pt; // Makes pawns match
@@ -326,8 +381,8 @@ void DisplayCanvas::renderPieces()
                 vec3 color = glm::rgbColor(vec3(hue, 1, 1));
 
                 // Set uniform variables
-                GLuint m_loc = glGetUniformLocation(piece_program_, "M");
-                GLuint color_loc = glGetUniformLocation(piece_program_, "color");
+                GLuint m_loc = glGetUniformLocation(program, "M");
+                GLuint color_loc = glGetUniformLocation(program, "color");
                 glUniformMatrix4fv(m_loc, 1, false, glm::value_ptr(model));
                 glUniform3f(color_loc, color.r, color.g, color.b);
 
@@ -337,6 +392,41 @@ void DisplayCanvas::renderPieces()
                 glDrawArrays(GL_TRIANGLES, offset, length);
             }
         }
+    }
+
+    // Unbind everything
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
+// TODO rounder!
+void DisplayCanvas::renderIndicators()
+{
+    // Bind the program and VAO
+    GLuint program = indicator_object_.program;
+    glUseProgram(program);
+    glBindVertexArray(indicator_object_.vao);
+
+    // Set up view-projection matrix
+    mat4 vp = proj_ * view_;
+    GLuint vp_loc = glGetUniformLocation(program, "VP");
+    glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
+
+    std::list<Cell> indicators = presenter_->getMoveIndicators();
+
+    std::list<Cell>::const_iterator it;
+    for(it = indicators.begin(); it != indicators.end(); it++)
+    {
+        // Compute model matrix
+        vec3 corner = vec3(it->x - 4, it->y - 4, it->z - 4);
+        mat4 model = glm::translate(mat4(), corner);
+
+        // Set uniform variables
+        GLuint m_loc = glGetUniformLocation(program, "M");
+        glUniformMatrix4fv(m_loc, 1, false, glm::value_ptr(model));
+
+        // Draw
+        glDrawArrays(GL_TRIANGLES, 0, 3 * 8);
     }
 
     // Unbind everything

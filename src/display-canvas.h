@@ -9,7 +9,7 @@
 
 #include <glm/glm.hpp>
 
-#include "board.h"
+#include "presenter.h"
 
 /**
  * A panel that displays the chessboard. This is the class that will be most
@@ -19,13 +19,21 @@ class DisplayCanvas : public wxGLCanvas
 {
   public:
     /** Constructs a blank canvas, and creates all relevant buffers. */
-    DisplayCanvas(wxWindow *parent, Board* board);
+    DisplayCanvas(wxWindow *parent, Presenter* presenter);
 
-    // TODO destruct all the things you create!
+    /**
+     * Destructs the object and destroys all associated OpenGL resources.
+     */
+    ~DisplayCanvas();
 
   private:
-    /** The board that this panel displays and modifies. */
-    Board* board_;
+    struct RenderObject // TODO name better; also, make one for each piece (sharing references)
+    {
+        GLuint program, vao, vbo;
+    };
+
+    /** The presentation layer this panel displays. */
+    Presenter* presenter_;
 
 
     /** The OpenGL context for this window. */
@@ -35,24 +43,14 @@ class DisplayCanvas : public wxGLCanvas
     bool opengl_initialized;
 
 
-    /** The shading program for the grid. */
-    GLuint grid_program_;
+    /** The render object for the grid. */
+    RenderObject grid_object_;
 
-    /** The VAO for the grid. */
-    GLuint grid_vao_;
+    /** The render object for the pieces. */
+    RenderObject piece_object_;
 
-    /** The VBO for the grid. */
-    GLuint grid_vbo_;
-
-
-    /** The shading program for the pieces. */
-    GLuint piece_program_;
-
-    /** The VAO for the pieces. */
-    GLuint piece_vao_;
-
-    /** The VBO for the grid. */
-    GLuint piece_vbo_;
+    /** The render object for the move indicators. */
+    RenderObject indicator_object_;
 
 
     /** The horizontal angle the board is viewed from. */
@@ -88,6 +86,9 @@ class DisplayCanvas : public wxGLCanvas
     /** Initializes the VAOs and VBO for the pieces. */
     void initializePieces();
 
+    /** Initializes the VAOs and VBO for the move indicators. */
+    void initializeIndicators();
+
 
     /** Sets the old mouse position. */
     void handleMouseDown(wxMouseEvent& evt);
@@ -121,6 +122,9 @@ class DisplayCanvas : public wxGLCanvas
 
     /** Renders the pieces to the back buffer. */
     void renderPieces();
+
+    /** Renders the move indicators to the back buffer. */
+    void renderIndicators();
 };
 
 #endif

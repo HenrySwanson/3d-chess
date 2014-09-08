@@ -3,14 +3,16 @@
 
 #include <wx/wx.h>
 
+#include "view-interface.h"
 #include "display-canvas.h"
-#include "board.h"
+
+#include "presenter.h"
 
 /**
  * A 3D graphical interface for the game. When this object is initialized,
  * it creates a new game and board, as well as all relevant windows.
  */
-class Gui3D : public wxFrame
+class Gui3D : public wxFrame, public ViewInterface
 {
   public:
     /** Standard constructor */
@@ -19,8 +21,11 @@ class Gui3D : public wxFrame
     /** Standard destructor */
     ~Gui3D();
 
-    /** The board that this GUI displays and modifies. */
-    Board* board;
+    /** Tells this window and its children to check the model for updates. */
+    virtual void refresh();
+
+    /** The presentation layer this view displays. */
+    Presenter* presenter_;
 
   private:
     /** The canvas on which the board is drawn. */

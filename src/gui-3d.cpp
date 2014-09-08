@@ -2,14 +2,18 @@
 
 Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxSize(500,500))
 {
-    board = new Board();
-    board->setup();
+    presenter_ = new Presenter(this);
 
     // Note: Don't have to destruct child windows
-    display_canvas = new DisplayCanvas(this, board);
+    display_canvas = new DisplayCanvas(this, presenter_);
 }
 
 Gui3D::~Gui3D()
 {
-    delete board;   
+    delete presenter_;
+}
+
+void Gui3D::refresh()
+{
+    Refresh();
 }
