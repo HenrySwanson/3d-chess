@@ -60,6 +60,12 @@ GLuint makeProgram(const char* vert_shader_src, const char* frag_shader_src)
     glAttachShader(program, frag_shader);
     glLinkProgram(program);
 
+    // Detach and delete shaders
+    glDetachShader(program, vert_shader);
+    glDetachShader(program, frag_shader);
+    glDeleteShader(vert_shader);
+    glDeleteShader(frag_shader);
+
     // Make sure linking succeeded
     GLint status;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
