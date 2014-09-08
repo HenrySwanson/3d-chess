@@ -2,12 +2,14 @@
 
 using std::list;
 
+static const int NO_SELECTION = 0;
+
 Presenter::Presenter(ViewInterface* view)
 {
     model_ = new Board();
     view_ = view;
 
-    selected_cell_ = 0;
+    selected_cell_ = NO_SELECTION;
 
     model_->setup();
 }
@@ -43,8 +45,31 @@ list<Cell> Presenter::getMoveIndicators() const
 
 void Presenter::click(int i, int j, int k)
 {
-    int index = mailbox(i, j, k);
-    selected_cell_ = index;
-    selected_moves_ = model_->generateMoves(index);
-    view_->refresh();
+    int clicked = mailbox(i, j, k);
+
+    list<Move>::const_iterator it;
+    for(it = selected_moves_.begin(); it != selected_moves_.end(); it++)
+    {
+        if(clicked == it->target())
+        {
+            model_->makeMove(*it);
+            selected_cell_ = NO_SELECTION;
+            selected_moves_.clear();
+            view_->refresh();
+            return;
+        }
+    }
+
+    if(clicked == selected_cell_)
+    {
+        selected_cell_ = NO_SELECTION;
+        selected_moves_.clear();
+        view_->refresh();
+    }
+    else
+    {
+        selected_cell_ = clicked;
+        selected_moves_ = model_->generateMoves(clicked);
+        view_->refresh();
+    }
 }
