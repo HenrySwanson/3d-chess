@@ -1,0 +1,11 @@
+#version 150
+
+uniform mat4 VP;
+uniform mat4 M;
+
+in vec3 vert;
+
+void main(void) {
+    gl_Position = VP * M * vec4(vert, 1);
+}
+
