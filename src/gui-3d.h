@@ -29,7 +29,9 @@ class Gui3D : public wxFrame, public ViewInterface
 
   private:
     /** The canvas on which the board is drawn. */
-    DisplayCanvas* display_canvas;
+    DisplayCanvas* display_canvas_;
+
+    wxListBox* move_history_;
 };
 
 #endif

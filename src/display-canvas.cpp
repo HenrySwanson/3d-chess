@@ -53,6 +53,8 @@ DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) : wxGLCanva
     theta_ = -PI/2;
     phi_ = PI/2;
 
+    SetMinSize(wxSize(500, 500));
+
     // Connect events to their handlers
     Connect(GetId(), wxEVT_LEFT_DOWN, wxMouseEventHandler(DisplayCanvas::handleMouseDown));
     Connect(GetId(), wxEVT_LEFT_UP, wxMouseEventHandler(DisplayCanvas::handleMouseUp));
@@ -229,7 +231,6 @@ void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
         // Shift from worldspace into "chess-space". The +0.02 is to prevent
         // the base of the piece from sticking into the square below it.
         vec3 loc = glm::floor(world_coords + vec3(4, 4, 4.02));
-        std::cout << "Cube: " << loc.x << ", " << loc.y << ", " << loc.z << std::endl;
         presenter_->click(loc.x, loc.y, loc.z);
     }
 }

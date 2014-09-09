@@ -1,11 +1,39 @@
 #include "gui-3d.h"
 
-Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxSize(500,500))
+Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxDefaultSize)
 {
     presenter_ = new Presenter(this);
 
-    // Note: Don't have to destruct child windows
-    display_canvas = new DisplayCanvas(this, presenter_);
+    // Note: Don't have to destruct any child widgets, wxWidgets does that.
+
+    // Construct all sizers
+    wxBoxSizer* h_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer* v_sizer = new wxBoxSizer(wxVERTICAL);
+    wxGridSizer* b_sizer = new wxGridSizer(2, 0, 0);
+
+    // Construct children
+    display_canvas_ = new DisplayCanvas(this, presenter_);
+    move_history_ = new wxListBox(this, wxID_ANY);
+
+    wxButton* button_new = new wxButton(this, wxID_ANY, wxT("New Game"));
+    wxButton* button_undo = new wxButton(this, wxID_ANY, wxT("Undo Game"));
+    wxButton* button_redo = new wxButton(this, wxID_ANY, wxT("Redo Game"));
+
+    // Put things in the right places
+    h_sizer->Add(display_canvas_, 3, wxEXPAND);
+    h_sizer->Add(v_sizer, 0, wxEXPAND);
+
+    v_sizer->Add(move_history_, 1, wxEXPAND);
+    v_sizer->Add(b_sizer, 0, wxEXPAND);
+
+    b_sizer->Add(button_new, 1, wxEXPAND);
+    b_sizer->Add(button_undo, 1, wxEXPAND);
+    b_sizer->Add((wxButton*) NULL, 1, wxEXPAND);
+    b_sizer->Add(button_redo, 1, wxEXPAND);
+
+
+    h_sizer->SetSizeHints(this);
+    SetSizer(h_sizer);
 }
 
 Gui3D::~Gui3D()
