@@ -34,6 +34,10 @@ class Gui3D : public wxFrame, public ViewInterface
     DisplayCanvas* display_canvas_;
 
     wxListBox* move_history_;
+
+    void newGame(wxCommandEvent& evt);
+    void undoMove(wxCommandEvent& evt);
+    void redoMove(wxCommandEvent& evt);
 };
 
 #endif

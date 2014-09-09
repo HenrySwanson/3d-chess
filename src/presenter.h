@@ -2,6 +2,7 @@
 #define CHESS_PRESENTATION_H
 
 #include <list>
+#include <stack>
 #include <string>
 
 #include "view-interface.h"
@@ -30,13 +31,18 @@ class Presenter
     std::list<std::string> getMoveHistory() const;
 
     void click(int i, int j, int k);
+    void newGame();
+    void undoMove();
+    void redoMove();
 
   private:
     Board* model_;
     ViewInterface* view_;
 
+    bool turn_;
     int selected_cell_;
     std::list<Move> selected_moves_;
+    std::stack<Move> undid_moves_;
 };
 
 #endif

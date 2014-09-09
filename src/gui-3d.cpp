@@ -34,6 +34,14 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
     // Set sizer
     h_sizer->SetSizeHints(this);
     SetSizer(h_sizer);
+
+    // Connect events from the buttons
+    Connect(button_new->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
+      wxCommandEventHandler(Gui3D::newGame));
+    Connect(button_undo->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
+      wxCommandEventHandler(Gui3D::undoMove));
+    Connect(button_redo->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
+      wxCommandEventHandler(Gui3D::redoMove));
 }
 
 Gui3D::~Gui3D()
@@ -49,9 +57,22 @@ void Gui3D::refresh()
 
     std::list<std::string>::const_iterator it;
     for(it = moves.begin(); it != moves.end(); it++)
-    {
         move_history_->Append(wxString::FromAscii(it->c_str()));
-    }
 
     Refresh();
+}
+
+void Gui3D::newGame(wxCommandEvent& evt)
+{
+    presenter_->newGame();
+}
+
+void Gui3D::undoMove(wxCommandEvent& evt)
+{
+    presenter_->undoMove();
+}
+
+void Gui3D::redoMove(wxCommandEvent& evt)
+{
+    presenter_->redoMove();
 }

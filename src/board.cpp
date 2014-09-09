@@ -168,10 +168,13 @@ void Board::setup()
         {
             PieceType pt = INITIAL_SETUP[i][j];
             pieces_[mailbox(i,j,0)] = Piece(pt, WHITE);
-            pieces_[mailbox(i,j,7)] = Piece(pt, BLACK);
-
             pieces_[mailbox(i,j,1)] = Piece(W_PAWN, WHITE);
+            pieces_[mailbox(i,j,2)] = Piece(NIL, WHITE);
+            pieces_[mailbox(i,j,3)] = Piece(NIL, WHITE);
+            pieces_[mailbox(i,j,4)] = Piece(NIL, WHITE);
+            pieces_[mailbox(i,j,5)] = Piece(NIL, WHITE);
             pieces_[mailbox(i,j,6)] = Piece(B_PAWN, BLACK);
+            pieces_[mailbox(i,j,7)] = Piece(pt, BLACK);
         }
     }
 
@@ -578,6 +581,9 @@ void Board::updateCastlingRights(bool color, int origin)
             return;
         }
     }
+
+    // If we didn't move them at all, just keep the same rights
+    castling_rights_.push(current_rights);
 }
 
 bool Board::isInSomemate(bool color) const
