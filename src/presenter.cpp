@@ -1,6 +1,9 @@
 #include "presenter.h"
 
+#include <sstream>
+
 using std::list;
+using std::string;
 
 static const int NO_SELECTION = 0;
 
@@ -41,6 +44,27 @@ list<Cell> Presenter::getMoveIndicators() const
     }
 
     return cells;
+}
+
+// TODO move to view?
+list<string> Presenter::getMoveHistory() const
+{
+    // Make a copy so it's not destroyed!
+    std::stack<Move> history (model_->getHistory());
+    list<string> strings;
+
+    while(!history.empty())
+    {
+        Move m = history.top();
+        std::stringstream ss;
+        ss << "(" << unmailboxX(m.origin()) << ", " << unmailboxY(m.origin()) <<
+            ", " << unmailboxZ(m.origin()) << ") -> (" << unmailboxX(m.target()) <<
+            ", " << unmailboxY(m.target()) << ", " << unmailboxZ(m.target()) << ")";
+        strings.push_back(ss.str());
+        history.pop();
+    }
+
+    return strings;
 }
 
 void Presenter::click(int i, int j, int k)

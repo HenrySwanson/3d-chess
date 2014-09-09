@@ -2,6 +2,7 @@
 #define CHESS_PRESENTATION_H
 
 #include <list>
+#include <string>
 
 #include "view-interface.h"
 #include "board.h"
@@ -26,6 +27,7 @@ class Presenter
 
     Piece getPiece(int i, int j, int k) const;
     std::list<Cell> getMoveIndicators() const;
+    std::list<std::string> getMoveHistory() const;
 
     void click(int i, int j, int k);
 

@@ -65,7 +65,12 @@ class Board
     /** Returns true if the king of the specified color is in check. */
     bool isInStalemate(bool color) const;
 
+
     // TODO determine move (so that the UI can figure out what move the player wanted)
+
+
+    /** Returns a const reference to the history of this board. */
+    const std::stack<Move> getHistory() const;
 
   private:
     /** Generates all pseudo-legal moves for a pawn. */ 

@@ -445,6 +445,11 @@ bool Board::isInStalemate(bool color) const
     return !isInCheck(color) && isInSomemate(color);
 }
 
+const stack<Move> Board::getHistory() const
+{
+    return history_;
+}
+
 //----PRIVATE----
 
 list<Move> Board::generatePawnMoves(int origin) const

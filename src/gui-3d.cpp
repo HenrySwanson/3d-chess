@@ -16,8 +16,8 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
     move_history_ = new wxListBox(this, wxID_ANY);
 
     wxButton* button_new = new wxButton(this, wxID_ANY, wxT("New Game"));
-    wxButton* button_undo = new wxButton(this, wxID_ANY, wxT("Undo Game"));
-    wxButton* button_redo = new wxButton(this, wxID_ANY, wxT("Redo Game"));
+    wxButton* button_undo = new wxButton(this, wxID_ANY, wxT("Undo Move"));
+    wxButton* button_redo = new wxButton(this, wxID_ANY, wxT("Redo Move"));
 
     // Put things in the right places
     h_sizer->Add(display_canvas_, 3, wxEXPAND);
@@ -31,7 +31,7 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
     b_sizer->Add((wxButton*) NULL, 1, wxEXPAND);
     b_sizer->Add(button_redo, 1, wxEXPAND);
 
-
+    // Set sizer
     h_sizer->SetSizeHints(this);
     SetSizer(h_sizer);
 }
@@ -43,5 +43,15 @@ Gui3D::~Gui3D()
 
 void Gui3D::refresh()
 {
+    std::list<std::string> moves = presenter_->getMoveHistory();
+
+    move_history_->Clear();
+
+    std::list<std::string>::const_iterator it;
+    for(it = moves.begin(); it != moves.end(); it++)
+    {
+        move_history_->Append(wxString::FromAscii(it->c_str()));
+    }
+
     Refresh();
 }

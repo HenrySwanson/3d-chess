@@ -3,6 +3,8 @@
 
 #include <wx/wx.h>
 
+#include <string>
+
 #include "view-interface.h"
 #include "display-canvas.h"
 
@@ -24,10 +26,10 @@ class Gui3D : public wxFrame, public ViewInterface
     /** Tells this window and its children to check the model for updates. */
     virtual void refresh();
 
+  private:
     /** The presentation layer this view displays. */
     Presenter* presenter_;
 
-  private:
     /** The canvas on which the board is drawn. */
     DisplayCanvas* display_canvas_;
 
