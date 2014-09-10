@@ -32,8 +32,6 @@ class Board
     /** Generates all pseudo-legal moves that the given color can make. */
     std::list<Move> generatePseudoLegalMoves(int color) const;
 
-    // TODO maybe generateLegalMoves
-
     /**
      * Generates all pseudo-legal moves that the piece on this square can make.
      * It is safe to call this method on a non-piece (NIL or BORDER); it will
@@ -47,7 +45,6 @@ class Board
     /** Returns true if the given move is legal for this configuration. */
     bool isLegalMove(const Move& m) const;
 
-    // TODO maybe isPseudoLegal, too?
 
     /** Performs the given move. Does not check for (pseudo-)legality. */
     void makeMove(const Move& m);
@@ -64,9 +61,6 @@ class Board
 
     /** Returns true if the king of the specified color is in check. */
     bool isInStalemate(bool color) const;
-
-
-    // TODO determine move (so that the UI can figure out what move the player wanted)
 
 
     /** Returns a const reference to the history of this board. */

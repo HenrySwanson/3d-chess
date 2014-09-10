@@ -213,6 +213,7 @@ list<Move> Board::generatePseudoLegalMoves(int color) const
         }
     }
 
+    // TODO should I wrap this into generateMoves for a king?
     temp = generateCastlingMoves(color);
     moves.splice(moves.end(), temp);
 
@@ -429,7 +430,7 @@ bool Board::isInCheck(bool color) const
     {
         if(it->type() == CAPTURE || it->type() == PROMO_CAPTURE)
         {
-            Piece captured = pieces_[it->origin()];
+            Piece captured = pieces_[it->target()];
             if(captured.type() == KING)
                 return true;
         }
