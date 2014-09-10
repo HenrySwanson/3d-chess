@@ -67,6 +67,26 @@ list<string> Presenter::getMoveHistory() const
     return strings;
 }
 
+GameState Presenter::getGameState() const
+{
+    if(model_->isInCheckmate(turn_))
+        return (turn_ == WHITE) ? CHECKMATE_WHITE : CHECKMATE_BLACK;
+    else if(model_->isInStalemate(turn_))
+        return (turn_ == WHITE) ? STALEMATE_WHITE : STALEMATE_BLACK;
+    else
+        return IN_PROGRESS;
+}
+
+bool Presenter::canUndo() const
+{
+    return !(model_->getHistory().empty());
+}
+
+bool Presenter::canRedo() const
+{
+    return !(undid_moves_.empty());
+}
+
 void Presenter::click(int i, int j, int k)
 {
     int clicked = mailbox(i, j, k);
@@ -78,9 +98,7 @@ void Presenter::click(int i, int j, int k)
         if(clicked == it->target())
         {
             model_->makeMove(*it);
-            turn_ = !turn_;
-            selected_cell_ = NO_SELECTION;
-            selected_moves_.clear();
+            nextTurn();
             undid_moves_ = std::stack<Move>();
             view_->refresh();
             return;
@@ -98,7 +116,20 @@ void Presenter::click(int i, int j, int k)
     else if(model_->getPiece(clicked).isOn(turn_))
     {
         selected_cell_ = clicked;
-        selected_moves_ = model_->generateMoves(clicked);
+        list<Move> moves = model_->generateMoves(clicked);
+        if(model_->getPiece(clicked).type() == KING)
+        {
+            list<Move> castles = model_->generateCastlingMoves(turn_);
+            moves.splice(moves.end(), castles);
+        }
+        
+        // Restrict to legal moves
+        selected_moves_.clear();
+        list<Move>::const_iterator it;
+        for(it = moves.begin(); it != moves.end(); it++)
+            if(model_->isLegalMove(*it))
+                selected_moves_.push_back(*it);
+
         view_->refresh();
     }
 }
@@ -107,7 +138,7 @@ void Presenter::newGame()
 {
     turn_ = WHITE;
     selected_cell_ = NO_SELECTION;
-    selected_moves_ = std::list<Move>(0);
+    selected_moves_.clear();
     undid_moves_ = std::stack<Move>();
 
     model_->setup();
@@ -120,6 +151,7 @@ void Presenter::undoMove()
     if(history.empty())
         return;
 
+    nextTurn();
     undid_moves_.push(history.top());
     model_->undoMove();
     view_->refresh();
@@ -129,8 +161,16 @@ void Presenter::redoMove()
 {
     if(undid_moves_.empty())
         return;
-
+    
+    nextTurn();
     model_->makeMove(undid_moves_.top());
     undid_moves_.pop();
     view_->refresh();
+}
+
+void Presenter::nextTurn()
+{
+    turn_ = !turn_;
+    selected_cell_ = NO_SELECTION;
+    selected_moves_.clear();
 }

@@ -10,6 +10,11 @@
 #include "move.h"
 #include "piece.h"
 
+enum GameState {
+    IN_PROGRESS, CHECKMATE_WHITE, CHECKMATE_BLACK, STALEMATE_WHITE,
+    STALEMATE_BLACK
+};
+
 struct Cell
 {
     int x, y, z;
@@ -29,6 +34,9 @@ class Presenter
     Piece getPiece(int i, int j, int k) const;
     std::list<Cell> getMoveIndicators() const;
     std::list<std::string> getMoveHistory() const;
+    GameState getGameState() const;
+    bool canUndo() const;
+    bool canRedo() const;
 
     void click(int i, int j, int k);
     void newGame();
@@ -43,6 +51,8 @@ class Presenter
     int selected_cell_;
     std::list<Move> selected_moves_;
     std::stack<Move> undid_moves_;
+
+    void nextTurn();
 };
 
 #endif

@@ -16,8 +16,8 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
     move_history_ = new wxListBox(this, wxID_ANY);
 
     wxButton* button_new = new wxButton(this, wxID_ANY, wxT("New Game"));
-    wxButton* button_undo = new wxButton(this, wxID_ANY, wxT("Undo Move"));
-    wxButton* button_redo = new wxButton(this, wxID_ANY, wxT("Redo Move"));
+    button_undo = new wxButton(this, wxID_ANY, wxT("Undo Move"));
+    button_redo = new wxButton(this, wxID_ANY, wxT("Redo Move"));
 
     // Put things in the right places
     h_sizer->Add(display_canvas_, 3, wxEXPAND);
@@ -42,6 +42,10 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
       wxCommandEventHandler(Gui3D::undoMove));
     Connect(button_redo->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Gui3D::redoMove));
+
+    // Disable the appropriate buttons
+    button_undo->Disable();
+    button_redo->Disable();
 }
 
 Gui3D::~Gui3D()
@@ -54,10 +58,14 @@ void Gui3D::refresh()
     std::list<std::string> moves = presenter_->getMoveHistory();
 
     move_history_->Clear();
-
     std::list<std::string>::const_iterator it;
     for(it = moves.begin(); it != moves.end(); it++)
         move_history_->Append(wxString::FromAscii(it->c_str()));
+
+    button_undo->Enable(presenter_->canUndo());
+    button_redo->Enable(presenter_->canRedo());
+
+    // TODO respond to game state (like pop open a dialog box or something)
 
     Refresh();
 }

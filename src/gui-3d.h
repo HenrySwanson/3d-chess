@@ -35,6 +35,9 @@ class Gui3D : public wxFrame, public ViewInterface
 
     wxListBox* move_history_;
 
+    wxButton* button_undo;
+    wxButton* button_redo;
+
     void newGame(wxCommandEvent& evt);
     void undoMove(wxCommandEvent& evt);
     void redoMove(wxCommandEvent& evt);
