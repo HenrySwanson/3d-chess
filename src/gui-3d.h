@@ -33,13 +33,23 @@ class Gui3D : public wxFrame, public ViewInterface
     /** The canvas on which the board is drawn. */
     DisplayCanvas* display_canvas_;
 
+    /** The list box displaying the move history. */
     wxListBox* move_history_;
 
+    /** The button to undo moves. */
     wxButton* button_undo;
+
+    /** The button to redo moves. */
     wxButton* button_redo;
 
+
+    /** Triggers when the new game button is clicked. */
     void newGame(wxCommandEvent& evt);
+
+    /** Triggers when the undo move button is clicked. */
     void undoMove(wxCommandEvent& evt);
+
+    /** Triggers when the redo move button is clicked. */
     void redoMove(wxCommandEvent& evt);
 };
 
