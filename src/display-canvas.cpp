@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <vector>
 
 using glm::mat4;
 using glm::vec3;
@@ -32,15 +33,15 @@ static const int PIECE_MODEL_OFFSET[16] = {
 };
 
 /**
- * Indexed by PieceType. Indicates the number of vertices that the piece's
+ * Indexed by PieceType. Indicates the number of triangles that the piece's
  * model uses.
  */
 static const int PIECE_MODEL_LENGTH[16] = {
-    0, 0, 18, 18,
-    18, 18, 18, 18,
-    18, 18, 18,
-    18, 18, 18,
-    18, 18
+    0, 0, 6, 6,
+    6, 6, 6, 6,
+    6, 6, 6,
+    6, 6, 6,
+    6, 6
 };
 
 DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
@@ -93,9 +94,9 @@ void DisplayCanvas::initializeOpenGL()
     glEnable(GL_CULL_FACE);
 
     // Create programs
-    grid_object_.program = makeProgram("shaders/grid.vertexshader", "shaders/grid.fragmentshader");
-    piece_object_.program = makeProgram("shaders/piece.vertexshader", "shaders/piece.fragmentshader");
-    indicator_object_.program = makeProgram("shaders/indicator.vertexshader", "shaders/indicator.fragmentshader");
+    grid_object_.program = makeProgram("resources/grid.vertexshader", "resources/grid.fragmentshader");
+    piece_object_.program = makeProgram("resources/piece.vertexshader", "resources/piece.fragmentshader");
+    indicator_object_.program = makeProgram("resources/indicator.vertexshader", "resources/indicator.fragmentshader");
 
     // Create VAOs and VBOs
     initializeGrid();
@@ -153,18 +154,11 @@ void DisplayCanvas::initializePieces()
     glGenVertexArrays(1, &piece_object_.vao);
     glBindVertexArray(piece_object_.vao);
 
-    // Fill an array with data
-    GLfloat vertexData [3 * 3 * 6] = {
-        0.2, 0.2, 0.0,    0.8, 0.2, 0.0,    0.5, 0.5, 0.7,
-        0.8, 0.2, 0.0,    0.8, 0.8, 0.0,    0.5, 0.5, 0.7,
-        0.8, 0.8, 0.0,    0.2, 0.8, 0.0,    0.5, 0.5, 0.7,
-        0.2, 0.8, 0.0,    0.2, 0.2, 0.0,    0.5, 0.5, 0.7,
-        0.2, 0.2, 0.0,    0.2, 0.8, 0.0,    0.8, 0.2, 0.0,
-        0.8, 0.8, 0.0,    0.8, 0.2, 0.0,    0.2, 0.8, 0.0,
-    };
+    // TODO replace with piece-by-piece loading
+    std::vector<float> faces = loadObjFile("resources/pyramid.obj");
 
     // Load that array into the VBO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * faces.size(), &faces[0], GL_STATIC_DRAW);
 
     // Configure the "vert" variable of the shader program
     GLuint in_vert = glGetAttribLocation(piece_object_.program, "vert");
@@ -390,7 +384,7 @@ void DisplayCanvas::renderPieces()
                 // Find the piece model in the VBO and draw!
                 int offset = PIECE_MODEL_OFFSET[pt];
                 int length = PIECE_MODEL_LENGTH[pt];
-                glDrawArrays(GL_TRIANGLES, offset, length);
+                glDrawArrays(GL_TRIANGLES, offset * 3, length * 3);
             }
         }
     }
