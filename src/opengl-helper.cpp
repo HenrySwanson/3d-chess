@@ -9,7 +9,7 @@
 GLuint loadShaderFromFile(const char* filePath, GLenum type)
 {
     std::ifstream in_file;
-    in_file.open(filePath, std::ios::in | std::ios::binary);
+    in_file.open(filePath, std::ios::in);
 
     if(!in_file.is_open())
         std::cout << "Failed to open file: " << filePath << std::endl;
@@ -76,4 +76,66 @@ GLuint makeProgram(const char* vert_shader_src, const char* frag_shader_src)
     }
 
     return program;   
+}
+
+std::vector<float> loadObjFile(const char* obj_model_src)
+{
+    std::vector<float> vertices;
+    std::vector<float> normals;
+    std::vector<float> faces;
+
+    FILE * file = fopen(obj_model_src, "r");
+
+    if( file == NULL )
+        std::cout << "Failed to open file: " << obj_model_src << std::endl;
+
+    while(true)
+    {
+        char line_header [128];
+        int res = fscanf(file, "%s", line_header);
+        if(res == EOF)
+            break;
+
+        float x, y, z;
+        if(strcmp(line_header, "v") == 0)
+        {
+            fscanf(file, "%f %f %f\n", &x, &y, &z);
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
+        }
+        else if(strcmp(line_header, "vn") == 0)
+        {
+            fscanf(file, "%f %f %f\n", &x, &y, &z);
+            normals.push_back(x);
+            normals.push_back(y);
+            normals.push_back(z);
+        }
+        else if(strcmp(line_header, "f") == 0)
+        {
+            unsigned int v_indices [3];
+            unsigned int n_indices [3];
+            int matches = fscanf(file, "%d//%d %d//%d %d//%d\n",
+                    &v_indices[0], &n_indices[0],
+                    &v_indices[1], &n_indices[1],
+                    &v_indices[2], &n_indices[2]);
+
+            if(matches != 6)
+            {
+                std::cout << "Could not parse file with this dumb parser: " <<
+                        obj_model_src << std::endl;
+                return std::vector<float>(0);
+            }
+
+            for(int i = 0; i < 3; i++)
+            {
+                for(int j = 0; j < 3; j++)
+                    faces.push_back(vertices[3 * (v_indices[i] - 1) + j]);
+                //for(int j = 0; j < 3; j++)
+                    //faces.push_back(normals[3 * (n_indices[i] - 1) + j]);
+            }
+        }
+    }
+
+    return faces;
 }
