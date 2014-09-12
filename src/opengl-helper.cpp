@@ -48,11 +48,11 @@ GLuint loadShaderFromFile(const char* filePath, GLenum type)
     return shader;
 }
 
-GLuint makeProgram(const char* vert_shader_src, const char* frag_shader_src)
+GLuint makeProgram(const char* vert_filename, const char* frag_filename)
 {
     // Load both (compiled) shaders
-    GLuint vert_shader = loadShaderFromFile(vert_shader_src, GL_VERTEX_SHADER);
-    GLuint frag_shader = loadShaderFromFile(frag_shader_src, GL_FRAGMENT_SHADER);
+    GLuint vert_shader = loadShaderFromFile(vert_filename, GL_VERTEX_SHADER);
+    GLuint frag_shader = loadShaderFromFile(frag_filename, GL_FRAGMENT_SHADER);
 
     // Generate program, attach shaders and link together
     GLuint program = glCreateProgram();
@@ -78,16 +78,23 @@ GLuint makeProgram(const char* vert_shader_src, const char* frag_shader_src)
     return program;   
 }
 
-std::vector<float> loadObjFile(const char* obj_model_src)
+std::vector<float> loadObjFile(const char* obj_filename)
 {
     std::vector<float> vertices;
     std::vector<float> normals;
     std::vector<float> faces;
 
-    FILE * file = fopen(obj_model_src, "r");
+    std::stringstream ss;
+    ss << "resources/" << obj_filename << ".obj";
+    std::string path = ss.str();
+
+    FILE * file = fopen(path.c_str(), "r");
 
     if( file == NULL )
-        std::cout << "Failed to open file: " << obj_model_src << std::endl;
+    {
+        std::cout << "Failed to open file: " << path << std::endl;
+        return std::vector<float>(0);
+    }
 
     while(true)
     {
@@ -96,9 +103,9 @@ std::vector<float> loadObjFile(const char* obj_model_src)
         if(res == EOF)
             break;
 
-        float x, y, z;
         if(strcmp(line_header, "v") == 0)
         {
+            float x, y, z;
             fscanf(file, "%f %f %f\n", &x, &y, &z);
             vertices.push_back(x);
             vertices.push_back(y);
@@ -106,6 +113,7 @@ std::vector<float> loadObjFile(const char* obj_model_src)
         }
         else if(strcmp(line_header, "vn") == 0)
         {
+            float x, y, z;
             fscanf(file, "%f %f %f\n", &x, &y, &z);
             normals.push_back(x);
             normals.push_back(y);
@@ -123,7 +131,7 @@ std::vector<float> loadObjFile(const char* obj_model_src)
             if(matches != 6)
             {
                 std::cout << "Could not parse file with this dumb parser: " <<
-                        obj_model_src << std::endl;
+                        path << std::endl;
                 return std::vector<float>(0);
             }
 

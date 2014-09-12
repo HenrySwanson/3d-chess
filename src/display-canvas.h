@@ -52,6 +52,9 @@ class DisplayCanvas : public wxGLCanvas
     /** The render object for the move indicators. */
     RenderObject indicator_object_;
 
+    /** The offsets, in vertices, that each piece model starts at. */
+    int piece_model_offset_ [17];
+
 
     /** The horizontal angle the board is viewed from. */
     float theta_;

@@ -9,8 +9,12 @@
  * Loads vertex and fragment shader code from files, compiles them, then links
  * them into a shader program. Returns the ID of this program.
  */
-GLuint makeProgram(const char* vert_shader_src, const char* frag_shader_src);
+GLuint makeProgram(const char* vert_filename, const char* frag_filename);
 
-std::vector<float> loadObjFile(const char* obj_model_src);
+/**
+ * Given a string ("foo"), finds the file resources/foo.obj, loads it, then
+ * returns a vector with the faces.
+ */
+std::vector<float> loadObjFile(const char* obj_filename);
 
 #endif

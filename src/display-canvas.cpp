@@ -20,28 +20,16 @@ static const float EYE_RAD = 15;
 /** Attributes to set up the OpenGL context */
 static int OPEN_GL_ATTRIBS [] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0};
 
-/**
- * Indexed by PieceType. Indicates the offset in the VBO that the piece's model
- * starts at.
- */
-static const int PIECE_MODEL_OFFSET[16] = {
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0,
-    0, 0, 0,
-    0, 0
-};
+/** The number of floats per vertex */
+static const int VERTEX_SIZE = 3;
 
-/**
- * Indexed by PieceType. Indicates the number of triangles that the piece's
- * model uses.
- */
-static const int PIECE_MODEL_LENGTH[16] = {
-    0, 0, 6, 6,
-    6, 6, 6, 6,
-    6, 6, 6,
-    6, 6, 6,
-    6, 6
+/** The files to load for each piece */
+static const char* PIECE_FILES [16] = {
+    NULL, NULL, "pyramid", "pyramid",
+    "pyramid", "pyramid", "pyramid", "pyramid",
+    "pyramid", "pyramid", "pyramid",
+    "pyramid", "pyramid", "pyramid",
+    "pyramid", "pyramid"
 };
 
 DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
@@ -154,11 +142,26 @@ void DisplayCanvas::initializePieces()
     glGenVertexArrays(1, &piece_object_.vao);
     glBindVertexArray(piece_object_.vao);
 
-    // TODO replace with piece-by-piece loading
-    std::vector<float> faces = loadObjFile("resources/pyramid.obj");
+    // Load each piece model into a vector, and concatenate them
+    int index = 0;
+    std::vector<float> accumulator;
+    for(int i = 0; i < 16; i++)
+    {
+        piece_model_offset_[i] = index / VERTEX_SIZE;
 
-    // Load that array into the VBO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * faces.size(), &faces[0], GL_STATIC_DRAW);
+        std::vector<float> faces = loadObjFile(PIECE_FILES[i]);
+        index += faces.size();
+
+        accumulator.reserve(faces.size());
+        accumulator.insert(accumulator.end(), faces.begin(), faces.end());
+    }
+
+    // Store the total number of vertices as the last index
+    piece_model_offset_[16] = index / VERTEX_SIZE;
+
+    // Load that vector into the VBO
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * accumulator.size(),
+            &accumulator[0], GL_STATIC_DRAW);
 
     // Configure the "vert" variable of the shader program
     GLuint in_vert = glGetAttribLocation(piece_object_.program, "vert");
@@ -344,7 +347,6 @@ void DisplayCanvas::renderGrid()
     glUseProgram(0);
 }
 
-// TODO render actual pieces
 void DisplayCanvas::renderPieces()
 {
     // Bind the program and VAO
@@ -382,9 +384,9 @@ void DisplayCanvas::renderPieces()
                 glUniform3f(color_loc, color.r, color.g, color.b);
 
                 // Find the piece model in the VBO and draw!
-                int offset = PIECE_MODEL_OFFSET[pt];
-                int length = PIECE_MODEL_LENGTH[pt];
-                glDrawArrays(GL_TRIANGLES, offset * 3, length * 3);
+                int offset = piece_model_offset_[pt];
+                int length = piece_model_offset_[pt + 1] - offset;
+                glDrawArrays(GL_TRIANGLES, offset, length);
             }
         }
     }
