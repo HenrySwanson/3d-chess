@@ -1,10 +1,19 @@
 3d-chess
 ========
 
-A C++ implementation of 3D chess. Not the Star Trek kind; this is a full 8 x 8 x 8 chessboard (chesscube?).
+Description
+-----------
 
-For quite some time, I've wanted to make some 3D expansion of chess. Unfortunately, I couldn't find much on the Internet. Or at least, not the sort of thing I was thinking of. I did manage to find one site (hixoxih.com), but it's inaccessible now. Most of the rules and pieces are from there.
+A C++ implementation of 3D chess. Not the Star Trek kind; not the standard-chess-with-pretty-graphics kind; this is a full 8 x 8 x 8 chessboard (chesscube?). With 13 types of pieces (including the traditional 6), a whopping 64 pawns per side, and an additional dimension to navigate, this will be... interesting?
 
-During a summer camp (EPGY) in 2010, I wrote a Java implementation of the game. Turns out I knew absolutely nothing back then, so that code is never again going to see the light of day. This is a total re-write and re-design.
+It's not complete yet. For example, I need to write an AI opponent, and make actual models for each piece. Right now, it's just a bunch of colored pyramids.
 
-When complete, this will have an AI opponent (playing against yourself is boring), actual 3D graphics (before, it was 8 separate windows, one for each "slice" of the board), and no improper use of threads (I'd rather not explain that one...).
+Installation
+------------
+
+This project uses OpenGL and wxWidgets. I'm not entirely sure how to correctly distribute these dependencies. So until I figure that out, you're on your own.
+
+Contributions
+-------------
+
+The piece names and initial board setup come from hixoxih.com. Unfortunately, at the time of writing, this site is no longer accessible.
