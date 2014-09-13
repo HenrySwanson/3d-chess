@@ -30,6 +30,10 @@ class Gui3D : public wxFrame, public ViewInterface
     /** The presentation layer this view displays. */
     Presenter* presenter_;
 
+    /** Whether the game is over or not. */
+    bool game_over_;
+
+
     /** The canvas on which the board is drawn. */
     DisplayCanvas* display_canvas_;
 
@@ -51,6 +55,10 @@ class Gui3D : public wxFrame, public ViewInterface
 
     /** Triggers when the redo move button is clicked. */
     void redoMove(wxCommandEvent& evt);
+
+
+    /** Responds to the game ending with the appropriate box. */
+    void reactGameOver(GameState state);
 };
 
 #endif

@@ -3,6 +3,7 @@
 Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxDefaultSize)
 {
     presenter_ = new Presenter(this);
+    game_over_ = false;
 
     // Note: Don't have to destruct any child widgets, wxWidgets does that.
 
@@ -43,9 +44,7 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
     Connect(button_redo->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Gui3D::redoMove));
 
-    // Disable the appropriate buttons
-    button_undo->Disable();
-    button_redo->Disable();
+    refresh();
 }
 
 Gui3D::~Gui3D()
@@ -62,16 +61,20 @@ void Gui3D::refresh()
     for(it = moves.begin(); it != moves.end(); it++)
         move_history_->Append(wxString::FromAscii(it->c_str()));
 
-    button_undo->Enable(presenter_->canUndo());
-    button_redo->Enable(presenter_->canRedo());
+    button_undo->Enable(presenter_->canUndo() && game_over_);
+    button_redo->Enable(presenter_->canRedo() && game_over_);
 
-    // TODO respond to game state (like pop open a dialog box or something)
+    GameState state = presenter_->getGameState();
+    // Triggers on the "rising edge" of game_over_
+    if(state != IN_PROGRESS && !game_over_)
+        reactGameOver(state);
 
     Refresh();
 }
 
 void Gui3D::newGame(wxCommandEvent& evt)
 {
+    game_over_ = false;
     presenter_->newGame();
 }
 
@@ -83,4 +86,40 @@ void Gui3D::undoMove(wxCommandEvent& evt)
 void Gui3D::redoMove(wxCommandEvent& evt)
 {
     presenter_->redoMove();
+}
+
+void Gui3D::reactGameOver(GameState state)
+{
+    game_over_ = true;
+
+    const char* message;
+    const char* title;
+
+    switch(state)
+    {
+      case IN_PROGRESS:
+        message = "You shouldn't ever see this...";
+        title = "No one wins yet";
+        break;
+      case CHECKMATE_WHITE:
+        message = "White's king is in check and can no longer move!";
+        title = "Black wins!";
+        break;
+      case CHECKMATE_BLACK:
+        message = "Black's king is in check and can no longer move!";
+        title = "White wins!";
+        break;
+      case STALEMATE_WHITE:
+        message = "White's king is safe, but can no longer move!";
+        title = "Draw!";
+        break;
+      case STALEMATE_BLACK:
+        message = "Black's king is safe, but can no longer move!";
+        title = "Draw!";
+        break;
+    }
+
+    wxMessageDialog* dialog = new wxMessageDialog (NULL, 
+            wxString::FromAscii(message), wxString::FromAscii(title));
+    dialog->ShowModal();
 }
