@@ -278,27 +278,11 @@ bool Board::isLegalMove(const Move& m) const // TODO make non-const version that
         int dir = (m.target() - m.origin()) / 2;
         int middle = m.origin() + dir;
 
-        // Are we in check?
-        if(copy.isInCheck(m.color()))
-            return false;
-
-        // Move king one square
-        copy.pieces_[middle] = copy.pieces_[m.origin()];
-        copy.pieces_[m.origin()] = Piece(NIL, WHITE);
-
-        // Are we passing through check?
-        if(copy.isInCheck(m.color()))
-            return false;
-
-        // Move king another square
-        copy.pieces_[m.target()] = copy.pieces_[middle];
-        copy.pieces_[middle] = Piece(NIL, WHITE);
-
-        // Do we end up in check?
-        if(copy.isInCheck(m.color()))
-            return false;
-
-        return true;
+        // If any king is in check, then we cannot castle
+        Piece king = copy.pieces_[m.origin()];
+        copy.pieces_[m.target()] = king;
+        copy.pieces_[middle] = king;
+        return !copy.isInCheck(m.color());
     }
     else
     {
