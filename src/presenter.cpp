@@ -9,23 +9,25 @@ static const int NO_SELECTION = 0;
 
 Presenter::Presenter(ViewInterface* view)
 {
-    model_ = new Board();
-    model_->setup();
+    player_ = new HumanPlayer();
+
+    game_ = new Game(player_, player_);
+    game_->begin();
     view_ = view;
 
-    turn_ = WHITE;
     selected_cell_ = NO_SELECTION;
 }
 
 Presenter::~Presenter()
 {
-    delete model_;
+    delete game_;
+    delete player_;
 }
 
 Piece Presenter::getPiece(int i, int j, int k) const
 {
     int index = mailbox(i, j, k);
-    return model_->getPiece(index);
+    return game_->getBoard().getPiece(index);
 }
 
 list<Cell> Presenter::getMoveIndicators() const
@@ -50,7 +52,7 @@ list<Cell> Presenter::getMoveIndicators() const
 list<string> Presenter::getMoveHistory() const
 {
     // Make a copy so it's not destroyed!
-    std::stack<Move> history (model_->getHistory());
+    std::stack<Move> history (game_->getBoard().getHistory());
     list<string> strings;
 
     while(!history.empty())
@@ -67,29 +69,11 @@ list<string> Presenter::getMoveHistory() const
     return strings;
 }
 
-GameState Presenter::getGameState() const
-{
-    if(model_->isInCheckmate(turn_))
-        return (turn_ == WHITE) ? CHECKMATE_WHITE : CHECKMATE_BLACK;
-    else if(model_->isInStalemate(turn_))
-        return (turn_ == WHITE) ? STALEMATE_WHITE : STALEMATE_BLACK;
-    else
-        return IN_PROGRESS;
-}
-
-bool Presenter::canUndo() const
-{
-    return !(model_->getHistory().empty());
-}
-
-bool Presenter::canRedo() const
-{
-    return !(undid_moves_.empty());
-}
-
 void Presenter::click(int i, int j, int k)
 {
     int clicked = mailbox(i, j, k);
+    const Board& board = game_->getBoard();
+    bool turn = game_->getTurn();
 
     list<Move>::const_iterator it;
     for(it = selected_moves_.begin(); it != selected_moves_.end(); it++)
@@ -97,10 +81,9 @@ void Presenter::click(int i, int j, int k)
         // If we clicked a move indicator
         if(clicked == it->target())
         {
-            model_->makeMove(*it);
-            nextTurn();
-            undid_moves_ = std::stack<Move>();
-            view_->refresh();
+            player_->setMove(*it);
+            clearSelection();
+            view_->refresh(); // TODO this is called before the game finishes making the move!
             return;
         }
     }
@@ -108,18 +91,17 @@ void Presenter::click(int i, int j, int k)
     // If we clicked the already-selected cell
     if(clicked == selected_cell_)
     {
-        selected_cell_ = NO_SELECTION;
-        selected_moves_.clear();
+        clearSelection();
         view_->refresh();
     }
     // If we clicked on a piece on the current team
-    else if(model_->getPiece(clicked).isOn(turn_))
+    else if(board.getPiece(clicked).isOn(turn))
     {
         selected_cell_ = clicked;
-        list<Move> moves = model_->generateMoves(clicked);
-        if(model_->getPiece(clicked).type() == KING)
+        list<Move> moves = board.generateMoves(clicked);
+        if(board.getPiece(clicked).type() == KING)
         {
-            list<Move> castles = model_->generateCastlingMoves(turn_);
+            list<Move> castles = board.generateCastlingMoves(turn);
             moves.splice(moves.end(), castles);
         }
         
@@ -127,50 +109,17 @@ void Presenter::click(int i, int j, int k)
         selected_moves_.clear();
         list<Move>::const_iterator it;
         for(it = moves.begin(); it != moves.end(); it++)
-            if(model_->isLegalMove(*it))
+            if(board.isLegalMove(*it))
                 selected_moves_.push_back(*it);
 
         view_->refresh();
     }
 }
 
-void Presenter::newGame()
+//----PRIVATE----
+
+void Presenter::clearSelection()
 {
-    turn_ = WHITE;
-    selected_cell_ = NO_SELECTION;
-    selected_moves_.clear();
-    undid_moves_ = std::stack<Move>();
-
-    model_->setup();
-    view_->refresh();
-}
-
-void Presenter::undoMove()
-{
-    const std::stack<Move>& history = model_->getHistory();
-    if(history.empty())
-        return;
-
-    nextTurn();
-    undid_moves_.push(history.top());
-    model_->undoMove();
-    view_->refresh();
-}
-
-void Presenter::redoMove()
-{
-    if(undid_moves_.empty())
-        return;
-    
-    nextTurn();
-    model_->makeMove(undid_moves_.top());
-    undid_moves_.pop();
-    view_->refresh();
-}
-
-void Presenter::nextTurn()
-{
-    turn_ = !turn_;
     selected_cell_ = NO_SELECTION;
     selected_moves_.clear();
 }

@@ -4,6 +4,8 @@
 #include <list>
 #include <stack>
 
+#include "common.h"
+
 #include "move.h"
 #include "piece.h"
 

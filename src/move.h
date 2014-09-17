@@ -73,24 +73,4 @@ class Move
     unsigned int data_;
 };
 
-/**
- * Converts from an 8 x 8 x 8 cube to a 1728 array. Like the Board.pieces_
- * array, x-coordinates vary first, then y, then z.
- */
-int mailbox(int x, int y, int z);
-
-/*
- * Note that it's just as cheap to have the unmailboxing functions separate
- * as to have them together.
- */
-
-/** Converts from a 1728 array to the x-coordinate of an 8 x 8 x 8 cube. */
-int unmailboxX(int i);
-
-/** Converts from a 1728 array to the y-coordinate of an 8 x 8 x 8 cube. */
-int unmailboxY(int i);
-
-/** Converts from a 1728 array to the z-coordinate of an 8 x 8 x 8 cube. */
-int unmailboxZ(int i);
-
 #endif

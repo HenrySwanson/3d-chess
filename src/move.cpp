@@ -53,23 +53,3 @@ bool Move::operator!=(const Move& m) const
 {
     return !(*this == m);
 }
-
-int mailbox(int x, int y, int z)
-{
-    return (z + 2) * 144 + (y + 2) * 12 + (x + 2);
-}
-
-int unmailboxX(int i)
-{
-    return (i % 12) - 2;
-}
-
-int unmailboxY(int i)
-{
-    return (i / 12) % 12 - 2;
-}
-
-int unmailboxZ(int i)
-{
-    return (i / 144) % 12 - 2;
-}

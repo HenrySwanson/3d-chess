@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -g `wx-config --cxxflags`
+CFLAGS = -Wall -g -std=c++11 `wx-config --cxxflags`
 LFLAGS = -g -lGL -lGLEW `wx-config --libs --gl-libs`
 
 #TODO move unit_test.* to include

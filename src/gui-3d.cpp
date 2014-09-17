@@ -61,36 +61,36 @@ void Gui3D::refresh()
     for(it = moves.begin(); it != moves.end(); it++)
         move_history_->Append(wxString::FromAscii(it->c_str()));
 
-    button_undo->Enable(presenter_->canUndo() && game_over_);
+    /*button_undo->Enable(presenter_->canUndo() && game_over_);
     button_redo->Enable(presenter_->canRedo() && game_over_);
 
     GameState state = presenter_->getGameState();
     // Triggers on the "rising edge" of game_over_
     if(state != IN_PROGRESS && !game_over_)
-        reactGameOver(state);
+        reactGameOver(state);*/
 
     Refresh();
 }
 
 void Gui3D::newGame(wxCommandEvent& evt)
 {
-    game_over_ = false;
-    presenter_->newGame();
+    //game_over_ = false;
+    //presenter_->newGame();
 }
 
 void Gui3D::undoMove(wxCommandEvent& evt)
 {
-    presenter_->undoMove();
+    //presenter_->undoMove();
 }
 
 void Gui3D::redoMove(wxCommandEvent& evt)
 {
-    presenter_->redoMove();
+    //presenter_->redoMove();
 }
 
 void Gui3D::reactGameOver(GameState state)
 {
-    game_over_ = true;
+    /*game_over_ = true;
 
     const char* message;
     const char* title;
@@ -121,5 +121,5 @@ void Gui3D::reactGameOver(GameState state)
 
     wxMessageDialog* dialog = new wxMessageDialog (NULL, 
             wxString::FromAscii(message), wxString::FromAscii(title));
-    dialog->ShowModal();
+    dialog->ShowModal();*/
 }
