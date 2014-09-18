@@ -2,7 +2,7 @@
 
 Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxDefaultSize)
 {
-    presenter_ = new Presenter(this);
+    presenter_ = new Presenter();
     game_over_ = false;
 
     // Note: Don't have to destruct any child widgets, wxWidgets does that.
@@ -44,7 +44,7 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
     Connect(button_redo->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Gui3D::redoMove));
 
-    refresh();
+    presenter_->addObserver(this);
 }
 
 Gui3D::~Gui3D()
@@ -52,8 +52,12 @@ Gui3D::~Gui3D()
     delete presenter_;
 }
 
-void Gui3D::refresh()
+void Gui3D::onNotify()
 {
+    Refresh();
+}
+
+#if 0
     std::list<std::string> moves = presenter_->getMoveHistory();
 
     move_history_->Clear();
@@ -71,6 +75,7 @@ void Gui3D::refresh()
 
     Refresh();
 }
+#endif
 
 void Gui3D::newGame(wxCommandEvent& evt)
 {

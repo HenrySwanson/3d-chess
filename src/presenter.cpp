@@ -7,15 +7,16 @@ using std::string;
 
 static const int NO_SELECTION = 0;
 
-Presenter::Presenter(ViewInterface* view)
+Presenter::Presenter()
 {
     player_ = new HumanPlayer();
 
     game_ = new Game(player_, player_);
     game_->begin();
-    view_ = view;
 
     selected_cell_ = NO_SELECTION;
+
+    game_->addObserver(this);
 }
 
 Presenter::~Presenter()
@@ -83,7 +84,6 @@ void Presenter::click(int i, int j, int k)
         {
             player_->setMove(*it);
             clearSelection();
-            view_->refresh(); // TODO this is called before the game finishes making the move!
             return;
         }
     }
@@ -92,7 +92,7 @@ void Presenter::click(int i, int j, int k)
     if(clicked == selected_cell_)
     {
         clearSelection();
-        view_->refresh();
+        notifyAll();
     }
     // If we clicked on a piece on the current team
     else if(board.getPiece(clicked).isOn(turn))
@@ -112,8 +112,13 @@ void Presenter::click(int i, int j, int k)
             if(board.isLegalMove(*it))
                 selected_moves_.push_back(*it);
 
-        view_->refresh();
+        notifyAll();
     }
+}
+
+void Presenter::onNotify()
+{
+    notifyAll();
 }
 
 //----PRIVATE----

@@ -6,6 +6,8 @@
 #include <atomic>
 #include <thread>
 
+#include "subject.h"
+
 #include "board.h"
 #include "move.h"
 
@@ -18,7 +20,7 @@ enum GameState {
 };
 
 // TODO maybe make the view observe this? otherwise how can it know when the ai makes a move?
-class Game
+class Game : public Subject
 {
   public:
     Game(PlayerInterface* white, PlayerInterface* black);

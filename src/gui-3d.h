@@ -5,7 +5,8 @@
 
 #include <string>
 
-#include "view-interface.h"
+#include "observer.h"
+
 #include "display-canvas.h"
 
 #include "presenter.h"
@@ -14,7 +15,7 @@
  * A 3D graphical interface for the game. When this object is initialized,
  * it creates a new game and board, as well as all relevant windows.
  */
-class Gui3D : public wxFrame, public ViewInterface
+class Gui3D : public wxFrame, public Observer
 {
   public:
     /** Standard constructor */
@@ -24,7 +25,7 @@ class Gui3D : public wxFrame, public ViewInterface
     ~Gui3D();
 
     /** Tells this window and its children to check the model for updates. */
-    virtual void refresh();
+    virtual void onNotify();
 
   private:
     /** The presentation layer this view displays. */

@@ -47,5 +47,6 @@ void Game::run()
         Move m = players_[turn_]->getMove();
         board_.makeMove(m);
         turn_ = !turn_;
+        notifyAll();
     }
 }

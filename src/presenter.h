@@ -6,12 +6,15 @@
 
 #include "common.h"
 
-#include "view-interface.h"
+#include "observer.h"
+#include "subject.h"
 
 #include "human-player.h"
 
 #include "game.h"
 #include "piece.h"
+
+// TODO perhaps couple more tightly to the view?
 
 /**
  * Not sure what to say about this. It doesn't correspond to anything nice and
@@ -19,11 +22,11 @@
  * In MVP terms, it's either a Supervising Controller, or the Presenter in a
  * Passive View setup.
  */
-class Presenter
+class Presenter : public Observer, public Subject
 {
   public:
     /** Constructs a presenter that is attached to the given view. */
-    Presenter(ViewInterface* view);
+    Presenter();
 
     /** Destructs the presenter. Not responsible for destructing the view. */
     ~Presenter();
@@ -44,12 +47,12 @@ class Presenter
      */
     void click(int i, int j, int k);
 
+
+    virtual void onNotify();
+
   private:
     /** The game the presentation modifies. */
     Game* game_;
-
-    /** The view that displays this presentation. */
-    ViewInterface* view_;
 
     HumanPlayer* player_;
 
