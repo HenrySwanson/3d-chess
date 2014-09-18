@@ -13,12 +13,6 @@
 
 #include "player-interface.h"
 
-// TODO move to board?
-enum GameState {
-    IN_PROGRESS, CHECKMATE_WHITE, CHECKMATE_BLACK, STALEMATE_WHITE,
-    STALEMATE_BLACK
-};
-
 // TODO maybe make the view observe this? otherwise how can it know when the ai makes a move?
 class Game : public Subject
 {

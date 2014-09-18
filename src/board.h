@@ -9,6 +9,11 @@
 #include "move.h"
 #include "piece.h"
 
+enum GameState {
+    IN_PROGRESS, CHECKMATE_WHITE, CHECKMATE_BLACK, STALEMATE_WHITE,
+    STALEMATE_BLACK
+};
+
 /**
  * Represents an 8 x 8 x 8 chessboard, the pieces on it, and all necessary
  * metadata, such as move history, and if en passant is possible.
@@ -58,11 +63,8 @@ class Board
     /** Returns true if the king of the specified color is in check. */
     bool isInCheck(bool color) const;
 
-    /** Returns true if the king of the specified color is in check. */
-    bool isInCheckmate(bool color) const;
-
-    /** Returns true if the king of the specified color is in check. */
-    bool isInStalemate(bool color) const;
+    /** Returns the current state of the game (checkmate, stalemate, etc). */
+    GameState getGameState() const;
 
 
     /** Returns a const reference to the history of this board. */

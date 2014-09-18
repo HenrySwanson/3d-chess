@@ -42,7 +42,7 @@ void Game::run()
 {
     board_.setup();
 
-    while(running_) // TODO end on mate
+    while(running_ && board_.getGameState() == IN_PROGRESS)
     {
         Move m = players_[turn_]->getMove();
         board_.makeMove(m);

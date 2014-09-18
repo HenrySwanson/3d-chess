@@ -423,14 +423,15 @@ bool Board::isInCheck(bool color) const
     return false;
 }
 
-bool Board::isInCheckmate(bool color) const
+GameState Board::getGameState() const
 {
-    return isInCheck(color) && isInSomemate(color);
-}
+    if(isInSomemate(WHITE))
+        return isInCheck(WHITE) ? CHECKMATE_WHITE : STALEMATE_WHITE;
 
-bool Board::isInStalemate(bool color) const
-{
-    return !isInCheck(color) && isInSomemate(color);
+    if(isInSomemate(BLACK))
+        return isInCheck(BLACK) ? CHECKMATE_BLACK : STALEMATE_BLACK;
+
+    return IN_PROGRESS;
 }
 
 const stack<Move> Board::getHistory() const
