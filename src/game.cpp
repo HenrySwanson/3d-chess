@@ -33,8 +33,8 @@ void Game::begin()
 
 void Game::end()
 {
-    // TODO this can get stuck if it's waiting for the HumanPlayer to respond...
-    running_ = false;
+    // Interrupt the current player and waits for the thread to die.
+    players_[turn_]->interrupt(END);
     game_thread_.join();
 }
 
@@ -45,6 +45,11 @@ void Game::run()
     while(running_ && board_.getGameState() == IN_PROGRESS)
     {
         Move m = players_[turn_]->getMove();
+        InterruptCode code = players_[turn_]->getInterruptCode();
+
+        if(code == END)
+            break;
+
         board_.makeMove(m);
         turn_ = !turn_;
         notifyAll();

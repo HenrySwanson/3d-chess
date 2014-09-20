@@ -5,28 +5,50 @@ HumanPlayer::HumanPlayer()
     ready_ = false;
 }
 
+void HumanPlayer::setMove(Move m)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    // If getMove hasn't yet been called, skip this
+    if(ready_)
+        return;
+
+    move_ = m;
+    ready_ = true;
+
+    waiting_.notify_one();
+}
+
 Move HumanPlayer::getMove()
 {
     std::unique_lock<std::mutex> lock(mutex_);
 
+    code_ = NONE;
+
     // Protects against spurious wakeup
     while(!ready_)
-        cond_var_.wait(lock);
+        waiting_.wait(lock);
 
     ready_ = false;
 
     return move_;
 }
 
-void HumanPlayer::setMove(Move m)
+void HumanPlayer::interrupt(InterruptCode code)
 {
-    // If getMove hasn't yet been called, skip this
-    if(ready_) return;
-
     std::lock_guard<std::mutex> lock(mutex_);
 
-    move_ = m;
+    // If we're ready, why interrupt?
+    if(ready_)
+        return;
+
+    code_ = code;
     ready_ = true;
 
-    cond_var_.notify_one();
+    waiting_.notify_one();
+}
+
+InterruptCode HumanPlayer::getInterruptCode() const
+{
+    return code_;
 }
