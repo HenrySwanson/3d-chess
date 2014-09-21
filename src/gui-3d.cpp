@@ -38,11 +38,15 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
 
     // Connect events from the buttons
     Connect(button_new->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
-      wxCommandEventHandler(Gui3D::newGame));
+            wxCommandEventHandler(Gui3D::newGame));
     Connect(button_undo->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
-      wxCommandEventHandler(Gui3D::undoMove));
+            wxCommandEventHandler(Gui3D::undoMove));
     Connect(button_redo->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, 
-      wxCommandEventHandler(Gui3D::redoMove));
+            wxCommandEventHandler(Gui3D::redoMove));
+
+    // Connect window close event
+    Connect(GetId(), wxEVT_CLOSE_WINDOW, 
+      wxCloseEventHandler(Gui3D::onClose));
 
     presenter_->addObserver(this);
 }
@@ -127,4 +131,9 @@ void Gui3D::reactGameOver(GameState state)
     wxMessageDialog* dialog = new wxMessageDialog (NULL, 
             wxString::FromAscii(message), wxString::FromAscii(title));
     dialog->ShowModal();*/
+}
+
+void Gui3D::onClose(wxCloseEvent& event)
+{
+    Destroy();
 }

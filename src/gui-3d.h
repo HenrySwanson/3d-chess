@@ -60,6 +60,10 @@ class Gui3D : public wxFrame, public Observer
 
     /** Responds to the game ending with the appropriate box. */
     void reactGameOver(GameState state);
+
+
+    /** Closes the window. */
+    void onClose(wxCloseEvent& evt);
 };
 
 #endif
