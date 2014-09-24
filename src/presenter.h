@@ -14,7 +14,10 @@
 #include "game.h"
 #include "piece.h"
 
-// TODO perhaps couple more tightly to the view?
+// TODO make this a controller for DisplayView. That'll get rid of a lot of
+// methods that are just "parse this from model and pass it on". Part of this
+// will involve getting the view to know about the model. That allows it to
+// directly observe the model, so this no longer needs to be a subject/observer
 
 /**
  * Not sure what to say about this. It doesn't correspond to anything nice and
@@ -22,7 +25,7 @@
  * In MVP terms, it's either a Supervising Controller, or the Presenter in a
  * Passive View setup.
  */
-class Presenter : public Observer, public Subject
+class Presenter : public Subject, public Observer
 {
   public:
     /** Constructs a presenter that is attached to the given view. */
@@ -32,8 +35,9 @@ class Presenter : public Observer, public Subject
     ~Presenter();
 
 
-    /** Returns the piece at the given location. */
-    Piece getPiece(int i, int j, int k) const;
+    /** Returns the underlying game that this presenter handles. */
+    const Game* getGame() const;
+
 
     /** Returns a list of the targets of possible moves. */
     std::list<Cell> getMoveIndicators() const;
@@ -46,6 +50,9 @@ class Presenter : public Observer, public Subject
      * action.
      */
     void click(int i, int j, int k);
+
+    /** Terminates the game. */
+    void haltGame();
 
 
     virtual void onNotify();

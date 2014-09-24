@@ -16,7 +16,8 @@ Move::Move(bool color, MoveType type, int origin, int target)
 Move::Move(bool color, MoveType type, int origin, int target, PieceType promo)
 {
     assert(type == PROMOTE || type == PROMO_CAPTURE);
-    data_ = (type) | (color << 3) | (origin << 4) | (target << 15) | (promo << 26);
+    data_ = (type) | (color << 3) | (origin << 4) | (target << 15) |
+            (promo << 26);
 }
 
 MoveType Move::type() const

@@ -7,7 +7,10 @@
 #include "player-interface.h"
 #include "move.h"
 
-// TODO this is not thread-safe! what happens when you call getMove, and before turn is changed, another setMove is called?
+// TODO this is not thread-safe! what happens when you call getMove, and before
+// turn is changed, another setMove is called? Possible fix: have an "isMyTurn"
+// method? But editing that is a pain. This is something I should look up in
+// the book.
 
 class HumanPlayer : public PlayerInterface
 {

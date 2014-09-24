@@ -267,7 +267,8 @@ list<Move> Board::generateCastlingMoves(bool color) const
     return moves;
 }
 
-bool Board::isLegalMove(const Move& m) const // TODO make non-const version that uses undo
+// TODO make non-const version that uses undo
+bool Board::isLegalMove(const Move& m) const
 {
     Board copy (*this);
 
@@ -492,7 +493,8 @@ list<Move> Board::generatePawnMoves(int origin) const
                 for(int i = 0; i < NUM_PROMOTION_PIECES; i++)
                 {
                     PieceType pt = PROMOTION_PIECES[i];
-                    moves.push_back(Move(color, PROMO_CAPTURE, origin, target, pt));
+                    Move m (color, PROMO_CAPTURE, origin, target, pt);
+                    moves.push_back(m);
                 }
             }
             else

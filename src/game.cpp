@@ -19,7 +19,8 @@ bool Game::getTurn() const
     return turn_;
 }
 
-const Board& Game::getBoard() const
+// TODO like this is even remotely thread-safe. fix it, asshole
+Board Game::getBoard() const
 {
     return board_;
 }

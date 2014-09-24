@@ -13,7 +13,6 @@
 
 #include "player-interface.h"
 
-// TODO maybe make the view observe this? otherwise how can it know when the ai makes a move?
 class Game : public Subject
 {
   public:
@@ -21,7 +20,9 @@ class Game : public Subject
     ~Game();
 
     bool getTurn() const;
-    const Board& getBoard() const;
+
+    /** Returns a copy of the current board. */
+    Board getBoard() const;
 
     void begin();
     void end();

@@ -25,10 +25,9 @@ Presenter::~Presenter()
     delete player_;
 }
 
-Piece Presenter::getPiece(int i, int j, int k) const
+const Game* Presenter::getGame() const
 {
-    int index = mailbox(i, j, k);
-    return game_->getBoard().getPiece(index);
+    return game_;
 }
 
 list<Cell> Presenter::getMoveIndicators() const
@@ -37,14 +36,7 @@ list<Cell> Presenter::getMoveIndicators() const
 
     list<Move>::const_iterator it;
     for(it = selected_moves_.begin(); it != selected_moves_.end(); it++)
-    {
-        int target = it->target();
-        Cell c;
-        c.x = unmailboxX(target);
-        c.y = unmailboxY(target);
-        c.z = unmailboxZ(target);
-        cells.push_back(c);
-    }
+        cells.push_back(unmailbox(it->target()));
 
     return cells;
 }
@@ -60,9 +52,11 @@ list<string> Presenter::getMoveHistory() const
     {
         Move m = history.top();
         std::stringstream ss;
-        ss << "(" << unmailboxX(m.origin()) << ", " << unmailboxY(m.origin()) <<
-            ", " << unmailboxZ(m.origin()) << ") -> (" << unmailboxX(m.target()) <<
-            ", " << unmailboxY(m.target()) << ", " << unmailboxZ(m.target()) << ")";
+        Cell origin = unmailbox(m.origin());
+        Cell target = unmailbox(m.target());
+        ss << "(" << origin.x << ", " << origin.y << ", " << origin.z <<
+            ") -> (" << target.x << ", " << target.y << ", " << target.z <<
+            ")";
         strings.push_back(ss.str());
         history.pop();
     }
@@ -73,7 +67,7 @@ list<string> Presenter::getMoveHistory() const
 void Presenter::click(int i, int j, int k)
 {
     int clicked = mailbox(i, j, k);
-    const Board& board = game_->getBoard();
+    Board board = game_->getBoard();
     bool turn = game_->getTurn();
 
     list<Move>::const_iterator it;
@@ -114,6 +108,11 @@ void Presenter::click(int i, int j, int k)
 
         notifyAll();
     }
+}
+
+void Presenter::haltGame()
+{
+    game_->end();
 }
 
 void Presenter::onNotify()

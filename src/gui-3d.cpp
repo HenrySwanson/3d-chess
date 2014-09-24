@@ -1,6 +1,6 @@
 #include "gui-3d.h"
 
-Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxDefaultSize)
+Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
 {
     presenter_ = new Presenter();
     game_over_ = false;
@@ -48,6 +48,7 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"), wxDefaultPosition, wxD
     Connect(GetId(), wxEVT_CLOSE_WINDOW, 
       wxCloseEventHandler(Gui3D::onClose));
 
+    // Observe the game
     presenter_->addObserver(this);
 }
 

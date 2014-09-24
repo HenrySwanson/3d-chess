@@ -18,7 +18,8 @@ static const float PI = 3.1415926535f;
 static const float EYE_RAD = 15;
 
 /** Attributes to set up the OpenGL context */
-static int OPEN_GL_ATTRIBS [] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0};
+static int OPEN_GL_ATTRIBS [] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER,
+    WX_GL_DEPTH_SIZE, 16, 0 };
 
 /** The number of floats per vertex */
 static const int VERTEX_SIZE = 3;
@@ -32,7 +33,8 @@ static const char* PIECE_FILES [16] = {
     "pyramid", "pyramid"
 };
 
-DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) : wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS, wxDefaultPosition, wxDefaultSize, 0, wxT("GLCanvas"), wxNullPalette)
+DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) :
+    wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS)
 {
     presenter_ = presenter;
 
@@ -45,10 +47,14 @@ DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) : wxGLCanva
     SetMinSize(wxSize(500, 500));
 
     // Connect events to their handlers
-    Connect(GetId(), wxEVT_LEFT_DOWN, wxMouseEventHandler(DisplayCanvas::handleMouseDown));
-    Connect(GetId(), wxEVT_LEFT_UP, wxMouseEventHandler(DisplayCanvas::handleMouseUp));
-    Connect(GetId(), wxEVT_MOTION, wxMouseEventHandler(DisplayCanvas::handleMouseDrag));
-    Connect(GetId(), wxEVT_PAINT, wxPaintEventHandler(DisplayCanvas::paint));
+    Connect(GetId(), wxEVT_LEFT_DOWN,
+            wxMouseEventHandler(DisplayCanvas::handleMouseDown));
+    Connect(GetId(), wxEVT_LEFT_UP,
+            wxMouseEventHandler(DisplayCanvas::handleMouseUp));
+    Connect(GetId(), wxEVT_MOTION,
+            wxMouseEventHandler(DisplayCanvas::handleMouseDrag));
+    Connect(GetId(), wxEVT_PAINT,
+            wxPaintEventHandler(DisplayCanvas::paint));
 }
 
 DisplayCanvas::~DisplayCanvas()
@@ -82,9 +88,12 @@ void DisplayCanvas::initializeOpenGL()
     glEnable(GL_CULL_FACE);
 
     // Create programs
-    grid_object_.program = makeProgram("resources/grid.vertexshader", "resources/grid.fragmentshader");
-    piece_object_.program = makeProgram("resources/piece.vertexshader", "resources/piece.fragmentshader");
-    indicator_object_.program = makeProgram("resources/indicator.vertexshader", "resources/indicator.fragmentshader");
+    grid_object_.program = makeProgram("resources/grid.vertexshader",
+            "resources/grid.fragmentshader");
+    piece_object_.program = makeProgram("resources/piece.vertexshader",
+            "resources/piece.fragmentshader");
+    indicator_object_.program = makeProgram("resources/indicator.vertexshader",
+            "resources/indicator.fragmentshader");
 
     // Create VAOs and VBOs
     initializeGrid();
@@ -122,7 +131,8 @@ void DisplayCanvas::initializeGrid()
     }
 
     // Load that array into the VBO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    int byte_len = sizeof(vertexData);
+    glBufferData(GL_ARRAY_BUFFER, byte_len, vertexData, GL_STATIC_DRAW);
     
     // Configure the "vert" variable of the shader program
     GLuint in_vert = glGetAttribLocation(grid_object_.program, "vert");
@@ -194,7 +204,8 @@ void DisplayCanvas::initializeIndicators()
     };
 
     // Load that array into the VBO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    int byte_len = sizeof(vertexData);
+    glBufferData(GL_ARRAY_BUFFER, byte_len, vertexData, GL_STATIC_DRAW);
 
     // Configure the "vert" variable of the shader program
     GLuint in_vert = glGetAttribLocation(indicator_object_.program, "vert");
@@ -217,7 +228,7 @@ void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
     if(has_dragged_)
         return;
 
-    // Render just the pieces and indicators (to the back buffer, to avoid flicker)
+    // Render just the pieces and indicators (back buffer, to avoid flicker)
     prerender();
     renderPieces();
     renderIndicators();
@@ -359,6 +370,9 @@ void DisplayCanvas::renderPieces()
     GLuint vp_loc = glGetUniformLocation(program, "VP");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
+    // Obtain a copy of the board
+    Board board = presenter_->getGame()->getBoard();
+
     for(int i = 0; i < 8; i++)
     {
         for(int j = 0; j < 8; j++)
@@ -370,7 +384,8 @@ void DisplayCanvas::renderPieces()
                 mat4 model = glm::translate(mat4(), corner);
 
                 // Compute hue
-                PieceType pt = presenter_->getPiece(i,j,k).type();
+                int index = mailbox(i, j, k);
+                PieceType pt = board.getPiece(index).type();
                 if(pt == NIL || pt == BORDER)
                     continue;
                 int tmp = (pt == W_PAWN) ? B_PAWN : pt; // Makes pawns match

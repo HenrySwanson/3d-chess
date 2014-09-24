@@ -27,7 +27,7 @@ class DisplayCanvas : public wxGLCanvas
     ~DisplayCanvas();
 
   private:
-    struct RenderObject // TODO name better; also, make one for each piece (sharing references)
+    struct RenderObject // TODO name better
     {
         GLuint program, vao, vbo;
     };
