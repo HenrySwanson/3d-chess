@@ -3,17 +3,12 @@
 
 #include <stack>
 
-#include <atomic>
-#include <thread>
-
-#include "subject.h"
-
 #include "board.h"
 #include "move.h"
 
 #include "player-interface.h"
 
-class Game : public Subject
+class Game
 {
   public:
     Game(PlayerInterface* white, PlayerInterface* black);
@@ -24,21 +19,16 @@ class Game : public Subject
     /** Returns a copy of the current board. */
     Board getBoard() const;
 
-    void begin();
-    void end();
+    void submitMove(const Move& m);
 
     // TODO undo and redo
   private:
+    // TODO should these be atomic?
     Board board_;
     bool turn_;
-    std::stack<Move> undid_moves_;
+    std::stack<Move> undone_moves_;
 
     PlayerInterface* players_ [2];
-
-    std::atomic<bool> running_;
-    std::thread game_thread_;
-
-    void run();
 };
 
 #endif

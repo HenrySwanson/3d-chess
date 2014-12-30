@@ -47,40 +47,12 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
     // Connect window close event
     Connect(GetId(), wxEVT_CLOSE_WINDOW, 
       wxCloseEventHandler(Gui3D::onClose));
-
-    // Observe the game
-    presenter_->addObserver(this);
 }
 
 Gui3D::~Gui3D()
 {
     delete presenter_;
 }
-
-void Gui3D::onNotify()
-{
-    Refresh();
-}
-
-#if 0
-    std::list<std::string> moves = presenter_->getMoveHistory();
-
-    move_history_->Clear();
-    std::list<std::string>::const_iterator it;
-    for(it = moves.begin(); it != moves.end(); it++)
-        move_history_->Append(wxString::FromAscii(it->c_str()));
-
-    /*button_undo->Enable(presenter_->canUndo() && game_over_);
-    button_redo->Enable(presenter_->canRedo() && game_over_);
-
-    GameState state = presenter_->getGameState();
-    // Triggers on the "rising edge" of game_over_
-    if(state != IN_PROGRESS && !game_over_)
-        reactGameOver(state);*/
-
-    Refresh();
-}
-#endif
 
 void Gui3D::newGame(wxCommandEvent& evt)
 {

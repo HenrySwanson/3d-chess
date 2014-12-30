@@ -12,11 +12,8 @@ Presenter::Presenter()
     player_ = new HumanPlayer();
 
     game_ = new Game(player_, player_);
-    game_->begin();
 
     selected_cell_ = NO_SELECTION;
-
-    game_->addObserver(this);
 }
 
 Presenter::~Presenter()
@@ -76,7 +73,8 @@ void Presenter::click(int i, int j, int k)
         // If we clicked a move indicator
         if(clicked == it->target())
         {
-            player_->setMove(*it);
+            // TODO lock move submission until notification
+            game_->submitMove(*it);
             clearSelection();
             return;
         }
@@ -86,7 +84,6 @@ void Presenter::click(int i, int j, int k)
     if(clicked == selected_cell_)
     {
         clearSelection();
-        notifyAll();
     }
     // If we clicked on a piece on the current team
     else if(board.getPiece(clicked).isOn(turn))
@@ -105,19 +102,7 @@ void Presenter::click(int i, int j, int k)
         for(it = moves.begin(); it != moves.end(); it++)
             if(board.isLegalMove(*it))
                 selected_moves_.push_back(*it);
-
-        notifyAll();
     }
-}
-
-void Presenter::haltGame()
-{
-    game_->end();
-}
-
-void Presenter::onNotify()
-{
-    notifyAll();
 }
 
 //----PRIVATE----

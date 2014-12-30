@@ -370,7 +370,7 @@ void DisplayCanvas::renderPieces()
     GLuint vp_loc = glGetUniformLocation(program, "VP");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
-    // Obtain a copy of the board
+    // Obtain a copy of the board TODO this requires lots of copies
     Board board = presenter_->getGame()->getBoard();
 
     for(int i = 0; i < 8; i++)

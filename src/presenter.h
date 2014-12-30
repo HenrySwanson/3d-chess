@@ -6,9 +6,6 @@
 
 #include "common.h"
 
-#include "observer.h"
-#include "subject.h"
-
 #include "human-player.h"
 
 #include "game.h"
@@ -25,7 +22,7 @@
  * In MVP terms, it's either a Supervising Controller, or the Presenter in a
  * Passive View setup.
  */
-class Presenter : public Subject, public Observer
+class Presenter
 {
   public:
     /** Constructs a presenter that is attached to the given view. */
@@ -50,12 +47,6 @@ class Presenter : public Subject, public Observer
      * action.
      */
     void click(int i, int j, int k);
-
-    /** Terminates the game. */
-    void haltGame();
-
-
-    virtual void onNotify();
 
   private:
     /** The game the presentation modifies. */
