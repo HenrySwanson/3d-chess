@@ -9,7 +9,18 @@
 
 #include <glm/glm.hpp>
 
-#include "presenter.h"
+#include <list>
+#include <string>
+
+#include "common.h"
+
+#include "human-player.h"
+
+#include "game.h"
+#include "piece.h"
+
+// TODO there's a function called "Move" in wxGLCanvas, so i need to find a way
+// to un-hide my class in a cleaner way...
 
 /**
  * A panel that displays the chessboard. This is the class that will be most
@@ -19,7 +30,7 @@ class DisplayCanvas : public wxGLCanvas
 {
   public:
     /** Constructs a blank canvas, and creates all relevant buffers. */
-    DisplayCanvas(wxWindow *parent, Presenter* presenter);
+    DisplayCanvas(wxWindow *parent, Game* game);
 
     /**
      * Destructs the object and destroys all associated OpenGL resources.
@@ -31,10 +42,6 @@ class DisplayCanvas : public wxGLCanvas
     {
         GLuint program, vao, vbo;
     };
-
-    /** The presentation layer this panel displays. */
-    Presenter* presenter_;
-
 
     /** The OpenGL context for this window. */
     wxGLContext* context_;
@@ -76,6 +83,19 @@ class DisplayCanvas : public wxGLCanvas
     bool has_dragged_;
 
 
+    /** The game being displayed / controlled by this. */
+    Game* game_;
+
+    HumanPlayer* player_;
+
+
+    /** The cell currently selected. */   
+    int selected_cell_;
+
+    /** The moves the selected piece can make. */
+    std::list< ::Move> selected_moves_;
+
+
     /**
      * Initializes all the OpenGL specific variables and sets up global state.
      * This cannot be called until there is a valid OpenGL context! As a
@@ -108,7 +128,9 @@ class DisplayCanvas : public wxGLCanvas
      * worldspace this click occurred. Returns false and does not modify the
      * vector if no object was clicked.
      */
-    bool unprojectClick(wxPoint pt, glm::vec3& world_coords);
+    bool unproject(wxPoint pt, glm::vec3& world_coords);
+
+    void click(int i, int j, int k);
 
     /** Recomputes the view and projection matrices. */
     void updateMatrices();
@@ -128,6 +150,10 @@ class DisplayCanvas : public wxGLCanvas
 
     /** Renders the move indicators to the back buffer. */
     void renderIndicators();
+
+
+    /** Clears the selected piece and available moves. */
+    void clearSelection();
 };
 
 #endif

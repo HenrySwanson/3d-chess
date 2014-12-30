@@ -2,8 +2,7 @@
 
 Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
 {
-    presenter_ = new Presenter();
-    game_over_ = false;
+    game_ = new Game();
 
     // Note: Don't have to destruct any child widgets, wxWidgets does that.
 
@@ -13,7 +12,7 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
     wxGridSizer* b_sizer = new wxGridSizer(2, 0, 0);
 
     // Construct children
-    display_canvas_ = new DisplayCanvas(this, presenter_);
+    display_canvas_ = new DisplayCanvas(this, game_);
     move_history_ = new wxListBox(this, wxID_ANY);
 
     wxButton* button_new = new wxButton(this, wxID_ANY, wxT("New Game"));
@@ -51,7 +50,7 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
 
 Gui3D::~Gui3D()
 {
-    delete presenter_;
+    delete game_;
 }
 
 void Gui3D::newGame(wxCommandEvent& evt)

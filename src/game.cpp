@@ -1,5 +1,11 @@
 #include "game.h"
 
+Game::Game()
+{
+    turn_ = WHITE;
+    board_.setup();
+}
+
 Game::Game(PlayerInterface* white, PlayerInterface* black)
 {
     turn_ = WHITE;

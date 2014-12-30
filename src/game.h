@@ -11,6 +11,7 @@
 class Game
 {
   public:
+    Game();
     Game(PlayerInterface* white, PlayerInterface* black);
     ~Game();
 

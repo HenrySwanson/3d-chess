@@ -11,6 +11,9 @@ using glm::mat4;
 using glm::vec3;
 using glm::vec4;
 
+using std::list;
+using std::string;
+
 /** Pi */
 static const float PI = 3.1415926535f;
 
@@ -33,10 +36,12 @@ static const char* PIECE_FILES [16] = {
     "pyramid", "pyramid"
 };
 
-DisplayCanvas::DisplayCanvas(wxWindow *parent, Presenter* presenter) :
+static const int NO_SELECTION = 0;
+
+DisplayCanvas::DisplayCanvas(wxWindow *parent, Game* game) :
     wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS)
 {
-    presenter_ = presenter;
+    game_ = game;
 
     context_ = new wxGLContext(this);
     opengl_initialized = false;
@@ -234,12 +239,12 @@ void DisplayCanvas::handleMouseUp(wxMouseEvent& evt)
     renderIndicators();
 
     vec3 world_coords;
-    if(unprojectClick(evt.GetPosition(), world_coords))
+    if(unproject(evt.GetPosition(), world_coords))
     {
         // Shift from worldspace into "chess-space". The +0.02 is to prevent
         // the base of the piece from sticking into the square below it.
         vec3 loc = glm::floor(world_coords + vec3(4, 4, 4.02));
-        presenter_->click(loc.x, loc.y, loc.z);
+        click(loc.x, loc.y, loc.z);
     }
 }
 
@@ -265,7 +270,7 @@ void DisplayCanvas::handleMouseDrag(wxMouseEvent& evt)
     Refresh();
 }
 
-bool DisplayCanvas::unprojectClick(wxPoint pt, vec3& world_coords)
+bool DisplayCanvas::unproject(wxPoint pt, vec3& world_coords)
 {
     // Get screen size and viewport
     wxSize size = GetClientSize();
@@ -289,6 +294,52 @@ bool DisplayCanvas::unprojectClick(wxPoint pt, vec3& world_coords)
     world_coords = glm::unProject(window, view_, proj_, viewport);
 
     return true;
+}
+
+void DisplayCanvas::click(int i, int j, int k)
+{
+    int clickedIndex = mailbox(i, j, k);
+
+    // Get necessary board information
+    Board board = game_->getBoard();
+    bool turn = game_->getTurn();
+
+    // Check if we clicked on a move indicator
+    list< ::Move>::const_iterator it;
+    for(it = selected_moves_.begin(); it != selected_moves_.end(); it++)
+    {
+        if(clickedIndex == it->target())
+        {
+            // TODO lock move submission until re-notification
+            game_->submitMove(*it);
+            clearSelection();
+            return;
+        }
+    }
+
+    // If we clicked the already-selected cell
+    if(clickedIndex == selected_cell_)
+    {
+        clearSelection();
+    }
+    // If we clicked on a piece on the current team
+    else if(board.getPiece(clickedIndex).isOn(turn))
+    {
+        selected_cell_ = clickedIndex;
+        list< ::Move> moves = board.generateMoves(clickedIndex);
+        if(board.getPiece(clickedIndex).type() == KING)
+        {
+            list< ::Move> castles = board.generateCastlingMoves(turn);
+            moves.splice(moves.end(), castles);
+        }
+        
+        // Restrict to legal moves
+        selected_moves_.clear();
+        list< ::Move>::const_iterator it;
+        for(it = moves.begin(); it != moves.end(); it++)
+            if(board.isLegalMove(*it))
+                selected_moves_.push_back(*it);
+    }
 }
 
 void DisplayCanvas::updateMatrices()
@@ -371,7 +422,7 @@ void DisplayCanvas::renderPieces()
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
     // Obtain a copy of the board TODO this requires lots of copies
-    Board board = presenter_->getGame()->getBoard();
+    Board board = game_->getBoard();
 
     for(int i = 0; i < 8; i++)
     {
@@ -424,13 +475,16 @@ void DisplayCanvas::renderIndicators()
     GLuint vp_loc = glGetUniformLocation(program, "VP");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
-    std::list<Cell> indicators = presenter_->getMoveIndicators();
-
-    std::list<Cell>::const_iterator it;
-    for(it = indicators.begin(); it != indicators.end(); it++)
+    std::list< ::Move>::const_iterator it;
+    for(it = selected_moves_.begin(); it != selected_moves_.end(); it++)
     {
+        // Get the target square of the move
+        int x = unmailboxX(it->target());
+        int y = unmailboxY(it->target());
+        int z = unmailboxZ(it->target());
+
         // Compute model matrix
-        vec3 corner = vec3(it->x - 4, it->y - 4, it->z - 4);
+        vec3 corner = vec3(x - 4, y - 4, z - 4);
         mat4 model = glm::translate(mat4(), corner);
 
         // Set uniform variables
@@ -444,4 +498,10 @@ void DisplayCanvas::renderIndicators()
     // Unbind everything
     glBindVertexArray(0);
     glUseProgram(0);
+}
+
+void DisplayCanvas::clearSelection()
+{
+    selected_cell_ = NO_SELECTION;
+    selected_moves_.clear();
 }
