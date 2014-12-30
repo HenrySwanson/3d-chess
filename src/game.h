@@ -12,8 +12,9 @@ class Game
 {
   public:
     Game();
-    Game(PlayerInterface* white, PlayerInterface* black);
     ~Game();
+
+    void setPlayer(bool color, PlayerInterface* player);
 
     bool getTurn() const;
 

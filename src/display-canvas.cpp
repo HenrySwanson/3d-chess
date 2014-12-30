@@ -78,6 +78,13 @@ DisplayCanvas::~DisplayCanvas()
     delete context_;
 }
 
+void DisplayCanvas::notify()
+{
+    // TODO unlock display
+    // Note, this just marks the window as dirty, and doesn't update it.
+    Refresh();
+}
+
 void DisplayCanvas::initializeOpenGL()
 {
     SetCurrent(*context_);
@@ -313,6 +320,7 @@ void DisplayCanvas::click(int i, int j, int k)
             // TODO lock move submission until re-notification
             game_->submitMove(*it);
             clearSelection();
+            Refresh();
             return;
         }
     }
@@ -321,6 +329,7 @@ void DisplayCanvas::click(int i, int j, int k)
     if(clickedIndex == selected_cell_)
     {
         clearSelection();
+        Refresh();
     }
     // If we clicked on a piece on the current team
     else if(board.getPiece(clickedIndex).isOn(turn))
@@ -339,6 +348,8 @@ void DisplayCanvas::click(int i, int j, int k)
         for(it = moves.begin(); it != moves.end(); it++)
             if(board.isLegalMove(*it))
                 selected_moves_.push_back(*it);
+
+        Refresh();
     }
 }
 

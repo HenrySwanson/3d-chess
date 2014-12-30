@@ -14,8 +14,6 @@
 
 #include "common.h"
 
-#include "human-player.h"
-
 #include "game.h"
 #include "piece.h"
 
@@ -26,7 +24,7 @@
  * A panel that displays the chessboard. This is the class that will be most
  * tightly linked to OpenGL.
  */
-class DisplayCanvas : public wxGLCanvas
+class DisplayCanvas : public wxGLCanvas, public PlayerInterface
 {
   public:
     /** Constructs a blank canvas, and creates all relevant buffers. */
@@ -36,6 +34,8 @@ class DisplayCanvas : public wxGLCanvas
      * Destructs the object and destroys all associated OpenGL resources.
      */
     ~DisplayCanvas();
+
+    virtual void notify();
 
   private:
     struct RenderObject // TODO name better
@@ -85,8 +85,6 @@ class DisplayCanvas : public wxGLCanvas
 
     /** The game being displayed / controlled by this. */
     Game* game_;
-
-    HumanPlayer* player_;
 
 
     /** The cell currently selected. */   

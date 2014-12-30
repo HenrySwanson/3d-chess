@@ -46,6 +46,10 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
     // Connect window close event
     Connect(GetId(), wxEVT_CLOSE_WINDOW, 
       wxCloseEventHandler(Gui3D::onClose));
+
+    // Plug the display into the game as both players TODO make this changable
+    game_->setPlayer(WHITE, display_canvas_);
+    game_->setPlayer(BLACK, display_canvas_);
 }
 
 Gui3D::~Gui3D()

@@ -6,13 +6,9 @@ Game::Game()
     board_.setup();
 }
 
-Game::Game(PlayerInterface* white, PlayerInterface* black)
+void Game::setPlayer(bool color, PlayerInterface* player)
 {
-    turn_ = WHITE;
-    players_[0] = white;
-    players_[1] = black;
-
-    board_.setup();
+    players_[color] = player;
 }
 
 Game::~Game()
@@ -33,5 +29,10 @@ Board Game::getBoard() const
 
 void Game::submitMove(const Move& m)
 {
-    // TODO implement
+    // Make move and switch turns
+    board_.makeMove(m);
+    turn_ = !turn_;
+
+    // Notify the next player
+    players_[turn_]->notify();
 }
