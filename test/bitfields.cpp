@@ -1,3 +1,4 @@
+#include "../src/common.h"
 #include "../src/piece.h"
 #include "../src/move.h"
 

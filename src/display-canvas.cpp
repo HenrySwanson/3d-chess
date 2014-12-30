@@ -420,6 +420,7 @@ void DisplayCanvas::renderGrid()
     glUseProgram(0);
 }
 
+// TODO delete the silly color things once you have real models
 void DisplayCanvas::renderPieces()
 {
     // Bind the program and VAO
@@ -441,13 +442,25 @@ void DisplayCanvas::renderPieces()
         {
             for(int k = 0; k < 8; k++)
             {
+                // Find piece data
+                Piece p = board.getPiece(mailbox(i, j, k));
+
                 // Compute model matrix
-                vec3 corner = vec3(i - 4, j - 4, k - 4);
-                mat4 model = glm::translate(mat4(), corner);
+                mat4 model;
+                if(p.color() == WHITE)
+                {
+                    vec3 corner = vec3(i - 4, j - 4, k - 4);
+                    model = glm::translate(mat4(), corner);
+                }
+                else
+                {
+                    vec3 corner = vec3(i - 4, j - 4, k - 3);
+                    model = glm::translate(mat4(), corner);
+                    model[2][2] = -1; // flips it across z = 0
+                }
 
                 // Compute hue
-                int index = mailbox(i, j, k);
-                PieceType pt = board.getPiece(index).type();
+                PieceType pt = p.type();
                 if(pt == NIL || pt == BORDER)
                     continue;
                 int tmp = (pt == W_PAWN) ? B_PAWN : pt; // Makes pawns match
