@@ -2,8 +2,7 @@
 
 Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
 {
-    game_ = new Game();
-    ai_ = new AiPlayer(BLACK, game_);
+    ai_ = new AiPlayer();
 
     // Note: Don't have to destruct any child widgets, wxWidgets does that.
 
@@ -13,7 +12,7 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
     wxGridSizer* b_sizer = new wxGridSizer(2, 0, 0);
 
     // Construct children
-    display_canvas_ = new DisplayCanvas(this, game_);
+    display_canvas_ = new DisplayCanvas(this);
     move_history_ = new wxListBox(this, wxID_ANY);
 
     wxButton* button_new = new wxButton(this, wxID_ANY, wxT("New Game"));
@@ -48,9 +47,8 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
     Connect(GetId(), wxEVT_CLOSE_WINDOW, 
       wxCloseEventHandler(Gui3D::onClose));
 
-    // Plug the display into the game as both players TODO make this changable
-    game_->setPlayer(WHITE, display_canvas_);
-    game_->setPlayer(BLACK, ai_);
+    // Create the game
+    game_ = new Game(display_canvas_->getPlayer(), ai_);
 }
 
 Gui3D::~Gui3D()

@@ -27,7 +27,7 @@ class Gui3D : public wxFrame
 
     /** An AI player. */
     AiPlayer* ai_;
-    AiPlayer* ai2_;
+
 
     /** The canvas on which the board is drawn. */
     DisplayCanvas* display_canvas_;

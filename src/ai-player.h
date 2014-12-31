@@ -8,13 +8,11 @@
 class AiPlayer : public PlayerInterface
 {
   public:
-    AiPlayer(bool color, Game* game);
+    AiPlayer();
     ~AiPlayer();
-    virtual void notify();
+    virtual Move requestMove(bool color, const Board& board);
 
   private:
-    bool color_;
-    Game* game_;
 };
 
 #endif

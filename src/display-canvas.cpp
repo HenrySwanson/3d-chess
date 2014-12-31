@@ -38,10 +38,12 @@ static const char* PIECE_FILES [16] = {
 
 static const int NO_SELECTION = 0;
 
-DisplayCanvas::DisplayCanvas(wxWindow *parent, Game* game) :
-    wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS)
+DisplayCanvas::DisplayCanvas(wxWindow *parent) :
+    wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS),
+    player_(this)
 {
-    game_ = game;
+    board_.setup();
+    selected_cell_ = NO_SELECTION;
 
     context_ = new wxGLContext(this);
     opengl_initialized = false;
@@ -78,10 +80,15 @@ DisplayCanvas::~DisplayCanvas()
     delete context_;
 }
 
-void DisplayCanvas::notify()
+HumanPlayer* DisplayCanvas::getPlayer()
 {
-    // TODO unlock display
-    // Note, this just marks the window as dirty, and doesn't update it.
+    return &player_;
+}
+
+// TODO is this thread-safe?
+void DisplayCanvas::refresh()
+{
+    board_ = player_.getBoard();
     Refresh();
 }
 
@@ -305,11 +312,11 @@ bool DisplayCanvas::unproject(wxPoint pt, vec3& world_coords)
 
 void DisplayCanvas::click(int i, int j, int k)
 {
-    int clickedIndex = mailbox(i, j, k);
+    if(!player_.isReady())
+        return;
 
-    // Get necessary board information
-    Board board = game_->getBoard();
-    bool turn = game_->getTurn();
+    bool turn = player_.whoseTurn();
+    int clickedIndex = mailbox(i, j, k);
 
     // Check if we clicked on a move indicator
     list< ::Move>::const_iterator it;
@@ -317,8 +324,8 @@ void DisplayCanvas::click(int i, int j, int k)
     {
         if(clickedIndex == it->target())
         {
-            // TODO lock move submission until re-notification
-            game_->submitMove(*it);
+            player_.submitMove(*it);
+            board_.makeMove(*it); // keeps the cache up-to-date
             clearSelection();
             Refresh();
             return;
@@ -330,15 +337,18 @@ void DisplayCanvas::click(int i, int j, int k)
     {
         clearSelection();
         Refresh();
+        return;
     }
+
     // If we clicked on a piece on the current team
-    else if(board.getPiece(clickedIndex).isOn(turn))
+    Piece clickedPiece = board_.getPiece(clickedIndex);
+    if(clickedPiece.isOn(turn))
     {
         selected_cell_ = clickedIndex;
-        list< ::Move> moves = board.generateMoves(clickedIndex);
-        if(board.getPiece(clickedIndex).type() == KING)
+        list< ::Move> moves = board_.generateMoves(clickedIndex);
+        if(clickedPiece.type() == KING)
         {
-            list< ::Move> castles = board.generateCastlingMoves(turn);
+            list< ::Move> castles = board_.generateCastlingMoves(turn);
             moves.splice(moves.end(), castles);
         }
         
@@ -346,10 +356,11 @@ void DisplayCanvas::click(int i, int j, int k)
         selected_moves_.clear();
         list< ::Move>::const_iterator it;
         for(it = moves.begin(); it != moves.end(); it++)
-            if(board.isLegalMove(*it))
+            if(board_.isLegalMove(*it))
                 selected_moves_.push_back(*it);
 
         Refresh();
+        return;
     }
 }
 
@@ -433,9 +444,7 @@ void DisplayCanvas::renderPieces()
     GLuint vp_loc = glGetUniformLocation(program, "VP");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
-    // Obtain a copy of the board TODO this requires lots of copies
-    Board board = game_->getBoard();
-
+    // Iterates through the board
     for(int i = 0; i < 8; i++)
     {
         for(int j = 0; j < 8; j++)
@@ -443,7 +452,7 @@ void DisplayCanvas::renderPieces()
             for(int k = 0; k < 8; k++)
             {
                 // Find piece data
-                Piece p = board.getPiece(mailbox(i, j, k));
+                Piece p = board_.getPiece(mailbox(i, j, k));
 
                 // Compute model matrix
                 mat4 model;

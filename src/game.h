@@ -11,23 +11,14 @@
 class Game
 {
   public:
-    Game();
+    Game(PlayerInterface* white, PlayerInterface* black);
     ~Game();
-
-    void setPlayer(bool color, PlayerInterface* player);
-
-    bool getTurn() const;
-
-    /** Returns a copy of the current board. */
-    Board getBoard() const;
-
-    void submitMove(const Move& m);
 
     // TODO undo and redo
   private:
     // TODO should these be atomic?
-    Board board_;
     bool turn_;
+    Board board_;
     std::stack<Move> undone_moves_;
 
     PlayerInterface* players_ [2];

@@ -16,36 +16,49 @@
 
 #include "game.h"
 #include "piece.h"
+#include "human-player.h"
+#include "view-interface.h"
 
 // TODO there's a function called "Move" in wxGLCanvas, so i need to find a way
 // to un-hide my class in a cleaner way...
-
-// TODO right now, this allows you to move as both players. the AI is too fast
-// for it to matter right now, but I should give an option to move as white,
-// black, or both.
 
 /**
  * A panel that displays the chessboard. This is the class that will be most
  * tightly linked to OpenGL.
  */
-class DisplayCanvas : public wxGLCanvas, public PlayerInterface
+class DisplayCanvas : public wxGLCanvas, public ViewInterface
 {
   public:
     /** Constructs a blank canvas, and creates all relevant buffers. */
-    DisplayCanvas(wxWindow *parent, Game* game);
+    DisplayCanvas(wxWindow *parent);
 
     /**
      * Destructs the object and destroys all associated OpenGL resources.
      */
     ~DisplayCanvas();
 
-    virtual void notify();
+    HumanPlayer* getPlayer();
+
+    virtual void refresh();
 
   private:
     struct RenderObject // TODO name better
     {
         GLuint program, vao, vbo;
     };
+
+    /** The interface to attach to the game object. */
+    HumanPlayer player_;
+
+    /** A cached copy of the game board. */
+    Board board_;
+
+    /** The cell currently selected. */   
+    int selected_cell_;
+
+    /** The moves the selected piece can make. */
+    std::list< ::Move> selected_moves_;
+
 
     /** The OpenGL context for this window. */
     wxGLContext* context_;
@@ -85,17 +98,6 @@ class DisplayCanvas : public wxGLCanvas, public PlayerInterface
 
     /** If the mouse is down and has moved, this is true. */
     bool has_dragged_;
-
-
-    /** The game being displayed / controlled by this. */
-    Game* game_;
-
-
-    /** The cell currently selected. */   
-    int selected_cell_;
-
-    /** The moves the selected piece can make. */
-    std::list< ::Move> selected_moves_;
 
 
     /**
