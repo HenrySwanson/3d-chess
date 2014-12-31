@@ -20,6 +20,10 @@
 // TODO there's a function called "Move" in wxGLCanvas, so i need to find a way
 // to un-hide my class in a cleaner way...
 
+// TODO right now, this allows you to move as both players. the AI is too fast
+// for it to matter right now, but I should give an option to move as white,
+// black, or both.
+
 /**
  * A panel that displays the chessboard. This is the class that will be most
  * tightly linked to OpenGL.

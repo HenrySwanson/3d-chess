@@ -6,6 +6,7 @@
 #include <string>
 
 #include "display-canvas.h"
+#include "ai-player.h"
 
 /**
  * A 3D graphical interface for the game. When this object is initialized,
@@ -24,6 +25,9 @@ class Gui3D : public wxFrame
     /** The game being played. */
     Game* game_;
 
+    /** An AI player. */
+    AiPlayer* ai_;
+    AiPlayer* ai2_;
 
     /** The canvas on which the board is drawn. */
     DisplayCanvas* display_canvas_;
