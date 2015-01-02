@@ -39,12 +39,13 @@ Move HumanPlayer::requestMove(bool color, const Board& board)
 {
     std::unique_lock<std::mutex> lock(mutex_);
 
-    view_->refresh();
-
     ready_ = true;
     // TODO standardize turn/color
     turn_ = color;
     board_ = board;
+
+    // Refresh the view
+    view_->refresh();
 
     // Protects against spurious wakeup
     while(ready_)

@@ -9,6 +9,9 @@
 #include "board.h"
 #include "move.h"
 
+// TODO should the view handle be moved into Game? that way, two AIs can
+// play against each other
+
 // TODO should I use futures to handle this, instead of condvars?
 class HumanPlayer : public PlayerInterface
 {

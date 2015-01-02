@@ -2,8 +2,6 @@
 
 Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
 {
-    ai_ = new AiPlayer();
-
     // Note: Don't have to destruct any child widgets, wxWidgets does that.
 
     // Construct all sizers
@@ -47,8 +45,12 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
     Connect(GetId(), wxEVT_CLOSE_WINDOW, 
       wxCloseEventHandler(Gui3D::onClose));
 
+    // Create the AI
+    ai_ = new AiPlayer();
+
     // Create the game
     game_ = new Game(display_canvas_->getPlayer(), ai_);
+    game_-> start();
 }
 
 Gui3D::~Gui3D()
