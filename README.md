@@ -17,9 +17,9 @@ This project uses OpenGL and wxWidgets. I'm not entirely sure how to correctly d
 
 Screenshots
 -----------
-![Initial Configuration (Side)](http://imgur.com/HaxuP9x)
-![Initial Configuration (Top)](http://imgur.com/sAXw5w9)
-![Move Indicators](http://imgur.com/nu4a5so)
+![Initial Configuration (Side)](http://imgur.com/HaxuP9x.png)
+![Initial Configuration (Top)](http://imgur.com/sAXw5w9.png)
+![Move Indicators](http://imgur.com/nu4a5so.png)
 
 Contributions
 -------------
