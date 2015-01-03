@@ -51,6 +51,11 @@ Gui3D::Gui3D() : wxFrame(NULL, wxID_ANY, wxT("3D Chess"))
     // Create the game
     game_ = new Game(display_canvas_->getPlayer(), ai_);
     game_-> start();
+
+    // Disable buttons (since they don't work yet)
+    button_new->Enable(false);
+    button_undo->Enable(false);
+    button_redo->Enable(false);
 }
 
 Gui3D::~Gui3D()
