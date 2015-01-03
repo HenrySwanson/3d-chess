@@ -37,11 +37,14 @@ class DisplayCanvas : public wxGLCanvas, public ViewInterface
      */
     ~DisplayCanvas();
 
+    /** Returns the HumanPlayer object associated with this canvas. */
     HumanPlayer* getPlayer();
 
+    /** Reloads the cached board and repaints the window. */
     virtual void refresh();
 
   private:
+    /** A struct containing render data for an object. */
     struct RenderObject // TODO name better
     {
         GLuint program, vao, vbo;

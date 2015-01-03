@@ -8,7 +8,7 @@ Game::Game(PlayerInterface* white, PlayerInterface* black)
 
 Game::~Game()
 {
-
+    // TODO should probably kill the other thread here?
 }
 
 void Game::start()

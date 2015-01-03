@@ -9,6 +9,10 @@
 #include "move.h"
 #include "piece.h"
 
+/**
+ * Represents the possible end states of the board, or that the game has not
+ * yet ended (IN_PROGRESS).
+ */
 enum GameState {
     IN_PROGRESS, CHECKMATE_WHITE, CHECKMATE_BLACK, STALEMATE_WHITE,
     STALEMATE_BLACK
