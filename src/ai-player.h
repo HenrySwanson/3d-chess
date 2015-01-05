@@ -1,9 +1,9 @@
 #ifndef CHESS_AIPLAYER_H
 #define CHESS_AIPLAYER_H
 
+#include "board.h"
+#include "move.h"
 #include "player-interface.h"
-
-#include "game.h"
 
 // TODO make a class comment once your AI isn't terrible
 class AiPlayer : public PlayerInterface

@@ -13,10 +13,9 @@
 #include <string>
 
 #include "common.h"
-
+#include "human-player.h"
 #include "game.h"
 #include "piece.h"
-#include "human-player.h"
 #include "view-interface.h"
 
 // TODO there's a function called "Move" in wxGLCanvas, so i need to find a way
@@ -37,6 +36,7 @@ class DisplayCanvas : public wxGLCanvas, public ViewInterface
      */
     ~DisplayCanvas();
 
+
     /** Returns the HumanPlayer object associated with this canvas. */
     HumanPlayer* getPlayer();
 
@@ -50,17 +50,64 @@ class DisplayCanvas : public wxGLCanvas, public ViewInterface
         GLuint program, vao, vbo;
     };
 
-    /** The interface to attach to the game object. */
-    HumanPlayer player_;
+    /**
+     * Initializes all the OpenGL specific variables and sets up global state.
+     * This cannot be called until there is a valid OpenGL context! As a
+     * result, this can't be called until the panel is shown.
+     */
+    void initializeOpenGL();
 
-    /** A cached copy of the game board. */
-    Board board_;
+    /** Initializes the VAO and VBO for the grid. */
+    void initializeGrid();
 
-    /** The cell currently selected. */   
-    int selected_cell_;
+    /** Initializes the VAOs and VBO for the pieces. */
+    void initializePieces();
 
-    /** The moves the selected piece can make. */
-    std::list< ::Move> selected_moves_;
+    /** Initializes the VAOs and VBO for the move indicators. */
+    void initializeIndicators();
+
+
+    /** Sets the old mouse position. */
+    void handleMouseDown(wxMouseEvent& evt);
+
+    /** Checks if a click has occurred, and handles the resulting action. */
+    void handleMouseUp(wxMouseEvent& evt);
+
+    /** Handles mouse dragging and the resulting camera rotation. */
+    void handleMouseDrag(wxMouseEvent& evt);
+
+    /** Recomputes the view and projection matrices. */
+    void updateMatrices();
+
+
+    /**
+     * Given a click location, examines the back buffer to determine where in
+     * worldspace this click occurred. Returns false and does not modify the
+     * vector if no object was clicked.
+     */
+    bool unproject(wxPoint pt, glm::vec3& world_coords);
+
+    /** Interprets a click on cell (i, j, k), and performs the move, if any. */
+    void click(int i, int j, int k);
+
+    /** Clears the selected piece and available moves. */
+    void clearSelection();
+
+
+    /** Displays the board on the panel. */
+    void paint(wxPaintEvent& evt);
+
+    /** Resizes the viewport and clears the back buffer. */
+    void prerender();
+
+    /** Renders the grid to the back buffer. */
+    void renderGrid();
+
+    /** Renders the pieces to the back buffer. */
+    void renderPieces();
+
+    /** Renders the move indicators to the back buffer. */
+    void renderIndicators();
 
 
     /** The OpenGL context for this window. */
@@ -68,7 +115,6 @@ class DisplayCanvas : public wxGLCanvas, public ViewInterface
 
     /** Whether or not context_ has been initialized. */
     bool opengl_initialized;
-
 
     /** The render object for the grid. */
     RenderObject grid_object_;
@@ -103,64 +149,17 @@ class DisplayCanvas : public wxGLCanvas, public ViewInterface
     bool has_dragged_;
 
 
-    /**
-     * Initializes all the OpenGL specific variables and sets up global state.
-     * This cannot be called until there is a valid OpenGL context! As a
-     * result, this can't be called until the panel is shown.
-     */
-    void initializeOpenGL();
+    /** The interface to attach to the game object. */
+    HumanPlayer player_;
 
-    /** Initializes the VAO and VBO for the grid. */
-    void initializeGrid();
+    /** A cached copy of the game board. */
+    Board board_;
 
-    /** Initializes the VAOs and VBO for the pieces. */
-    void initializePieces();
+    /** The cell currently selected. */   
+    int selected_cell_;
 
-    /** Initializes the VAOs and VBO for the move indicators. */
-    void initializeIndicators();
-
-
-    /** Sets the old mouse position. */
-    void handleMouseDown(wxMouseEvent& evt);
-
-    /** Checks if a click has occurred, and handles the resulting action. */
-    void handleMouseUp(wxMouseEvent& evt);
-
-    /** Handles mouse dragging and the resulting camera rotation. */
-    void handleMouseDrag(wxMouseEvent& evt);
-
-
-    /**
-     * Given a click location, examines the back buffer to determine where in
-     * worldspace this click occurred. Returns false and does not modify the
-     * vector if no object was clicked.
-     */
-    bool unproject(wxPoint pt, glm::vec3& world_coords);
-
-    void click(int i, int j, int k);
-
-    /** Recomputes the view and projection matrices. */
-    void updateMatrices();
-
-
-    /** Displays the board on the panel. */
-    void paint(wxPaintEvent& evt);
-
-    /** Resizes the viewport and clears the back buffer. */
-    void prerender();
-
-    /** Renders the grid to the back buffer. */
-    void renderGrid();
-
-    /** Renders the pieces to the back buffer. */
-    void renderPieces();
-
-    /** Renders the move indicators to the back buffer. */
-    void renderIndicators();
-
-
-    /** Clears the selected piece and available moves. */
-    void clearSelection();
+    /** The moves the selected piece can make. */
+    std::list< ::Move> selected_moves_;
 };
 
 #endif

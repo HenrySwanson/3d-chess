@@ -1,11 +1,7 @@
 #include "ai-player.h"
 
-#include <list>
-
-#include "board.h"
-#include "move.h"
-
 #include <iostream>
+#include <list>
 
 using std::list;
 

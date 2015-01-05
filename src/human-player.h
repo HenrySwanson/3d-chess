@@ -1,16 +1,16 @@
 #ifndef CHESS_HUMANPLAYER_H
 #define CHESS_HUMANPLAYER_H
 
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 
-#include "player-interface.h"
-#include "view-interface.h"
 #include "board.h"
 #include "move.h"
+#include "player-interface.h"
+#include "view-interface.h"
 
 // TODO should the view handle be moved into Game? that way, two AIs can
-// play against each other
+// play against each other and someone can watch it happen
 
 // TODO should I use futures to handle this, instead of condvars?
 
@@ -28,6 +28,7 @@ class HumanPlayer : public PlayerInterface
 
     /** Default destructor. Doesn't destruct the view. */
     ~HumanPlayer();
+
 
     /** Returns true if there is a thread waiting on requestMove. */
     bool isReady() const;
@@ -58,9 +59,6 @@ class HumanPlayer : public PlayerInterface
     virtual Move requestMove(bool color, const Board& board);
 
   private:
-    /** The view that the human player observes. */
-    ViewInterface* view_;
-
     /** Used to hold requestMove's parameters. */
     bool turn_;
 
@@ -70,9 +68,13 @@ class HumanPlayer : public PlayerInterface
     /** Used to hold submitMove's parameters. */
     Move submitted_move_;
 
+
+    /** The view that the human player observes. */
+    ViewInterface* view_;
+
+
     /** True when there is a thread waiting on requestMove. */
     bool ready_;
-
 
     /** The condition for the requesting thread to wait on. */
     std::condition_variable cv_;

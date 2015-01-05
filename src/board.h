@@ -5,7 +5,6 @@
 #include <stack>
 
 #include "common.h"
-
 #include "move.h"
 #include "piece.h"
 
@@ -29,6 +28,7 @@ class Board
     /** Generates an empty board. */
     Board();
 
+
     /** Puts pieces on the board in their initial position. */
     void setup();
 
@@ -38,6 +38,15 @@ class Board
 
     /** Puts the specifed piece at i and returns the previous occupant. */
     Piece putPiece(const Piece& p, int i);
+
+    /** Returns true if the king of the specified color is in check. */
+    bool isInCheck(bool color) const;
+
+    /** Returns the current state of the game (checkmate, stalemate, etc). */
+    GameState getGameState() const;
+
+    /** Returns a const reference to the history of this board. */
+    const std::stack<Move>& getHistory() const;
 
 
     /** Generates all pseudo-legal moves that the given color can make. */
@@ -53,6 +62,7 @@ class Board
     /** Generates all pseudo-legal castling moves for the given team. */
     std::list<Move> generateCastlingMoves(bool color) const;
 
+
     /** Returns true if the given move is legal for this configuration. */
     bool isLegalMove(const Move& m) const;
 
@@ -62,17 +72,6 @@ class Board
 
     /** Undoes the most recent move. Does nothing if there was none. */
     void undoMove();
-
-
-    /** Returns true if the king of the specified color is in check. */
-    bool isInCheck(bool color) const;
-
-    /** Returns the current state of the game (checkmate, stalemate, etc). */
-    GameState getGameState() const;
-
-
-    /** Returns a const reference to the history of this board. */
-    const std::stack<Move> getHistory() const;
 
   private:
     /** Generates all pseudo-legal moves for a pawn. */ 

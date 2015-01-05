@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include "display-canvas.h"
 #include "ai-player.h"
+#include "display-canvas.h"
 
 /**
  * A 3D graphical interface for the game. When this object is initialized,
@@ -22,11 +22,28 @@ class Gui3D : public wxFrame
     ~Gui3D();
 
   private:
-    /** The game being played. */
-    Game* game_;
+    /** Triggers when the new game button is clicked. */
+    void newGame(wxCommandEvent& evt);
+
+    /** Triggers when the undo move button is clicked. */
+    void undoMove(wxCommandEvent& evt);
+
+    /** Triggers when the redo move button is clicked. */
+    void redoMove(wxCommandEvent& evt);
+
+    /** Closes the window. */
+    void onClose(wxCloseEvent& evt);
+
+
+    /** Responds to the game ending with the appropriate box. */
+    void reactGameOver(GameState state);
+
 
     /** An AI player. */
     AiPlayer* ai_;
+
+    /** The game being played. */
+    Game* game_;
 
 
     /** The canvas on which the board is drawn. */
@@ -40,24 +57,6 @@ class Gui3D : public wxFrame
 
     /** The button to redo moves. */
     wxButton* button_redo;
-
-
-    /** Triggers when the new game button is clicked. */
-    void newGame(wxCommandEvent& evt);
-
-    /** Triggers when the undo move button is clicked. */
-    void undoMove(wxCommandEvent& evt);
-
-    /** Triggers when the redo move button is clicked. */
-    void redoMove(wxCommandEvent& evt);
-
-
-    /** Responds to the game ending with the appropriate box. */
-    void reactGameOver(GameState state);
-
-
-    /** Closes the window. */
-    void onClose(wxCloseEvent& evt);
 };
 
 #endif

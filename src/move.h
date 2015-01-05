@@ -43,11 +43,12 @@ class Move
      */
     Move(bool color, MoveType type, int origin, int target, PieceType promo);
 
-    /** Returns the type of this move. */
-    MoveType type() const;
 
     /** Returns the color of the team making this move. */
     int color() const;
+
+    /** Returns the type of this move. */
+    MoveType type() const;
 
     /** Returns the origin square of this move. */
     int origin() const;
@@ -55,9 +56,14 @@ class Move
     /** Returns the target square of this move. */
     int target() const;
 
-    /** Returns the piece promoted to during this move. */
+    /**
+     * Returns the piece promoted to during this move. Undefined if this was
+     * constructed with the Move(bool, MoveType, int, int) constructor.
+     */
     PieceType promoted() const;
 
+
+    /** Operators */
     bool operator==(const Move& m) const;
     bool operator!=(const Move& m) const;
 

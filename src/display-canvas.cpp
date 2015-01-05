@@ -36,20 +36,23 @@ static const char* PIECE_FILES [16] = {
     "pyramid", "pyramid"
 };
 
+/** Represents that there is no selected cell. */
 static const int NO_SELECTION = 0;
+
+//----CLASS METHODS----
 
 DisplayCanvas::DisplayCanvas(wxWindow *parent) :
     wxGLCanvas(parent, wxID_ANY, OPEN_GL_ATTRIBS),
     player_(this)
 {
-    board_.setup();
-    selected_cell_ = NO_SELECTION;
-
     context_ = new wxGLContext(this);
     opengl_initialized = false;
 
     theta_ = -PI/2;
     phi_ = PI/2;
+
+    board_.setup();
+    selected_cell_ = NO_SELECTION;
 
     SetMinSize(wxSize(500, 500));
 
@@ -281,6 +284,20 @@ void DisplayCanvas::handleMouseDrag(wxMouseEvent& evt)
     Refresh();
 }
 
+void DisplayCanvas::updateMatrices()
+{
+    // View
+    vec3 eye (EYE_RAD * sin(phi_) * cos(theta_),
+              EYE_RAD * sin(phi_) * sin(theta_),
+              EYE_RAD * cos(phi_));
+
+    view_ = glm::lookAt(eye, vec3(0,0,0), vec3(0,0,1));
+
+    // Projection
+    wxSize size = GetClientSize();
+    proj_ = glm::perspective<float>(50.0, (float) size.x / size.y, 8.0, 22.0);
+}
+
 bool DisplayCanvas::unproject(wxPoint pt, vec3& world_coords)
 {
     // Get screen size and viewport
@@ -361,18 +378,10 @@ void DisplayCanvas::click(int i, int j, int k)
     }
 }
 
-void DisplayCanvas::updateMatrices()
+void DisplayCanvas::clearSelection()
 {
-    // View
-    vec3 eye (EYE_RAD * sin(phi_) * cos(theta_),
-              EYE_RAD * sin(phi_) * sin(theta_),
-              EYE_RAD * cos(phi_));
-
-    view_ = glm::lookAt(eye, vec3(0,0,0), vec3(0,0,1));
-
-    // Projection
-    wxSize size = GetClientSize();
-    proj_ = glm::perspective<float>(50.0, (float) size.x / size.y, 8.0, 22.0);
+    selected_cell_ = NO_SELECTION;
+    selected_moves_.clear();
 }
 
 void DisplayCanvas::paint(wxPaintEvent& evt)
@@ -528,10 +537,4 @@ void DisplayCanvas::renderIndicators()
     // Unbind everything
     glBindVertexArray(0);
     glUseProgram(0);
-}
-
-void DisplayCanvas::clearSelection()
-{
-    selected_cell_ = NO_SELECTION;
-    selected_moves_.clear();
 }

@@ -20,14 +20,14 @@ Move::Move(bool color, MoveType type, int origin, int target, PieceType promo)
             (promo << 26);
 }
 
-MoveType Move::type() const
-{
-    return static_cast<MoveType>(data_ & 0x7);
-}
-
 int Move::color() const
 {
     return (data_ >> 3) & 0x1;
+}
+
+MoveType Move::type() const
+{
+    return static_cast<MoveType>(data_ & 0x7);
 }
 
 int Move::origin() const

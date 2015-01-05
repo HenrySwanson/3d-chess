@@ -199,6 +199,41 @@ Piece Board::putPiece(const Piece& p, int i)
     return q;
 }
 
+// TODO this is very slow, and it's called in many places. Consider re-writing
+// or cacheing the result
+bool Board::isInCheck(bool color) const
+{
+    list<Move> opponents_moves = generatePseudoLegalMoves(!color);
+    list<Move>::const_iterator it;
+    for(it = opponents_moves.begin(); it != opponents_moves.end(); it++)
+    {
+        if(it->type() == CAPTURE || it->type() == PROMO_CAPTURE)
+        {
+            Piece captured = pieces_[it->target()];
+            if(captured.type() == KING)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+GameState Board::getGameState() const
+{
+    if(isInSomemate(WHITE))
+        return isInCheck(WHITE) ? CHECKMATE_WHITE : STALEMATE_WHITE;
+
+    if(isInSomemate(BLACK))
+        return isInCheck(BLACK) ? CHECKMATE_BLACK : STALEMATE_BLACK;
+
+    return IN_PROGRESS;
+}
+
+const stack<Move>& Board::getHistory() const
+{
+    return history_;
+}
+
 list<Move> Board::generatePseudoLegalMoves(int color) const
 {
     list<Move> moves;
@@ -403,41 +438,6 @@ void Board::undoMove()
         captured_.pop();
         break;
     }
-}
-
-// TODO this is very slow, and it's called in many places. Consider re-writing
-// or cacheing the result
-bool Board::isInCheck(bool color) const
-{
-    list<Move> opponents_moves = generatePseudoLegalMoves(!color);
-    list<Move>::const_iterator it;
-    for(it = opponents_moves.begin(); it != opponents_moves.end(); it++)
-    {
-        if(it->type() == CAPTURE || it->type() == PROMO_CAPTURE)
-        {
-            Piece captured = pieces_[it->target()];
-            if(captured.type() == KING)
-                return true;
-        }
-    }
-
-    return false;
-}
-
-GameState Board::getGameState() const
-{
-    if(isInSomemate(WHITE))
-        return isInCheck(WHITE) ? CHECKMATE_WHITE : STALEMATE_WHITE;
-
-    if(isInSomemate(BLACK))
-        return isInCheck(BLACK) ? CHECKMATE_BLACK : STALEMATE_BLACK;
-
-    return IN_PROGRESS;
-}
-
-const stack<Move> Board::getHistory() const
-{
-    return history_;
 }
 
 //----PRIVATE----

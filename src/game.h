@@ -6,7 +6,6 @@
 
 #include "board.h"
 #include "move.h"
-
 #include "player-interface.h"
 
 /**
@@ -24,6 +23,7 @@ class Game
     /** Destructs the game, but not the players. */
     ~Game();
 
+
     /**
      * Begins the game. This will start a new thread, which will poll the
      * players for actions until forcibly terminated.
@@ -34,6 +34,19 @@ class Game
     // TODO undo and redo
 
   private:
+    /**
+     * Alternately queries each player forever, starting with white.
+     * The entry point for game_thread_.
+     */
+    void run();
+
+
+    /** The thread started by start(). Currently an infinite loop. */
+    std::thread game_thread_;
+
+    /** Stores the two players in an array. */
+    PlayerInterface* players_ [2];
+
     /** Which player's turn it currently is. */
     bool turn_;
 
@@ -45,18 +58,6 @@ class Game
      * moves. Making a move clears it.
      */
     std::stack<Move> undone_moves_;
-
-    /** Stores the two players in an array. */
-    PlayerInterface* players_ [2];
-
-    /** The thread started by start(). Currently an infinite loop. */
-    std::thread game_thread_;
-
-    /**
-     * Alternately queries each player forever, starting with white.
-     * The entry point for game_thread_.
-     */
-    void run();
 };
 
 #endif

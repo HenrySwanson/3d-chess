@@ -80,6 +80,11 @@ void Gui3D::redoMove(wxCommandEvent& evt)
     //presenter_->redoMove();
 }
 
+void Gui3D::onClose(wxCloseEvent& event)
+{
+    Destroy();
+}
+
 void Gui3D::reactGameOver(GameState state)
 {
     /*game_over_ = true;
@@ -114,9 +119,4 @@ void Gui3D::reactGameOver(GameState state)
     wxMessageDialog* dialog = new wxMessageDialog (NULL, 
             wxString::FromAscii(message), wxString::FromAscii(title));
     dialog->ShowModal();*/
-}
-
-void Gui3D::onClose(wxCloseEvent& event)
-{
-    Destroy();
 }
