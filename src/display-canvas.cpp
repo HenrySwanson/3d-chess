@@ -107,12 +107,9 @@ void DisplayCanvas::initializeOpenGL()
     glEnable(GL_CULL_FACE);
 
     // Create programs
-    grid_object_.program = makeProgram("resources/grid.vertexshader",
-            "resources/grid.fragmentshader");
-    piece_object_.program = makeProgram("resources/piece.vertexshader",
-            "resources/piece.fragmentshader");
-    indicator_object_.program = makeProgram("resources/indicator.vertexshader",
-            "resources/indicator.fragmentshader");
+    grid_object_.program = makeProgram("grid", "grid");
+    piece_object_.program = makeProgram("piece", "piece");
+    indicator_object_.program = makeProgram("indicator", "indicator");
 
     // Create VAOs and VBOs
     initializeGrid();

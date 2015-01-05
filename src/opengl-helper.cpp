@@ -3,8 +3,8 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 
 GLuint loadShaderFromFile(const char* filePath, GLenum type)
 {
@@ -50,9 +50,18 @@ GLuint loadShaderFromFile(const char* filePath, GLenum type)
 
 GLuint makeProgram(const char* vert_filename, const char* frag_filename)
 {
+    // Create full filenames
+    std::stringstream ss_vert;
+    ss_vert << "resources/" << vert_filename << ".vertexshader";
+    std::string path_vert = ss_vert.str();
+
+    std::stringstream ss_frag;
+    ss_frag << "resources/" << frag_filename << ".fragmentshader";
+    std::string path_frag = ss_frag.str();
+
     // Load both (compiled) shaders
-    GLuint vert_shader = loadShaderFromFile(vert_filename, GL_VERTEX_SHADER);
-    GLuint frag_shader = loadShaderFromFile(frag_filename, GL_FRAGMENT_SHADER);
+    GLuint vert_shader = loadShaderFromFile(path_vert.c_str(), GL_VERTEX_SHADER);
+    GLuint frag_shader = loadShaderFromFile(path_frag.c_str(), GL_FRAGMENT_SHADER);
 
     // Generate program, attach shaders and link together
     GLuint program = glCreateProgram();
