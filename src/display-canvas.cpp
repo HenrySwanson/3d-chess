@@ -29,11 +29,11 @@ static const int VERTEX_SIZE = 3;
 
 /** The files to load for each piece */
 static const char* PIECE_FILES [16] = {
-    NULL, NULL, "pyramid", "pyramid",
-    "pyramid", "pyramid", "pyramid", "pyramid",
-    "pyramid", "pyramid", "pyramid",
-    "pyramid", "pyramid", "pyramid",
-    "pyramid", "pyramid"
+    NULL, NULL, "pawn", "pawn",
+    "pawn", "pawn", "pawn", "pawn",
+    "pawn", "pawn", "pawn",
+    "pawn", "pawn", "pawn",
+    "pawn", "pawn"
 };
 
 /** Represents that there is no selected cell. */
@@ -464,12 +464,12 @@ void DisplayCanvas::renderPieces()
                 mat4 model;
                 if(p.color() == WHITE)
                 {
-                    vec3 corner = vec3(i - 4, j - 4, k - 4);
+                    vec3 corner = vec3(i - 3.5, j - 3.5, k - 4);
                     model = glm::translate(mat4(), corner);
                 }
                 else
                 {
-                    vec3 corner = vec3(i - 4, j - 4, k - 3);
+                    vec3 corner = vec3(i - 3.5, j - 3.5, k - 3);
                     model = glm::translate(mat4(), corner);
                     model[2][2] = -1; // flips it across z = 0
                 }
