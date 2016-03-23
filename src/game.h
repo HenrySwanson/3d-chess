@@ -26,16 +26,21 @@ class Game
 
     /**
      * Begins the game. This will start a new thread, which will poll the
-     * players for actions until forcibly terminated.
+     * players for actions until interrupted.
      */
     void start();
 
-    // TODO end (which will involve creating and joining a thread)
+    /**
+     * Ends the game. This interrupts the current player's move-making, and
+     * tells the game thread to leave the run-loop.
+     */
+    void end();
+
     // TODO undo and redo
 
   private:
     /**
-     * Alternately queries each player forever, starting with white.
+     * Alternately queries each player until interrupted, starting with white.
      * The entry point for game_thread_.
      */
     void run();
@@ -52,6 +57,9 @@ class Game
 
     /** The current state of the board. */
     Board board_;
+
+    /** If another thread has called for the game to end. */
+    bool interrupted_;
 
     /**
      * When a move is undone, it's pushed onto this stack. This allows redoing

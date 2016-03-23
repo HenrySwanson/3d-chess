@@ -24,7 +24,7 @@ enum MoveType {
 class Move
 {
   public:
-    /** Constructs a nil move. This move should never be used. */
+    /** Constructs a nil move. This indicates something unusual, like end-of-game. */
     Move();
 
     /**

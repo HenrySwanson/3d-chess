@@ -82,6 +82,7 @@ void Gui3D::redoMove(wxCommandEvent& evt)
 
 void Gui3D::onClose(wxCloseEvent& event)
 {
+    game_->end();
     Destroy();
 }
 
