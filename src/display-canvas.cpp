@@ -31,7 +31,7 @@ static const int VERTEX_SIZE = 3;
 static const char* PIECE_FILES [16] = {
     NULL, NULL, "pawn", "pawn",
     "pawn", "pawn", "pawn", "pawn",
-    "pawn", "pawn", "pawn",
+    "pawn", "bishop", "pawn",
     "pawn", "pawn", "pawn",
     "pawn", "pawn"
 };
