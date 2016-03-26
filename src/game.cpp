@@ -1,5 +1,7 @@
 #include "game.h"
 
+#include <iostream>
+
 Game::Game(PlayerInterface* white, PlayerInterface* black)
 {
     players_[WHITE] = white;
@@ -35,4 +37,29 @@ void Game::run()
         board_.makeMove(m);
         turn_ = !turn_;
     }
+
+    // TODO this is a placeholder, replace with something more interesting,
+    // possibly somewhere else
+    std::cout << "Game ended in: ";
+    switch(board_.getGameState())
+    {
+      case IN_PROGRESS:
+        std::cout << "IN_PROGRESS";
+        break;
+      case WHITE_CHECKMATE:
+        std::cout << "WHITE_CHECKMATE";
+        break;
+      case BLACK_CHECKMATE:
+        std::cout << "BLACK_CHECKMATE";
+        break;
+      case WHITE_STALEMATE:
+        std::cout << "WHITE_STALEMATE";
+        break;
+      case BLACK_STALEMATE:
+        std::cout << "BLACK_STALEMATE";
+        break;
+      default:
+        std::cout << "???";
+    }
+    std::cout << std::endl;
 }
