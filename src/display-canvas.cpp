@@ -30,10 +30,10 @@ static const int VERTEX_SIZE = 3;
 /** The files to load for each piece */
 static const char* PIECE_FILES [16] = {
     NULL, NULL, "pawn", "pawn",
-    "pawn", "pawn", "pawn", "pawn",
-    "pawn", "bishop", "pawn",
-    "pawn", "pawn", "pawn",
-    "pawn", "pawn"
+    "knight", "griffin", "dragon", "unicorn",
+    "rook", "bishop", "mace",
+    "wizard", "archer", "cannon",
+    "queen", "king"
 };
 
 /** Represents that there is no selected cell. */
