@@ -326,7 +326,7 @@ bool DisplayCanvas::unproject(wxPoint pt, vec3& world_coords)
 
 void DisplayCanvas::click(int i, int j, int k)
 {
-    if(!player_.isReady())
+    if(!player_.waitingForMove())
         return;
 
     bool turn = player_.whoseTurn();

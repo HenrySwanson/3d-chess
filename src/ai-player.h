@@ -21,6 +21,9 @@ class AiPlayer : public PlayerInterface
      */
     virtual Move requestMove(bool color, const Board& board);
 
+    /** For now, does nothing. */
+    virtual void interrupt();
+
   private:
 };
 

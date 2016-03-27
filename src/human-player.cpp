@@ -3,17 +3,23 @@
 HumanPlayer::HumanPlayer(ViewInterface* view)
 {
     view_ = view;
-    ready_ = false;
+    // Doesn't really matter what the values are; they should be set by
+    // requestMove before submitMove is called.
+    submitted_ = true;
+    interrupted_ = true;
 }
 
+#include <iostream>
 HumanPlayer::~HumanPlayer()
 {
-
+    // Interrupt any thread waiting on requestMove before continuing.
+    interrupt();
+    // TODO stall so that we don't die before requestMove completes...?
 }
 
-bool HumanPlayer::isReady() const
+bool HumanPlayer::waitingForMove() const
 {
-    return ready_;
+    return !(submitted_ || interrupted_);
 }
 
 bool HumanPlayer::whoseTurn() const
@@ -31,15 +37,16 @@ void HumanPlayer::submitMove(const Move& m)
     std::lock_guard<std::mutex> lock(mutex_);
 
     submitted_move_ = m;
-    ready_ = false;
-    cv_.notify_all();
+    submitted_ = true;
+    cv_.notify_one();
 }
 
 Move HumanPlayer::requestMove(bool color, const Board& board)
 {
     std::unique_lock<std::mutex> lock(mutex_);
 
-    ready_ = true;
+    submitted_ = false;
+    interrupted_ = false;
     turn_ = color;
     board_ = board;
 
@@ -47,9 +54,18 @@ Move HumanPlayer::requestMove(bool color, const Board& board)
     view_->refresh();
 
     // Protects against spurious wakeup
-    // TODO if someone closes the window here, we don't respond
-    while(ready_)
+    while(!submitted_ && !interrupted_)
+    {
         cv_.wait(lock);
+        if(interrupted_)
+            submitted_move_ = Move();
+    }
 
     return submitted_move_;
+}
+
+void HumanPlayer::interrupt()
+{
+    interrupted_ = true;
+    cv_.notify_one();
 }

@@ -31,7 +31,7 @@ class HumanPlayer : public PlayerInterface
 
 
     /** Returns true if there is a thread waiting on requestMove. */
-    bool isReady() const;
+    bool waitingForMove() const;
 
     /**
      * Returns the color passed in by requestMove. Undefined if no thread is
@@ -58,14 +58,13 @@ class HumanPlayer : public PlayerInterface
      */
     virtual Move requestMove(bool color, const Board& board);
 
+    /** Unblocks a thread waiting on requestMove. */
+    virtual void interrupt();
+
   private:
     /** Used to hold requestMove's parameters. */
     bool turn_;
-
-    /** Used to hold requestMove's parameters. */
     Board board_;
-
-    /** Used to hold submitMove's parameters. */
     Move submitted_move_;
 
 
@@ -73,8 +72,11 @@ class HumanPlayer : public PlayerInterface
     ViewInterface* view_;
 
 
-    /** True when there is a thread waiting on requestMove. */
-    bool ready_;
+    /** True when submitMove() has been called. */
+    bool submitted_;
+
+    /** True when interrupt() has been called. */
+    bool interrupted_;
 
     /** The condition for the requesting thread to wait on. */
     std::condition_variable cv_;

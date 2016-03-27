@@ -19,6 +19,12 @@ class PlayerInterface
      * and team color.
      */
     virtual Move requestMove(bool color, const Board& board) = 0;
+
+    /**
+     * Interrupts the player's "thinking". If a thread is in requestMove,
+     * causes it to return ASAP.
+     */
+    virtual void interrupt() = 0;
 };
 
 #endif

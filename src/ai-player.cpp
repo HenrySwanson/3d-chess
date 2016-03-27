@@ -30,3 +30,9 @@ Move AiPlayer::requestMove(bool color, const Board& board)
     std::cout << "Checkmate" << std::endl;
     return Move();
 }
+
+void AiPlayer::interrupt()
+{
+    // TODO this should do something once the AI gets slower...
+    return;
+}

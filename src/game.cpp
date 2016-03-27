@@ -26,6 +26,8 @@ void Game::end()
     // TODO somehow, this has to interrupt a player and tell them to GTFO
     // maybe have PlayerInterface require interrupt()?
     interrupted_ = true;
+    players_[0]->interrupt();
+    players_[1]->interrupt();
     game_thread_.join();
 }
 
@@ -46,17 +48,17 @@ void Game::run()
       case IN_PROGRESS:
         std::cout << "IN_PROGRESS";
         break;
-      case WHITE_CHECKMATE:
-        std::cout << "WHITE_CHECKMATE";
+      case CHECKMATE_WHITE:
+        std::cout << "CHECKMATE_WHITE";
         break;
-      case BLACK_CHECKMATE:
-        std::cout << "BLACK_CHECKMATE";
+      case CHECKMATE_BLACK:
+        std::cout << "CHECKMATE_BLACK";
         break;
-      case WHITE_STALEMATE:
-        std::cout << "WHITE_STALEMATE";
+      case STALEMATE_WHITE:
+        std::cout << "STALEMATE_WHITE";
         break;
-      case BLACK_STALEMATE:
-        std::cout << "BLACK_STALEMATE";
+      case STALEMATE_BLACK:
+        std::cout << "STALEMATE_BLACK";
         break;
       default:
         std::cout << "???";
