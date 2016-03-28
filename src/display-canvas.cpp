@@ -25,7 +25,7 @@ static int OPEN_GL_ATTRIBS [] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER,
     WX_GL_DEPTH_SIZE, 16, 0 };
 
 /** The number of floats per vertex */
-static const int VERTEX_SIZE = 3;
+static const int VERTEX_SIZE = 6;
 
 /** The files to load for each piece */
 static const char* PIECE_FILES [16] = {
@@ -195,8 +195,13 @@ void DisplayCanvas::initializePieces()
     // Configure the "vert" variable of the shader program
     GLuint in_vert = glGetAttribLocation(piece_object_.program, "vert");
     glEnableVertexAttribArray(in_vert);
-    glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    
+    glVertexAttribPointer(in_vert, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), NULL);
+
+    // Configure the "normal" variable of the shader program
+    GLuint in_normal = glGetAttribLocation(piece_object_.program, "normal");
+    glEnableVertexAttribArray(in_normal);
+    glVertexAttribPointer(in_normal, 3, GL_FLOAT, GL_TRUE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)) );
+
     // Unbind the VAO and VBO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -447,8 +452,12 @@ void DisplayCanvas::renderPieces()
 
     // Set up view-projection matrix
     mat4 vp = proj_ * view_;
-    GLuint vp_loc = glGetUniformLocation(program, "VP");
+    GLuint vp_loc = glGetUniformLocation(program, "viewproject");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
+
+    // Set up the light
+    GLuint light_loc = glGetUniformLocation(program, "light");
+    glUniform3f(light_loc, 0, 0, 0);
 
     // Iterates through the board
     for(int i = 0; i < 8; i++)
@@ -466,13 +475,18 @@ void DisplayCanvas::renderPieces()
                 {
                     vec3 corner = vec3(i - 3.5, j - 3.5, k - 4);
                     model = glm::translate(mat4(), corner);
+                    glFrontFace(GL_CCW);
                 }
                 else
                 {
                     vec3 corner = vec3(i - 3.5, j - 3.5, k - 3);
                     model = glm::translate(mat4(), corner);
                     model[2][2] = -1; // flips it across z = 0
+                    glFrontFace(GL_CW);
                 }
+
+                // Compute the normal matrix
+                glm::mat3 normMat = glm::transpose(glm::inverse(glm::mat3(model)));
 
                 // Compute hue
                 PieceType pt = p.type();
@@ -483,9 +497,11 @@ void DisplayCanvas::renderPieces()
                 vec3 color = glm::rgbColor(vec3(hue, 1, 1));
 
                 // Set uniform variables
-                GLuint m_loc = glGetUniformLocation(program, "M");
+                GLuint m_loc = glGetUniformLocation(program, "model");
+                GLuint n_loc = glGetUniformLocation(program, "normMat");
                 GLuint color_loc = glGetUniformLocation(program, "color");
                 glUniformMatrix4fv(m_loc, 1, false, glm::value_ptr(model));
+                glUniformMatrix3fv(n_loc, 1, false, glm::value_ptr(normMat));
                 glUniform3f(color_loc, color.r, color.g, color.b);
 
                 // Find the piece model in the VBO and draw!
@@ -496,7 +512,8 @@ void DisplayCanvas::renderPieces()
         }
     }
 
-    // Unbind everything
+    // Unbind everything and reset the front face direction
+    glFrontFace(GL_CCW);
     glBindVertexArray(0);
     glUseProgram(0);
 }

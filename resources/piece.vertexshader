@@ -1,11 +1,17 @@
 #version 150
 
-uniform mat4 VP;
-uniform mat4 M;
+uniform mat4 model;
+uniform mat4 viewproject;
 
 in vec3 vert;
+in vec3 normal;
+
+out vec3 fragVert;
+out vec3 fragNormal;
 
 void main(void) {
-    gl_Position = VP * M * vec4(vert, 1);
+    fragVert = vert;
+    fragNormal = normal;
+    gl_Position = viewproject * model * vec4(vert, 1);
 }
 

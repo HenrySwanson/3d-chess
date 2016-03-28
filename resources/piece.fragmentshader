@@ -1,10 +1,29 @@
 #version 150
 
+uniform mat4 model;
+uniform mat3 normMat;
 uniform vec3 color;
+uniform vec3 light;
+
+in vec3 fragVert;
+in vec3 fragNormal;
 
 out vec4 finalColor;
 
 void main(void) {
-    finalColor = vec4(color, 0.5f);
+    // Where the fragment is, in worldspace
+    vec3 fragPosition = vec3(model * vec4(fragVert, 1));
+
+    // The normal vector, in worldspace
+    vec3 normal = normalize(normMat * fragNormal);
+
+    // The vector from pixel to light source
+    vec3 surfaceToLight = light - fragPosition;
+
+    // Brightness of the light
+    float brightness = dot(normal, surfaceToLight) / (length(normal) * length(surfaceToLight));
+    brightness = clamp(brightness, 0, 1);
+
+    finalColor = vec4(color * brightness, 1.0f);
 }
 

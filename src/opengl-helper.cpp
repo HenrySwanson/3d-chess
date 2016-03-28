@@ -148,8 +148,8 @@ std::vector<float> loadObjFile(const char* obj_filename)
             {
                 for(int j = 0; j < 3; j++)
                     faces.push_back(vertices[3 * (v_indices[i] - 1) + j]);
-                //for(int j = 0; j < 3; j++)
-                    //faces.push_back(normals[3 * (n_indices[i] - 1) + j]);
+                for(int j = 0; j < 3; j++)
+                    faces.push_back(normals[3 * (n_indices[i] - 1) + j]);
             }
         }
     }
