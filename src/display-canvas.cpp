@@ -455,9 +455,15 @@ void DisplayCanvas::renderPieces()
     GLuint vp_loc = glGetUniformLocation(program, "viewproject");
     glUniformMatrix4fv(vp_loc, 1, false, glm::value_ptr(vp));
 
-    // Set up the light
+    // Set up the light and eye locations (which are the same)!
     GLuint light_loc = glGetUniformLocation(program, "light");
-    glUniform3f(light_loc, 0, 0, 0);
+    GLuint eye_loc = glGetUniformLocation(program, "eye");
+    glUniform3f(light_loc, EYE_RAD * sin(phi_) * cos(theta_),
+                         EYE_RAD * sin(phi_) * sin(theta_),
+                         EYE_RAD * cos(phi_));
+    glUniform3f(eye_loc, EYE_RAD * sin(phi_) * cos(theta_),
+                         EYE_RAD * sin(phi_) * sin(theta_),
+                         EYE_RAD * cos(phi_));
 
     // Iterates through the board
     for(int i = 0; i < 8; i++)
@@ -485,7 +491,7 @@ void DisplayCanvas::renderPieces()
                     glFrontFace(GL_CW);
                 }
 
-                // Compute the normal matrix
+                // Compute the normal matrix.
                 glm::mat3 normMat = glm::transpose(glm::inverse(glm::mat3(model)));
 
                 // Compute hue

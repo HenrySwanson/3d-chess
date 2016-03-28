@@ -4,6 +4,7 @@ uniform mat4 model;
 uniform mat3 normMat;
 uniform vec3 color;
 uniform vec3 light;
+uniform vec3 eye;
 
 in vec3 fragVert;
 in vec3 fragNormal;
@@ -14,16 +15,27 @@ void main(void) {
     // Where the fragment is, in worldspace
     vec3 fragPosition = vec3(model * vec4(fragVert, 1));
 
-    // The normal vector, in worldspace
-    vec3 normal = normalize(normMat * fragNormal);
+    // Various direction vectors in worldspace
+    vec3 normal = normalize(normMat * fragNormal); // normal to the surface
+    vec3 incident = fragPosition - light;          // from light to pixel
+    vec3 surfaceToEye = eye - fragPosition;        // from pixel to the eye
+    vec3 reflected = reflect(incident, normal);    // from pixel outwards
 
-    // The vector from pixel to light source
-    vec3 surfaceToLight = light - fragPosition;
+    // Length of incident (and reflected) vector
+    float dist = length(incident);
 
-    // Brightness of the light
-    float brightness = dot(normal, surfaceToLight) / (length(normal) * length(surfaceToLight));
-    brightness = clamp(brightness, 0, 1);
+    // Angle between -incident and normal
+    float cosTheta = dot(normal, -incident) / dist;
+    cosTheta = clamp(cosTheta, 0, 1);
 
-    finalColor = vec4(color * brightness, 1.0f);
+    // Angle between reflected and eye
+    float cosAlpha = dot(reflected, surfaceToEye) / (dist * length(surfaceToEye));
+    cosAlpha = clamp(cosAlpha, 0, 1);
+
+    finalColor = vec4(
+        0.5 * color * cosTheta +        // diffuse
+        0.1 * color            +        // ambient
+        0.6 * color * pow(cosAlpha, 5), // specular
+        1.0f);                          // alpha
 }
 
